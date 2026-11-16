@@ -2,8 +2,8 @@
 
 See [plan.md](plan.md) for the demo story. The earlier 12-task `identity` plan is replaced by this demo plan; its ideas return after the demo.
 
-- [ ] 1. Projects: Expo app, Next.js admin, shared package
-- [ ] 2. Supabase project + tables + security rules + demo data
+- [x] 1. Projects: Expo app, Next.js admin, shared package
+- [x] 2. Supabase project + tables + security rules + demo data
 - [ ] 3. App: language screen, sign up / log in, role-based home
 - [ ] 4. App: add kid + health checklist
 - [ ] 5. Shared pricing calculator with tests
