@@ -156,6 +156,9 @@ export default function ParentHome() {
                     </T>
                     <T size={12} color={isPending ? p.bjj : p.inkSoft}>
                       {isPending ? t('home.pending', { amount: formatKD(s.total, lang ?? 'en') }) : t('home.left', { date: end })}
+                      {daysUntil(s.start_date, now) > 0
+                        ? ` · ${t('home.starts', { date: new Date(s.start_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })}`
+                        : ''}
                     </T>
                     {kid.belt && s.bjj_days.length > 0 ? <BeltBar belt={kid.belt} stripes={kid.stripes?.[0]?.count ?? 0} height={12} width={150} /> : null}
                     {kid.swim_level && s.swim_days.length > 0 ? <Label color={p.swim}>{t('kids.level', { n: kid.swim_level })}</Label> : null}

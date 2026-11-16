@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 
+import { DateStrip } from '@/components/date-strip';
 import { HomeHeader } from '@/components/home-header';
 import { DayPicker, Segmented } from '@/components/pickers';
 import { Button, ErrorText, Label, Screen, T } from '@/components/ui';
@@ -31,7 +32,8 @@ export default function RegisterScreen() {
   const [bjjDays, setBjjDays] = useState<Weekday[]>([]);
   const [time, setTime] = useState<'16:00' | '17:00'>('16:00');
   const [duration, setDuration] = useState<Duration>('4w');
-  const [start, setStart] = useState<'today' | 'tomorrow'>('today');
+  // first open day: today, or Saturday if today is Friday
+  const [startIso, setStartIso] = useState(() => isoDate(addDays(new Date(), new Date().getDay() === 5 ? 1 : 0)));
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -66,6 +68,7 @@ export default function RegisterScreen() {
   const toggle = (set: (fn: (cur: Weekday[]) => Weekday[]) => void) => (d: Weekday) =>
     set((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
 
+  const fmt = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString(lang === 'ar' ? 'ar-KW' : 'en-GB', { day: 'numeric', month: 'short' });
   const sportLabel = t(`sport.${sport}` as StringKey);
   const lengthLabel = t(`dur.${duration}` as StringKey);
 
@@ -74,7 +77,8 @@ export default function RegisterScreen() {
     if (!kidId) return setError(t('reg.noKids'));
     if (!price.ok) return setError(t(`reg.err.${price.error}` as StringKey));
     setBusy(true);
-    const startDate = addDays(new Date(), start === 'today' ? 0 : 1);
+    const [y, m, d] = startIso.split('-').map(Number);
+    const startDate = new Date(y, m - 1, d);
     const endDate = addDays(startDate, DURATION_WEEKS[duration] * 7);
     const { error: err } = await supabase.from('subscriptions').insert({
       kid_id: kidId,
@@ -178,7 +182,7 @@ export default function RegisterScreen() {
         </Section>
 
         <Section title={t('reg.start')}>
-          <Segmented options={[{ value: 'today', label: t('reg.today') }, { value: 'tomorrow', label: t('reg.tomorrow') }]} value={start} onChange={setStart} />
+          <DateStrip value={startIso} onChange={setStartIso} />
         </Section>
 
         {/* price summary */}
@@ -187,7 +191,7 @@ export default function RegisterScreen() {
             <>
               <Row left={t('reg.summary', { sport: sportLabel, days: price.daysPerWeek, length: lengthLabel })} right={formatKD(price.base, lang ?? 'en')} />
               <T size={12} color={p.inkSoft}>
-                {t('reg.sessions', { n: price.sessions })}
+                {t('reg.sessions', { n: price.sessions })} · {t('reg.dates', { start: fmt(startIso), end: fmt(isoDate(addDays(new Date(startIso + 'T00:00:00'), price.weeks * 7))) })}
               </T>
               {price.familyPct > 0 ? (
                 <Row left={t('reg.familyDisc', { n: familyKidCount, pct: price.familyPct })} right={`−${formatKD((price.base * price.familyPct) / 100, lang ?? 'en')}`} color={p.swim} />
