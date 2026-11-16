@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LOSE | GAIN screens</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--grey:#666;--line:#DDD;--tile:#E8F4F7;--swim:#1E7FA8;--bjj:#D2552B;--red:#C8102E;--bg:#F2F2F0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--ink);padding:32px 16px 64px}
+::selection{background:var(--swim);color:#fff}
+.intro{max-width:1240px;margin:0 auto 28px}
+.intro h1{font-size:28px;font-weight:600}
+.intro p{color:var(--grey);margin-top:6px;max-width:70ch;line-height:1.5}
+.row{display:flex;flex-wrap:wrap;gap:28px;justify-content:center;max-width:1240px;margin:0 auto}
+.cap{font-family:'Barlow Condensed';font-weight:700;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);margin:0 0 8px 4px}
+.phone{width:390px;height:844px;background:#fff;border-radius:40px;overflow:hidden;position:relative;box-shadow:0 18px 40px rgba(0,0,0,.12);border:1px solid #d8d8d8}
+.lbl{font-family:'Barlow Condensed';font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--grey)}
+.cond{font-family:'Barlow Condensed';font-weight:700}
+/* logo */
+.logo{display:inline-flex;flex-direction:column;align-items:center}
+.logo .w{display:flex;align-items:center;gap:7px;font-size:17px}
+.logo .l{font-weight:300}.logo .g{font-weight:700}.logo .bar{width:1px;height:19px;background:var(--ink)}
+.logo .c{font-size:7px;letter-spacing:1.05em;font-weight:400;margin-top:2px;padding-left:1.05em}
+.top{padding:56px 20px 12px;display:flex;justify-content:space-between;align-items:center}
+.hi{font-size:13px;color:var(--grey)}
+.tabs{position:absolute;bottom:0;left:0;right:0;height:80px;border-top:1px solid var(--line);background:#fff;display:flex;justify-content:space-around;padding-top:12px}
+.tabs span{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#888}
+.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6}
+.tabs .on{color:var(--ink);font-weight:700}
+/* pace clock */
+.clock{margin:4px 20px 0;background:var(--tile);padding:16px;display:flex;align-items:center;gap:16px;border-radius:4px}
+.dial{width:70px;height:70px;border-radius:50%;border:2px solid var(--ink);position:relative;flex:none;background:#fff}
+.dial i{position:absolute;left:50%;top:50%;width:2px;height:27px;background:var(--bjj);transform-origin:50% 100%;transform:translate(-50%,-100%) rotate(0deg)}
+.dial b{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:var(--ink)}
+.dial .tk{position:absolute;inset:4px;border-radius:50%;background:repeating-conic-gradient(var(--ink) 0 1.2deg,transparent 1.2deg 30deg);-webkit-mask:radial-gradient(circle,transparent 26px,#000 27px);mask:radial-gradient(circle,transparent 26px,#000 27px)}
+.clock .t{font-family:'Barlow Condensed';font-size:40px;font-weight:700;line-height:1}
+.clock .s{font-size:13px;margin-top:2px}
+/* lanes */
+.week{margin:18px 20px 0}
+.days{display:grid;grid-template-columns:repeat(6,1fr);margin:6px 0 2px 70px;font-family:'Barlow Condensed';font-size:12px;font-weight:700;text-align:center;color:var(--grey)}
+.days .today{color:var(--ink)}
+.lane{display:flex;align-items:center;height:60px;border-top:1px solid var(--line)}
+.who{width:70px;font-weight:600;font-size:15px;line-height:1.1}
+.who small{display:block;font-size:11px;color:var(--grey);font-weight:400}
+.track{flex:1;position:relative;height:100%;display:grid;grid-template-columns:repeat(6,1fr);align-items:center}
+.track:before{content:'';position:absolute;left:0;right:12px;top:50%;height:5px;margin-top:-2.5px;background:var(--ink)}
+.track:after{content:'';position:absolute;right:7px;top:50%;width:5px;height:24px;margin-top:-12px;background:var(--ink)}
+.mk{position:relative;z-index:1;justify-self:center;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--a);font-family:'Barlow Condensed';font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.mk.done{background:var(--a);color:#fff}
+.mk.off{border-color:var(--red);color:var(--red);background:#fff}
+.mk.off:after{content:'';position:absolute;width:26px;height:2px;background:var(--red);transform:rotate(-45deg)}
+/* kid rows */
+.kids{margin:16px 20px 0;border-top:2px solid var(--ink)}
+.kid{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.kid .n{font-family:'Barlow Condensed';font-size:46px;font-weight:700;line-height:.9;width:44px;text-align:center}
+.kid .d{flex:1}
+.kid .d b{font-size:15px}
+.kid .d div{font-size:12px;color:var(--grey)}
+.alert{margin:12px 20px 0;padding:11px 14px;background:var(--ink);color:#fff;font-size:13px;display:flex;justify-content:space-between;border-radius:4px}
+/* belt */
+.belt{height:26px;display:flex;border-radius:3px;overflow:hidden;border:1px solid #8a8a8a;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.belt .body{flex:1;background:linear-gradient(var(--b1) 0 34%,var(--b2) 34% 66%,var(--b1) 66% 100%)}
+.belt .tip{width:96px;background:var(--ink);display:flex;gap:8px;align-items:stretch;justify-content:flex-end;padding-right:12px}
+.belt .tip i{width:8px;background:#fff}
+.belt .tip i.empty{background:#3a3a3a}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.pill:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--a)}
+.health{display:flex;gap:8px;align-items:center;background:#FBEAEC;color:var(--red);padding:10px 12px;font-size:13px;font-weight:600;border-radius:4px}
+.health svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex:none}
+.btn{display:block;width:100%;text-align:center;background:var(--ink);color:#fff;font-weight:600;font-size:16px;padding:15px;border-radius:6px}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
+/* registration */
+.steps{display:flex;gap:4px;margin:0 20px}
+.steps i{flex:1;height:4px;background:var(--line);border-radius:2px}
+.steps i.on{background:var(--ink)}
+.sec{margin:18px 20px 0}
+.sec h3{font-size:18px;font-weight:600;margin-bottom:10px}
+.seg{display:flex;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden}
+.seg span{flex:1;text-align:center;padding:11px 0;font-weight:600;font-size:14px;border-inline-start:1.5px solid var(--ink)}
+.seg span:first-child{border:0}
+.seg .on{background:var(--ink);color:#fff}
+.grp{border:1.5px solid var(--line);border-radius:6px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.grp.on{border-color:var(--swim);background:var(--tile)}
+.grp b{font-size:15px}.grp small{display:block;font-size:12px;color:var(--grey)}
+.rec{font-family:'Barlow Condensed';font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--swim);text-transform:uppercase}
+.price{margin:16px 20px 0;border-top:2px solid var(--ink);padding-top:10px}
+.price div{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+.price .disc{color:var(--swim)}
+.price .tot{font-family:'Barlow Condensed';font-size:30px;font-weight:700;padding-top:8px;border-top:1px solid var(--line);margin-top:6px}
+.dpick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.dpick span{text-align:center;padding:12px 0;border:1.5px solid var(--line);border-radius:6px;font-weight:600;font-size:14px;position:relative}
+.dpick span.rg:after{content:'';position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--swim)}
+.dpick span.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dpick span.on:after{background:#fff}
+.hint{display:flex;gap:8px;font-size:12px;color:var(--grey);margin-top:8px;line-height:1.4}
+.hint .dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--swim);margin-top:5px}
+/* coach dashboards */
+.chead{padding:56px 20px 10px;display:flex;justify-content:space-between;align-items:flex-end}
+.chead h2{font-size:24px;font-weight:600}
+.slotbar{display:flex;gap:6px;margin:0 20px 12px}
+.slotbar span{padding:8px 14px;border-radius:20px;border:1.5px solid var(--line);font-family:'Barlow Condensed';font-weight:700;font-size:14px}
+.slotbar .on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.plane{margin:0 20px;border-top:5px solid var(--ink);position:relative}
+.plane:after{content:'';position:absolute;right:0;top:-12px;width:5px;height:19px;background:var(--ink)}
+.lv{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 4px}
+.lv b{font-family:'Barlow Condensed';font-size:18px;letter-spacing:.04em}
+.lv span{font-size:12px;color:var(--grey)}
+.kr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;font-size:15px}
+.kr .av{width:32px;height:32px;border-radius:50%;background:#eee;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:none}
+.kr .nm{flex:1}
+.kr .nm small{display:block;font-size:11px;color:var(--grey)}
+.chk{width:22px;height:22px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex:none}
+.chk svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:3}
+.chk.no{background:#fff;border:1.5px dashed #bbb}
+.hb{width:22px;height:22px;border-radius:4px;background:#FBEAEC;color:var(--red);display:flex;align-items:center;justify-content:center;flex:none}
+.hb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.4}
+.up{font-family:'Barlow Condensed';font-weight:700;font-size:11px;letter-spacing:.1em;color:var(--swim);border:1px solid var(--swim);border-radius:3px;padding:2px 6px}
+.mini{width:64px;height:12px;display:flex;border:1px solid #8a8a8a;border-radius:2px;overflow:hidden;flex:none}
+.mini .body{flex:1;background:linear-gradient(var(--b1) 0 34%,var(--b2) 34% 66%,var(--b1) 66% 100%)}
+.mini .tip{width:24px;background:var(--ink);display:flex;gap:2px;justify-content:flex-end;padding-right:3px}
+.mini .tip i{width:3px;background:#fff}
+.addst{font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:.06em;border:1.5px solid var(--ink);border-radius:4px;padding:4px 8px;flex:none}
+.ready{font-size:11px;color:var(--bjj);font-weight:600}
+.nudge{margin:12px 20px 0;padding:10px 12px;background:#FDF0EA;border-radius:4px;font-size:13px;display:flex;justify-content:space-between;color:#7A2E12}
+/* coach */
+.stripes{margin-top:10px}
+.stripes div{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--line)}
+.stripes span:first-child{display:flex;gap:8px;align-items:center}
+.stripes span:first-child:before{content:'';width:5px;height:16px;background:var(--ink);box-shadow:inset 0 0 0 1px #fff}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);padding:16px 20px 28px}
+.sheet .grab{width:40px;height:4px;background:#ccc;border-radius:2px;margin:0 auto 14px}
+.field{border:1.5px solid var(--ink);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;margin:10px 0 14px;font-size:15px}
+/* admin */
+.desk{width:1240px;max-width:100%;height:760px;background:#fff;border-radius:10px;overflow:hidden;display:flex;box-shadow:0 18px 40px rgba(0,0,0,.12);border:1px solid #d8d8d8}
+.rail{width:220px;background:var(--ink);color:#fff;padding:24px 18px;display:flex;flex-direction:column;gap:4px}
+.rail .logo .bar{background:#fff}
+.rail nav{margin-top:28px;display:flex;flex-direction:column;gap:2px}
+.rail a{color:#aaa;font-size:14px;padding:9px 10px;border-radius:4px;text-decoration:none}
+.rail a.on{background:#2a2a2a;color:#fff;font-weight:600}
+.main{flex:1;padding:24px 28px;overflow:hidden}
+.main h2{font-size:24px;font-weight:600}
+.main .sub{color:var(--grey);font-size:14px;margin-top:2px}
+.stat{display:flex;gap:36px;margin:18px 0 20px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.stat div b{display:block;font-family:'Barlow Condensed';font-size:38px;line-height:1}
+.stat div span{font-size:13px;color:var(--grey)}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:28px}
+.slot{border:1px solid var(--line);border-radius:6px;margin-bottom:12px}
+.slot header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.slot header b{font-family:'Barlow Condensed';font-size:22px}
+.slot .ln{display:flex;align-items:center;gap:12px;padding:9px 14px;font-size:14px;border-bottom:1px solid #f0f0f0}
+.slot .ln:last-child{border:0}
+.slot .ln .bar{flex:1;height:5px;background:var(--line);position:relative;border-radius:3px}
+.slot .ln .bar i{position:absolute;inset:0;width:var(--w);background:var(--a);border-radius:3px}
+.sm{white-space:nowrap;font-size:13px;padding:6px 12px;border-radius:4px;border:1.5px solid var(--ink);font-weight:600;background:#fff}
+.sm.red{border-color:var(--red);color:var(--red)}
+.sm.dark{background:var(--ink);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-family:'Barlow Condensed';font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);padding:8px 0;border-bottom:1px solid var(--ink)}
+td{padding:10px 0;border-bottom:1px solid #eee;font-variant-numeric:tabular-nums}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:3px;background:#FFF4E5;color:#9A5B00}
+</style></head><body>
+
+<div class="intro">
+  <h1>LOSE | GAIN: key screens</h1>
+  <p>Direction: <b>Lane Lines</b> with the full LOSE | GAIN COMPLEX logo. Swimming is shown as pool lanes; jiu-jitsu as the kid's real belt with stripes. Black and white, with blue for swimming and orange for jiu-jitsu. Sample names and numbers are made up for the demo.</p>
+</div>
+
+<div class="row">
+<!-- 1 PARENT HOME -->
+<div><div class="cap">1 · Parent home</div>
+<div class="phone">
+  <div class="top"><div class="logo"><div class="w"><span class="l">LOSE</span><span class="bar"></span><span class="g">GAIN</span></div><div class="c">COMPLEX</div></div><div class="hi">Hello, Noura</div></div>
+  <div class="clock"><div class="dial"><span class="tk"></span><i></i><b></b></div><div><div class="lbl">Next · Yousef · Mat 2</div><div class="t">5:00 PM</div><div class="s">Today with Coach Fahad</div></div></div>
+  <div class="week"><div class="lbl">This week</div>
+    <div class="days"><span>SAT</span><span>SUN</span><span class="today">MON</span><span>TUE</span><span>WED</span><span>THU</span></div>
+    <div class="lane"><div class="who">Sara<small>Swimming</small></div><div class="track" style="--a:var(--swim)"><span></span><span class="mk done">4</span><span></span><span class="mk">4</span><span></span><span class="mk">4</span></div></div>
+    <div class="lane"><div class="who">Yousef<small>Jiu-jitsu</small></div><div class="track" style="--a:var(--bjj)"><span class="mk done">5</span><span></span><span class="mk">5</span><span></span><span class="mk off"></span><span></span></div></div>
+  </div>
+  <div class="kids">
+    <div class="kid"><div class="n" style="color:var(--swim)">7</div><div class="d"><b>Sara</b><div>classes left · ends 3 Dec · Level 3</div></div></div>
+    <div class="kid"><div class="n" style="color:var(--bjj)">2</div><div class="d"><b>Yousef</b><div>classes left · ends 19 Nov</div><div class="belt" style="--b1:#9E9E9E;--b2:#fff;margin-top:6px;height:14px;width:150px"><span class="body"></span><span class="tip" style="width:46px;gap:4px;padding-right:6px"><i style="width:5px"></i><i style="width:5px"></i></span></div></div></div>
+  </div>
+  <div class="alert"><span>Wed 5 PM jiu-jitsu cancelled · Yousef renews in 3 days</span><b>Renew</b></div>
+  <div class="tabs"><span class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/></svg>Home</span><span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6M15 20c0-3 1.5-5 4-5"/></svg>Kids</span><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Register</span><span><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>Inbox</span></div>
+</div></div>
+
+<!-- 2 REGISTRATION -->
+<div><div class="cap">2 · Registration + price</div>
+<div class="phone">
+  <div class="top"><b style="font-size:17px">Register Lulwa</b><span class="hi">Step 3 of 4</span></div>
+  <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+  <div class="sec"><h3>Sport</h3><div class="seg"><span class="on">Swimming</span><span>Jiu-jitsu</span><span>Both</span></div></div>
+  <div class="sec"><h3>Days per week</h3><div class="seg"><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
+  <div class="sec"><h3>Pick 2 days</h3>
+    <div class="dpick"><span>Sat</span><span class="rg">Sun</span><span>Mon</span><span class="rg on">Tue</span><span>Wed</span><span class="rg on">Thu</span></div>
+    <div class="hint"><span class="dot"></span>Recommended for swimming: days from <b>Sun / Tue / Thu</b> or <b>Sat / Mon / Wed</b>. You'll keep the same coaches all week. Any days are fine.</div>
+  </div>
+  <div class="sec"><h3>Time and length</h3><div class="seg" style="margin-bottom:8px"><span class="on">4:00 PM</span><span>5:00 PM</span></div><div class="seg"><span>1 wk</span><span>2 wks</span><span class="on">4 wks</span><span>3 mo</span></div></div>
+  <div class="price">
+    <div><span>Swimming · 2 days · 4 weeks</span><span>65.000 KD</span></div>
+    <div class="disc"><span>Family discount · 3 kids · 10%</span><span>−6.500 KD</span></div>
+    <div class="tot"><span>Total</span><span>58.500 KD</span></div>
+  </div>
+  <div style="margin:14px 20px 0"><span class="btn">Continue to payment</span></div>
+</div></div>
+
+<!-- 3 COACH: KID PROFILE + ADD STRIPE -->
+<div><div class="cap">3 · Coach: kid profile + add stripe</div>
+<div class="phone">
+  <div class="top"><b style="font-size:17px">‹ Mat 2 · 5 PM</b><span class="pill" style="--a:var(--bjj)">Jiu-jitsu</span></div>
+  <div style="padding:0 20px">
+    <div style="font-size:28px;font-weight:600">Yousef Al-Ali</div>
+    <div class="hi" style="margin:2px 0 12px">9 years · Sat / Mon / Wed · Member 0398</div>
+    <div class="health"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg>Asthma · inhaler in bag</div>
+    <div class="lbl" style="margin:18px 0 8px">Belt</div>
+    <div class="belt" style="--b1:#9E9E9E;--b2:#fff"><span class="body"></span><span class="tip"><i></i><i></i><i class="empty"></i><i class="empty"></i></span></div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:14px"><b>Grey-white belt · 2 stripes</b><span class="hi">since 2 Sep</span></div>
+    <div class="stripes">
+      <div><span>Stripe 2</span><span class="hi">14 Oct 2026 · Coach Fahad</span></div>
+      <div><span>Stripe 1</span><span class="hi">20 Sep 2026 · Coach Fahad</span></div>
+    </div>
+  </div>
+  <div class="sheet"><div class="grab"></div>
+    <b style="font-size:18px">Add stripe 3</b>
+    <div class="field"><span>Date</span><b>17 Nov 2026</b></div>
+    <div style="display:flex;gap:10px"><span class="btn ghost" style="flex:1">Cancel</span><span class="btn" style="flex:1.4">Add stripe</span></div>
+    <div class="hi" style="text-align:center;margin-top:10px;font-size:12px">Yousef's parents will be notified</div>
+  </div>
+</div></div>
+
+<!-- 5 SWIM COACH -->
+<div><div class="cap">5 · Swimming coach: today</div>
+<div class="phone">
+  <div class="chead"><div><div class="lbl">Coach Hamad · Swimming</div><h2>Today · Mon</h2></div><div class="logo"><div class="w" style="font-size:13px"><span class="l">LOSE</span><span class="bar" style="height:14px"></span><span class="g">GAIN</span></div></div></div>
+  <div class="slotbar"><span class="on">4 PM · Kids pool</span><span>5 PM · Olympic</span></div>
+  <div style="margin:0 20px 10px;font-size:13px;color:var(--grey)">12 kids · 3 levels · checked in by reception</div>
+  <div class="plane">
+    <div class="lv"><b>LANE 1 · LEVEL 1</b><span>4 kids · Coach Hamad</span></div>
+    <div class="kr"><span class="av">LA</span><span class="nm">Lulwa<small>6 yrs · trial today</small></span><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6"/></svg></span></div>
+    <div class="kr"><span class="av">AB</span><span class="nm">Abdullah<small>5 yrs</small></span><span class="hb"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6"/></svg></span></div>
+    <div class="kr"><span class="av">MA</span><span class="nm">Maryam<small>6 yrs · 18 classes at level</small></span><span class="up">MOVE UP?</span><span class="chk no"></span></div>
+  </div>
+  <div class="plane" style="margin-top:14px">
+    <div class="lv"><b>LANE 2 · LEVEL 2</b><span>5 kids · Coach Ahmad</span></div>
+    <div class="kr"><span class="av">SA</span><span class="nm">Ali<small>7 yrs · Level 2 since 2 Nov</small></span><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6"/></svg></span></div>
+    <div class="kr"><span class="av">KH</span><span class="nm">Khaled<small>8 yrs</small></span><span class="hb"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6"/></svg></span></div>
+  </div>
+  <div class="plane" style="margin-top:14px">
+    <div class="lv"><b>LANE 3 · LEVEL 3</b><span>3 kids · Coach Hamad</span></div>
+  </div>
+  <div class="tabs"><span class="on"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Classes</span><span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6"/></svg>Kids</span><span><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat</span><span><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1-4 4-6 7-6s6 2 7 6"/></svg>Private</span></div>
+</div></div>
+
+<!-- 6 BJJ COACH -->
+<div><div class="cap">6 · Jiu-jitsu coach: today</div>
+<div class="phone">
+  <div class="chead"><div><div class="lbl">Coach Fahad · Jiu-jitsu</div><h2>Today · Mon</h2></div><div class="logo"><div class="w" style="font-size:13px"><span class="l">LOSE</span><span class="bar" style="height:14px"></span><span class="g">GAIN</span></div></div></div>
+  <div class="slotbar"><span>4:00 · Titans</span><span class="on">5:00 · Kids · Mat 2</span></div>
+  <div style="margin:0 20px 10px;font-size:13px;color:var(--grey)">9 of 10 kids · ages 5–11</div>
+  <div class="nudge"><span><b>2 kids</b> may be ready for a stripe</span><b>Review</b></div>
+  <div style="margin:10px 20px 0;border-top:2px solid var(--ink)">
+    <div class="kr"><span class="nm">Yousef<small>9 yrs · last stripe 14 Oct</small></span><span class="hb"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span><span class="mini" style="--b1:#9E9E9E;--b2:#fff"><span class="body"></span><span class="tip"><i></i><i></i></span></span><span class="addst">+ Stripe</span></div>
+    <div class="kr"><span class="nm">Faisal<small>10 yrs · <span class="ready">24 classes since last stripe</span></small></span><span class="mini" style="--b1:#E8C547;--b2:#E8C547"><span class="body"></span><span class="tip"><i></i><i></i><i></i></span></span><span class="addst">+ Stripe</span></div>
+    <div class="kr"><span class="nm">Noor<small>7 yrs · <span class="ready">4 stripes · belt test?</span></small></span><span class="mini" style="--b1:#9E9E9E;--b2:#9E9E9E"><span class="body"></span><span class="tip"><i></i><i></i><i></i><i></i></span></span><span class="addst">+ Belt</span></div>
+    <div class="kr"><span class="nm">Hamad<small>6 yrs · new · trial last Sat</small></span><span class="mini" style="--b1:#fff;--b2:#fff"><span class="body"></span><span class="tip"></span></span><span class="addst">+ Stripe</span></div>
+    <div class="kr"><span class="nm">Dana<small>8 yrs · last stripe 3 Nov</small></span><span class="hb"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span><span class="mini" style="--b1:#E8C547;--b2:#fff"><span class="body"></span><span class="tip"><i></i></span></span><span class="addst">+ Stripe</span></div>
+    <div class="kr"><span class="nm">Bader<small>11 yrs · moves to Titans in Dec</small></span><span class="mini" style="--b1:#E08A2E;--b2:#fff"><span class="body"></span><span class="tip"><i></i><i></i></span></span><span class="addst">+ Stripe</span></div>
+  </div>
+  <div class="tabs"><span class="on"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Classes</span><span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6"/></svg>Kids</span><span><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Chat</span><span><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c1-4 4-6 7-6s6 2 7 6"/></svg>Private</span></div>
+</div></div>
+</div>
+
+<!-- 4 ADMIN -->
+<div style="max-width:1240px;margin:40px auto 0"><div class="cap">4 · Admin dashboard (desktop)</div>
+<div class="desk">
+  <div class="rail"><div class="logo" style="color:#fff"><div class="w"><span class="l">LOSE</span><span class="bar"></span><span class="g">GAIN</span></div><div class="c">COMPLEX</div></div>
+    <nav><a class="on">Today</a><a>Registrations</a><a>Kids &amp; families</a><a>Classes</a><a>Payments</a><a>Settings</a></nav></div>
+  <div class="main">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><h2>Today · Monday 17 Nov</h2><div class="sub">Receptionist · Mariam</div></div><span class="sm dark">+ New registration</span></div>
+    <div class="stat"><div><b>148</b><span>active members</span></div><div><b>6</b><span>waiting for payment</span></div><div><b>11</b><span>expiring this week</span></div><div><b>34</b><span>kids in class today</span></div></div>
+    <div class="cols">
+      <div><div class="lbl" style="margin-bottom:8px">Today's classes</div>
+        <div class="slot"><header><b>4:00 PM</b><span class="sm red">Cancel a class</span></header>
+          <div class="ln" style="--a:var(--swim)"><span style="width:150px">Swim · Kids pool</span><span class="bar" style="--w:80%"><i></i></span><span>12 / 15</span></div>
+          <div class="ln" style="--a:var(--swim)"><span style="width:150px">Swim · Olympic pool</span><span class="bar" style="--w:55%"><i></i></span><span>11 / 20</span></div>
+          <div class="ln" style="--a:var(--bjj)"><span style="width:150px">Jiu-jitsu · Mat 1</span><span class="bar" style="--w:70%"><i></i></span><span>7 / 10</span></div></div>
+        <div class="slot"><header><b>5:00 PM</b><span class="sm red">Cancel a class</span></header>
+          <div class="ln" style="--a:var(--bjj)"><span style="width:150px">Jiu-jitsu · Mat 2</span><span class="bar" style="--w:90%"><i></i></span><span>9 / 10</span></div>
+          <div class="ln" style="--a:var(--swim)"><span style="width:150px">Swim · Kids pool</span><span class="bar" style="--w:40%"><i></i></span><span>6 / 15</span></div></div>
+      </div>
+      <div><div class="lbl" style="margin-bottom:8px">Waiting for payment</div>
+        <table><tr><th>Kid</th><th>Package</th><th>Amount</th><th></th></tr>
+          <tr><td><b>Lulwa</b> · 6</td><td>Swim 2d · 4w</td><td>58.500</td><td><span class="sm">Mark paid</span></td></tr>
+          <tr><td><b>Faisal</b> · 10</td><td>BJJ 3d · 4w</td><td>90.000</td><td><span class="sm">Mark paid</span></td></tr>
+          <tr><td><b>Dana</b> · 8</td><td>Both 4d · 3m</td><td>267.750</td><td><span class="sm">Mark paid</span></td></tr></table>
+        <div class="lbl" style="margin:20px 0 8px">Expiring this week</div>
+        <table><tr><th>Kid</th><th>Ends</th><th>Left</th><th></th></tr>
+          <tr><td><b>Yousef</b> · BJJ</td><td>19 Nov</td><td>2</td><td><span class="tag">Reminder sent</span></td></tr>
+          <tr><td><b>Hessa</b> · Swim</td><td>20 Nov</td><td>3</td><td><span class="tag">Reminder sent</span></td></tr></table>
+      </div>
+    </div>
+  </div>
+</div></div>
+</body></html>

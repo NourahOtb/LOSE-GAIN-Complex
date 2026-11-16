@@ -1,0 +1,11 @@
+{
+  "name": "lose-gain-complex",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:mobile": "npm run start -w mobile",
+    "dev:admin": "npm run dev -w admin",
+    "test": "npm run test -w @lg/shared",
+    "typecheck": "npm run typecheck -w @lg/shared && npm exec -w mobile -- tsc --noEmit && npm exec -w admin -- tsc --noEmit"
+  }
+}
