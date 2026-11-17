@@ -165,6 +165,19 @@ export default function KidProfile() {
           </View>
         ) : null}
 
+        {/* new jiu-jitsu kid: give the first belt */}
+        {!kid.belt && canEdit && profile?.sport !== 'swimming' ? (
+          <View style={{ gap: 8 }}>
+            <Label color={p.bjj}>{t('kid.belt')}</Label>
+            <Button
+              variant="ghost"
+              title={t('kid.firstBelt')}
+              loading={busy === 'belt'}
+              onPress={() => run('belt', () => supabase.rpc('set_level', { p_kid: kid.id, p_swim_level: null, p_belt: 'white' }))}
+            />
+          </View>
+        ) : null}
+
         {/* swimming level */}
         {kid.swim_level !== null || (canEdit && profile?.sport === 'swimming') ? (
           <View style={{ gap: 8 }}>

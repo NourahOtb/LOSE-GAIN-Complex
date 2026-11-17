@@ -11,4 +11,4 @@ See [plan.md](plan.md) for the demo story. The earlier 12-task `identity` plan i
 - [x] 7. App: coach view (classes, kids, health badges, level + note)
 - [x] 8. Admin: login, registrations, mark paid, expiring soon, kids
 - [x] 9. Admin: cancel class → parent notification inbox
-- [ ] 10. Full demo run-through, fixes, website online
+- [x] 10. Full demo run-through, fixes, website online
