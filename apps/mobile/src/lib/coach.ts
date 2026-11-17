@@ -1,0 +1,64 @@
+import { ageOn, isoDate, type Sport } from '@lg/shared';
+
+import type { Belt, Kid, Stripe } from './data';
+import type { ClassRow, Sub } from './family';
+import { supabase } from './supabase';
+
+export const BELT_ORDER: Belt[] = [
+  'white', 'grey_white', 'grey', 'grey_black',
+  'yellow_white', 'yellow', 'yellow_black',
+  'orange_white', 'orange', 'orange_black',
+  'green_white', 'green', 'green_black',
+];
+export const nextBelt = (b: Belt): Belt | null => BELT_ORDER[BELT_ORDER.indexOf(b) + 1] ?? null;
+
+export type CoachData = {
+  kids: Kid[];
+  subs: Sub[];
+  stripes: Stripe[];
+  classes: ClassRow[];
+  cancelled: { class_id: string; on_date: string }[];
+};
+
+/** Everything a coach needs for their sport (coaches may read all kids by design). */
+export async function loadCoachData(sport: Sport): Promise<CoachData> {
+  const since = isoDate(new Date(Date.now() - 14 * 86400000));
+  const [kids, subs, stripes, classes, cancelled] = await Promise.all([
+    supabase.from('kids').select('*').order('full_name'),
+    supabase
+      .from('subscriptions')
+      .select('id, kid_id, swim_days, bjj_days, start_time, start_date, end_date, status, sessions_total, sessions_used, total, weeks')
+      .in('status', ['active', 'pending_payment']),
+    supabase.from('stripes').select('*').order('awarded_on'),
+    supabase.from('classes').select('id, sport, age_group, location, weekday, start_time, coach_id').eq('sport', sport).eq('is_active', true).order('start_time'),
+    supabase.from('class_cancellations').select('class_id, on_date').gte('on_date', since),
+  ]);
+  return {
+    kids: (kids.data ?? []) as Kid[],
+    subs: (subs.data ?? []) as Sub[],
+    stripes: (stripes.data ?? []) as Stripe[],
+    classes: (classes.data ?? []) as ClassRow[],
+    cancelled: cancelled.data ?? [],
+  };
+}
+
+export const daysOf = (s: Sub, sport: Sport) => (sport === 'swimming' ? s.swim_days : s.bjj_days);
+
+/** Kids booked into a class on a given date (active or waiting for payment, date within the subscription). */
+export function kidsInClass(data: CoachData, cls: ClassRow, dateIso: string) {
+  const sport = cls.sport;
+  return data.subs
+    .filter((s) => daysOf(s, sport).includes(cls.weekday) && s.start_time.slice(0, 5) === cls.start_time.slice(0, 5))
+    .filter((s) => dateIso >= s.start_date && dateIso <= s.end_date)
+    .map((s) => ({ sub: s, kid: data.kids.find((k) => k.id === s.kid_id)! }))
+    .filter(({ kid }) => {
+      if (!kid) return false;
+      if (sport !== 'jiujitsu') return true;
+      const titan = ageOn(kid.birth_date) >= 11;
+      return cls.age_group === (titan ? 'titans' : 'kids');
+    });
+}
+
+/** Stripes on the kid's current belt, oldest first. */
+export const currentStripes = (data: { stripes: Stripe[] }, kid: Kid) =>
+  data.stripes.filter((s) => s.kid_id === kid.id && s.belt === kid.belt);

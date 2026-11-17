@@ -8,7 +8,7 @@ See [plan.md](plan.md) for the demo story. The earlier 12-task `identity` plan i
 - [x] 4. App: add kid + health checklist
 - [x] 5. Shared pricing calculator with tests
 - [x] 6. App: registration flow + price summary, parent home
-- [ ] 7. App: coach view (classes, kids, health badges, level + note)
+- [x] 7. App: coach view (classes, kids, health badges, level + note)
 - [ ] 8. Admin: login, registrations, mark paid, expiring soon, kids
 - [ ] 9. Admin: cancel class → parent notification inbox
 - [ ] 10. Full demo run-through, fixes, website online

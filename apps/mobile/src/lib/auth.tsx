@@ -45,7 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     profile,
     loading,
-    refreshProfile: () => loadProfile(session),
+    // read the live session: the one in state may be stale right after logging in
+    refreshProfile: async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      await loadProfile(data.session);
+    },
     signOut: async () => {
       await supabase.auth.signOut();
       setProfile(null);
