@@ -38,6 +38,11 @@ Demo accounts and the shared password are in `docs/demo-accounts.local.md` on yo
    - the price appears live from the real price sheet (**90.000 KD**)
 5. **Confirm registration** → "Please pay at reception". Home shows **Waiting for payment**.
 
+### 2b. Or pay online (1 minute): UPayments sandbox, no real money
+1. Choose **Online (KNET / card)** when registering, or tap **Pay online** on a waiting registration on the home screen.
+2. The UPayments test page opens with the exact amount. Choose **KNET** and use the UPayments sandbox test card: number `8888880000000001`, expiry `09/30`, PIN any 4 digits → **Submit** → **Confirm**.
+3. You come back to **"Payment received. The subscription is active."** The parent's inbox gets "Payment received · Paid online", and the admin **Registrations** page shows it as **Active · Online**.
+
 ### 3. Reception (1 minute), in the admin dashboard as the receptionist
 1. **Today** shows the numbers, today's classes and how full they are, **Waiting for payment**, and **Expiring this week**.
 2. Press **Paid · KNET** on the new registration → it becomes active. The parent gets **"Payment received"** in their app inbox.

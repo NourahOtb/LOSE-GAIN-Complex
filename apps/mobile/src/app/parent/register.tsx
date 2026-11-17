@@ -8,6 +8,7 @@ import { HomeHeader } from '@/components/home-header';
 import { DayPicker, Segmented } from '@/components/pickers';
 import { Button, ErrorText, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { startOnlinePayment } from '@/lib/payments';
 import type { Kid } from '@/lib/data';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
@@ -36,6 +37,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [payWith, setPayWith] = useState<'desk' | 'online'>('desk');
 
   useFocusEffect(
     useCallback(() => {
@@ -84,7 +86,7 @@ export default function RegisterScreen() {
     const [y, m, d] = startIso.split('-').map(Number);
     const startDate = new Date(y, m - 1, d);
     const endDate = addDays(startDate, DURATION_WEEKS[duration] * 7);
-    const { error: err } = await supabase.from('subscriptions').insert({
+    const { data: created, error: err } = await supabase.from('subscriptions').insert({
       kid_id: kidId,
       swim_days: swim,
       bjj_days: bjj,
@@ -97,9 +99,20 @@ export default function RegisterScreen() {
       discount_pct: price.totalPct,
       total: price.total,
       status: 'pending_payment',
-    });
+    }).select('id').single();
+    if (err || !created) {
+      setBusy(false);
+      return setError(t('err.generic'));
+    }
+    if (payWith === 'online') {
+      const failed = await startOnlinePayment(created.id, lang ?? 'en');
+      setBusy(false);
+      // on the website the page has already moved to UPayments; on a phone the browser has closed
+      if (failed) return setError(t('pay.failed'));
+      router.replace('/parent');
+      return;
+    }
     setBusy(false);
-    if (err) return setError(t('err.generic'));
     setDone(true);
   };
 
@@ -232,10 +245,10 @@ export default function RegisterScreen() {
           <Segmented
             options={[
               { value: 'desk', label: t('reg.payDesk') },
-              { value: 'online', label: t('reg.payOnline'), disabled: true },
+              { value: 'online', label: t('reg.payOnline') },
             ]}
-            value="desk"
-            onChange={() => {}}
+            value={payWith}
+            onChange={setPayWith}
           />
         </Section>
 

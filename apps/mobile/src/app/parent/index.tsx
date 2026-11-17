@@ -8,6 +8,7 @@ import { HomeHeader } from '@/components/home-header';
 import { PaceClock } from '@/components/pace-clock';
 import { Button, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
+import { startOnlinePayment } from '@/lib/payments';
 import { findClass, loadFamily, type FamilyData } from '@/lib/family';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
@@ -160,6 +161,7 @@ export default function ParentHome() {
                         ? ` · ${t('home.starts', { date: new Date(s.start_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })}`
                         : ''}
                     </T>
+                    {isPending ? <PayOnline subscriptionId={s.id} /> : null}
                     {kid.belt && s.bjj_days.length > 0 ? <BeltBar belt={kid.belt} stripes={kid.stripes?.[0]?.count ?? 0} height={12} width={150} /> : null}
                     {kid.swim_level && s.swim_days.length > 0 ? <Label color={p.swim}>{t('kids.level', { n: kid.swim_level })}</Label> : null}
                   </View>
@@ -231,6 +233,34 @@ function Lane({ name, sportLabel, color, marks, isRTL }: { name: string; sportLa
           ))}
         </View>
       </View>
+    </View>
+  );
+}
+
+function PayOnline({ subscriptionId }: { subscriptionId: string }) {
+  const { t, lang } = useI18n();
+  const p = usePalette();
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  return (
+    <View style={{ alignItems: 'flex-start', gap: 4, marginTop: 4 }}>
+      <Button
+        title={busy ? t('pay.opening') : t('pay.now')}
+        loading={busy}
+        style={{ minHeight: 38, paddingHorizontal: 14 }}
+        onPress={async () => {
+          setBusy(true);
+          setFailed(false);
+          const err = await startOnlinePayment(subscriptionId, lang ?? 'en');
+          setBusy(false);
+          if (err) setFailed(true);
+        }}
+      />
+      {failed ? (
+        <T size={12} color={p.danger}>
+          {t('pay.failed')}
+        </T>
+      ) : null}
     </View>
   );
 }
