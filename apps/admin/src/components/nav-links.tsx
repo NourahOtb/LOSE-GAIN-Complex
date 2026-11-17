@@ -1,0 +1,34 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/", label: "Today" },
+  { href: "/registrations", label: "Registrations" },
+  { href: "/kids", label: "Kids & families" },
+];
+
+export function NavLinks({ compact }: { compact?: boolean }) {
+  const path = usePathname();
+  return (
+    <nav className={compact ? "flex gap-3 text-sm" : "mt-8 flex flex-col gap-0.5"}>
+      {LINKS.map((l) => {
+        const on = l.href === "/" ? path === "/" : path.startsWith(l.href);
+        return (
+          <Link
+            key={l.href}
+            href={l.href}
+            aria-current={on ? "page" : undefined}
+            className={
+              compact
+                ? `${on ? "font-semibold text-white" : "text-white/60"}`
+                : `rounded px-2.5 py-2 text-[15px] transition-colors ${on ? "bg-white/10 font-semibold text-white" : "text-white/60 hover:text-white"}`
+            }>
+            {l.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

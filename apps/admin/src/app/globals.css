@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
+/* Lane Lines world: white tile, black lane-line ink, one accent per sport */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #f2f2f0;
+  --surface: #ffffff;
+  --ink: #111111;
+  --ink-soft: #666666;
+  --line: #dddddd;
+  --tile: #e8f4f7;
+  --swim: #1e7fa8;
+  --bjj: #d2552b;
+  --danger: #c8102e;
+  --danger-bg: #fbeaec;
+  --warn-bg: #fff4e5;
+  --warn-ink: #8a5300;
+  --rail: #111111;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0e0f10;
+    --surface: #17191a;
+    --ink: #f2f2f0;
+    --ink-soft: #a3a3a3;
+    --line: #2c2f31;
+    --tile: #12262e;
+    --swim: #4fb0d9;
+    --bjj: #f0855c;
+    --danger: #ff5a6e;
+    --danger-bg: #3a1418;
+    --warn-bg: #3a2a12;
+    --warn-ink: #f5c77a;
+    --rail: #000000;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-tile: var(--tile);
+  --color-swim: var(--swim);
+  --color-bjj: var(--bjj);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --color-rail: var(--rail);
+  --font-sans: var(--font-barlow);
+  --font-cond: var(--font-barlow-cond);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-barlow), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--swim);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--swim);
+  outline-offset: 2px;
+}
+
+.label {
+  font-family: var(--font-barlow-cond), sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.num {
+  font-family: var(--font-barlow-cond), sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+td,
+th {
+  font-variant-numeric: tabular-nums;
 }

@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // shared TypeScript package (prices, schedule helpers) from the monorepo
+  transpilePackages: ["@lg/shared"],
   turbopack: {
     rules: {
       "*.css": {
