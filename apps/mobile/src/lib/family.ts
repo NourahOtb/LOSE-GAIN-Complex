@@ -4,6 +4,7 @@ import type { Kid } from './data';
 import { supabase } from './supabase';
 
 export type Sub = SubLike & {
+  payment_link_at: string | null;
   sessions_total: number;
   sessions_used: number;
   total: number;
@@ -41,7 +42,7 @@ export async function loadFamily(parentId: string): Promise<FamilyData> {
   const [subsRes, cancelsRes] = await Promise.all([
     supabase
       .from('subscriptions')
-      .select('id, kid_id, swim_days, bjj_days, start_time, start_date, end_date, status, sessions_total, sessions_used, total, weeks')
+      .select('id, kid_id, swim_days, bjj_days, start_time, start_date, end_date, status, sessions_total, sessions_used, total, weeks, payment_link_at')
       .in('kid_id', kids.map((k) => k.id))
       .in('status', ['active', 'pending_payment'])
       .order('end_date'),

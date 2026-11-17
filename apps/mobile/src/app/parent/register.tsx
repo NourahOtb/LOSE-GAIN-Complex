@@ -105,11 +105,15 @@ export default function RegisterScreen() {
       return setError(t('err.generic'));
     }
     if (payWith === 'online') {
-      const failed = await startOnlinePayment(created.id, lang ?? 'en');
+      const r = await startOnlinePayment(created.id, lang ?? 'en');
       setBusy(false);
-      // on the website the page has already moved to UPayments; on a phone the browser has closed
-      if (failed) return setError(t('pay.failed'));
-      router.replace('/parent');
+      // website: already on its way to UPayments. Phone: the payment browser closed, so show the outcome.
+      if (r.kind === 'returned') router.replace({ pathname: '/payment-result', params: { sub: created.id } });
+      if (r.kind === 'error') {
+        // the registration is saved; the parent can pay from home or at reception
+        setError(t(`pay.err.${r.error}` as StringKey));
+        setDone(true);
+      }
       return;
     }
     setBusy(false);
@@ -126,10 +130,12 @@ export default function RegisterScreen() {
               {t('reg.done')}
             </T>
           </View>
+          <ErrorText>{error}</ErrorText>
           <Button
             title={t('tab.home')}
             onPress={() => {
               setDone(false);
+              setError('');
               setSwimDays([]);
               setBjjDays([]);
               router.replace('/parent');

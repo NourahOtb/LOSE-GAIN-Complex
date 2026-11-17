@@ -8,7 +8,7 @@ import { HomeHeader } from '@/components/home-header';
 import { PaceClock } from '@/components/pace-clock';
 import { Button, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { startOnlinePayment } from '@/lib/payments';
+import { checkPayment, startOnlinePayment, type PayStatus } from '@/lib/payments';
 import { findClass, loadFamily, type FamilyData } from '@/lib/family';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
@@ -25,8 +25,19 @@ export default function ParentHome() {
   const now = new Date();
   const locale = lang === 'ar' ? 'ar-KW' : 'en-GB';
 
+  const [attempts, setAttempts] = useState<Record<string, PayStatus>>({});
+
   const load = useCallback(async () => {
-    if (profile) setData(await loadFamily(profile.id));
+    if (!profile) return;
+    const fam = await loadFamily(profile.id);
+    setData(fam);
+    // a parent may come back from UPayments by any route (back button, closed tab, error page):
+    // check recent online payment attempts and refresh if one went through
+    const recent = fam.subs.filter((s) => s.status === 'pending_payment' && s.payment_link_at && Date.now() - new Date(s.payment_link_at).getTime() < 3 * 3600_000);
+    if (!recent.length) return;
+    const results = await Promise.all(recent.map(async (s) => [s.id, await checkPayment(s.id)] as const));
+    setAttempts(Object.fromEntries(results));
+    if (results.some(([, st]) => st === 'paid')) setData(await loadFamily(profile.id));
   }, [profile]);
 
   useFocusEffect(
@@ -161,7 +172,7 @@ export default function ParentHome() {
                         ? ` · ${t('home.starts', { date: new Date(s.start_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })}`
                         : ''}
                     </T>
-                    {isPending ? <PayOnline subscriptionId={s.id} /> : null}
+                    {isPending ? <PayOnline subscriptionId={s.id} lastAttempt={attempts[s.id]} /> : null}
                     {kid.belt && s.bjj_days.length > 0 ? <BeltBar belt={kid.belt} stripes={kid.stripes?.[0]?.count ?? 0} height={12} width={150} /> : null}
                     {kid.swim_level && s.swim_days.length > 0 ? <Label color={p.swim}>{t('kids.level', { n: kid.swim_level })}</Label> : null}
                   </View>
@@ -237,28 +248,38 @@ function Lane({ name, sportLabel, color, marks, isRTL }: { name: string; sportLa
   );
 }
 
-function PayOnline({ subscriptionId }: { subscriptionId: string }) {
+function PayOnline({ subscriptionId, lastAttempt }: { subscriptionId: string; lastAttempt?: PayStatus }) {
   const { t, lang } = useI18n();
   const p = usePalette();
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [error, setError] = useState('');
   return (
-    <View style={{ alignItems: 'flex-start', gap: 4, marginTop: 4 }}>
+    <View style={{ alignItems: 'flex-start', gap: 6, marginTop: 4 }}>
+      {lastAttempt === 'not_paid' ? (
+        <T size={12} color={p.danger}>
+          {t('pay.lastFailed')}
+        </T>
+      ) : lastAttempt === 'pending' || lastAttempt === 'unknown' ? (
+        <T size={12} color={p.inkSoft}>
+          {t('pay.lastPending')}
+        </T>
+      ) : null}
       <Button
-        title={busy ? t('pay.opening') : t('pay.now')}
+        title={busy ? t('pay.opening') : lastAttempt === 'not_paid' ? t('pay.tryAgain') : t('pay.now')}
         loading={busy}
         style={{ minHeight: 38, paddingHorizontal: 14 }}
         onPress={async () => {
           setBusy(true);
-          setFailed(false);
-          const err = await startOnlinePayment(subscriptionId, lang ?? 'en');
+          setError('');
+          const r = await startOnlinePayment(subscriptionId, lang ?? 'en');
           setBusy(false);
-          if (err) setFailed(true);
+          if (r.kind === 'error') setError(t(`pay.err.${r.error}` as StringKey));
+          if (r.kind === 'returned') router.push({ pathname: '/payment-result', params: { sub: subscriptionId } });
         }}
       />
-      {failed ? (
+      {error ? (
         <T size={12} color={p.danger}>
-          {t('pay.failed')}
+          {error}
         </T>
       ) : null}
     </View>
