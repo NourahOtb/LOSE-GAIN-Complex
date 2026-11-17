@@ -171,6 +171,12 @@ export const strings = {
     'kid.emergency.call': 'Emergency: {phone}',
     'common.cancel': 'Cancel',
     'common.back': 'Back',
+    'inbox.title': 'Inbox',
+    'inbox.empty': 'No messages yet. Class changes, payments, stripes and coach notes will appear here.',
+    'inbox.markAll': 'Mark all as read',
+    'inbox.justNow': 'Just now',
+    'inbox.minutes': '{n} min ago',
+    'inbox.hours': '{n} h ago',
   },
   ar: {
     'lang.title': 'اختر لغتك',
@@ -343,6 +349,12 @@ export const strings = {
     'kid.emergency.call': 'للطوارئ: {phone}',
     'common.cancel': 'إلغاء',
     'common.back': 'رجوع',
+    'inbox.title': 'الرسائل',
+    'inbox.empty': 'لا توجد رسائل بعد. ستظهر هنا تغييرات الحصص والمدفوعات والأشرطة وملاحظات المدرب.',
+    'inbox.markAll': 'تحديد الكل كمقروء',
+    'inbox.justNow': 'الآن',
+    'inbox.minutes': 'منذ {n} دقيقة',
+    'inbox.hours': 'منذ {n} ساعة',
   },
 } as const;
 

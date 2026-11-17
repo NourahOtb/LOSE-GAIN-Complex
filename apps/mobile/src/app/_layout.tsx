@@ -10,6 +10,7 @@ import { useColorScheme } from 'react-native';
 
 import { AuthProvider } from '@/lib/auth';
 import { LanguageProvider } from '@/lib/i18n';
+import { NotificationsProvider } from '@/lib/notifications';
 import { usePalette } from '@/lib/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -40,8 +41,10 @@ export default function RootLayout() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: p.bg } }} />
+        <NotificationsProvider>
+          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: p.bg } }} />
+        </NotificationsProvider>
       </AuthProvider>
     </LanguageProvider>
   );

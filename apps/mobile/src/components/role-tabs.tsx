@@ -6,7 +6,7 @@ import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
 import { usePalette } from '@/lib/theme';
 
-export type TabDef = { name: string; label: StringKey; Icon: ComponentType<{ color: string; size?: number }> };
+export type TabDef = { name: string; label: StringKey; Icon: ComponentType<{ color: string; size?: number }>; badge?: number };
 
 /** Bottom tab bar in the Lane Lines style: hairline top rule, condensed caps labels. */
 export function RoleTabs({ tabs }: { tabs: TabDef[] }) {
@@ -24,11 +24,16 @@ export function RoleTabs({ tabs }: { tabs: TabDef[] }) {
         tabBarLabelStyle: { fontFamily: f.cond, fontSize: 12, letterSpacing: isRTL ? 0 : 1.2, textTransform: 'uppercase' },
         sceneStyle: { backgroundColor: p.bg },
       }}>
-      {ordered.map(({ name, label, Icon }) => (
+      {ordered.map(({ name, label, Icon, badge }) => (
         <Tabs.Screen
           key={name}
           name={name}
-          options={{ title: t(label), tabBarIcon: ({ color }) => <Icon color={String(color)} /> }}
+          options={{
+            title: t(label),
+            tabBarIcon: ({ color }) => <Icon color={String(color)} />,
+            tabBarBadge: badge ? badge : undefined,
+            tabBarBadgeStyle: { backgroundColor: p.danger, color: '#FFFFFF', fontFamily: f.semibold, fontSize: 11 },
+          }}
         />
       ))}
     </Tabs>
