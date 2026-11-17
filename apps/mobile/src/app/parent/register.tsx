@@ -1,4 +1,4 @@
-import { addDays, DURATION_WEEKS, formatKD, isoDate, priceSubscription, WEEKDAYS, type Duration, type Weekday } from '@lg/shared';
+import { addDays, DURATION_WEEKS, formatKD, isoDate, priceSubscription, startOptions, WEEKDAYS, type Duration, type Weekday } from '@lg/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -32,8 +32,7 @@ export default function RegisterScreen() {
   const [bjjDays, setBjjDays] = useState<Weekday[]>([]);
   const [time, setTime] = useState<'16:00' | '17:00'>('16:00');
   const [duration, setDuration] = useState<Duration>('4w');
-  // first open day: today, or Saturday if today is Friday
-  const [startIso, setStartIso] = useState(() => isoDate(addDays(new Date(), new Date().getDay() === 5 ? 1 : 0)));
+  const [pickedStart, setPickedStart] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -59,6 +58,10 @@ export default function RegisterScreen() {
   const swim = sport === 'swimming' || sport === 'both' ? swimDays : [];
   const bjj = sport === 'jiujitsu' || sport === 'both' ? bjjDays : [];
 
+  // start dates: the chosen class days over the next 2 weeks; default = the first one
+  const startDates = startOptions([...new Set([...swim, ...bjj])], time, new Date());
+  const startIso = pickedStart && startDates.includes(pickedStart) ? pickedStart : (startDates[0] ?? null);
+
   // family size for the discount: kids already registered + this one
   const familyKidCount = useMemo(() => new Set([...registeredKidIds, ...(kidId ? [kidId] : [])]).size, [registeredKidIds, kidId]);
   const price = priceSubscription({ member: 'kid', swimDays: swim, bjjDays: bjj, duration, familyKidCount });
@@ -76,6 +79,7 @@ export default function RegisterScreen() {
     setError('');
     if (!kidId) return setError(t('reg.noKids'));
     if (!price.ok) return setError(t(`reg.err.${price.error}` as StringKey));
+    if (!startIso) return setError(t('reg.pickDaysFirst'));
     setBusy(true);
     const [y, m, d] = startIso.split('-').map(Number);
     const startDate = new Date(y, m - 1, d);
@@ -181,8 +185,14 @@ export default function RegisterScreen() {
           </View>
         </Section>
 
-        <Section title={t('reg.start')}>
-          <DateStrip value={startIso} onChange={setStartIso} />
+        <Section title={t('reg.startTitle')}>
+          {startDates.length > 0 ? (
+            <DateStrip dates={startDates} value={startIso} onChange={setPickedStart} />
+          ) : (
+            <T size={13} color={p.inkSoft}>
+              {t('reg.pickDaysFirst')}
+            </T>
+          )}
         </Section>
 
         {/* price summary */}
@@ -191,7 +201,8 @@ export default function RegisterScreen() {
             <>
               <Row left={t('reg.summary', { sport: sportLabel, days: price.daysPerWeek, length: lengthLabel })} right={formatKD(price.base, lang ?? 'en')} />
               <T size={12} color={p.inkSoft}>
-                {t('reg.sessions', { n: price.sessions })} · {t('reg.dates', { start: fmt(startIso), end: fmt(isoDate(addDays(new Date(startIso + 'T00:00:00'), price.weeks * 7))) })}
+                {t('reg.sessions', { n: price.sessions })}
+                {startIso ? ` · ${t('reg.dates', { start: fmt(startIso), end: fmt(isoDate(addDays(new Date(startIso + 'T00:00:00'), price.weeks * 7))) })}` : ''}
               </T>
               {price.familyPct > 0 ? (
                 <Row left={t('reg.familyDisc', { n: familyKidCount, pct: price.familyPct })} right={`−${formatKD((price.base * price.familyPct) / 100, lang ?? 'en')}`} color={p.swim} />
@@ -229,7 +240,7 @@ export default function RegisterScreen() {
         </Section>
 
         <ErrorText>{error}</ErrorText>
-        <Button title={t('reg.submit')} onPress={submit} loading={busy} disabled={!price.ok || !kidId} />
+        <Button title={t('reg.submit')} onPress={submit} loading={busy} disabled={!price.ok || !kidId || !startIso} />
       </ScrollView>
     </Screen>
   );

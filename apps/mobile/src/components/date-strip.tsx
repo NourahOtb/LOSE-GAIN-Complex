@@ -1,30 +1,22 @@
-import { addDays, isoDate } from '@lg/shared';
-import { useMemo } from 'react';
+import { isoDate } from '@lg/shared';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { T } from '@/components/ui';
 import { useI18n } from '@/lib/i18n';
 import { usePalette } from '@/lib/theme';
 
-/** Scrollable row of the next `days` dates (Fridays skipped: the complex is closed). Value is 'YYYY-MM-DD'. */
-export function DateStrip({ value, onChange, days = 30 }: { value: string; onChange: (iso: string) => void; days?: number }) {
+/** Row of selectable dates (ISO 'YYYY-MM-DD'), e.g. the next class days a kid could start on. */
+export function DateStrip({ dates, value, onChange }: { dates: string[]; value: string | null; onChange: (iso: string) => void }) {
   const p = usePalette();
   const { lang, t } = useI18n();
   const locale = lang === 'ar' ? 'ar-KW' : 'en-GB';
-
-  const dates = useMemo(() => {
-    const today = new Date();
-    return Array.from({ length: days }, (_, i) => addDays(today, i)).filter((d) => d.getDay() !== 5);
-  }, [days]);
-
   const todayIso = isoDate(new Date());
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingVertical: 2 }}>
-      {dates.map((d) => {
-        const iso = isoDate(d);
+      {dates.map((iso) => {
+        const d = new Date(iso + 'T00:00:00');
         const on = iso === value;
-        const monthStart = d.getDate() === 1 || iso === todayIso;
         return (
           <Pressable
             key={iso}
@@ -33,7 +25,7 @@ export function DateStrip({ value, onChange, days = 30 }: { value: string; onCha
             accessibilityState={{ checked: on }}
             accessibilityLabel={d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' })}
             style={({ pressed }) => ({
-              width: 58,
+              width: 62,
               paddingVertical: 8,
               alignItems: 'center',
               borderRadius: 6,
@@ -47,12 +39,10 @@ export function DateStrip({ value, onChange, days = 30 }: { value: string; onCha
             <T w="cond" size={24} color={on ? p.onInk : p.ink} style={{ textAlign: 'center', lineHeight: 28 }}>
               {d.toLocaleDateString(locale, { day: 'numeric' })}
             </T>
-            <View style={{ height: 14 }}>
-              {monthStart || on ? (
-                <T size={11} color={on ? p.onInk : p.inkSoft} style={{ textAlign: 'center' }}>
-                  {d.toLocaleDateString(locale, { month: 'short' })}
-                </T>
-              ) : null}
+            <View>
+              <T size={11} color={on ? p.onInk : p.inkSoft} style={{ textAlign: 'center' }}>
+                {d.toLocaleDateString(locale, { month: 'short' })}
+              </T>
             </View>
           </Pressable>
         );

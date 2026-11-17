@@ -98,3 +98,18 @@ export function daysUntil(endIso: string, now: Date): number {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.round((end.getTime() - today.getTime()) / 86400000);
 }
+
+/**
+ * Start-date choices: every date in the next `horizonDays` that falls on one of the
+ * chosen class days. Today only counts if the class time hasn't passed yet.
+ */
+export function startOptions(classDays: string[], startTime: string, now: Date, horizonDays = 14): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < horizonDays; i++) {
+    const day = addDays(now, i);
+    if (!classDays.includes(weekdayOf(day))) continue;
+    if (i === 0 && atTime(day, startTime) <= now) continue;
+    out.push(isoDate(day));
+  }
+  return out;
+}

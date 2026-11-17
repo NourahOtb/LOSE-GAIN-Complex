@@ -206,7 +206,7 @@ We are building:
 | Section | What parents can do |
 |---|---|
 | **Home** | One card per kid (and themselves): **today's or next class** (time, pool/mat, coach), **remaining sessions**, **make-ups left**, and alerts ("renew in 3 days", "class cancelled", "waitlist spot open"). Below it, a **family calendar** (weekly, swipe between weeks) with every kid's classes, color-coded by sport. |
-| **Register** | Step-by-step flow, **one cart for several kids**: who (add kid → health checklist → photo → emergency contact) → sport(s) → trial or package → days and time (guided to the recommended day groups; full slots offer the waitlist) → duration → **start date** (any open day in the next 30 days; Fridays skipped) → price summary with discounts and start/end dates → agreements → pay online, or pay at reception |
+| **Register** | Step-by-step flow, **one cart for several kids**: who (add kid → health checklist → photo → emergency contact) → sport(s) → trial or package → days and time (guided to the recommended day groups; full slots offer the waitlist) → duration → **first class** (any of the chosen class days in the next 2 weeks; today only if the class hasn't started) → price summary with discounts and start/end dates → agreements → pay online, or pay at reception |
 | **Kid profile** | Personal info, photo, **health checklist**, level and level history, coach notes; parent can add notes for coaches |
 | **Manage** | Reschedule, book a make-up, pause (with an injury request for longer), request a switch, cancel, renew |
 | **Private classes** | Request a private class with a coach, see upcoming private sessions |
