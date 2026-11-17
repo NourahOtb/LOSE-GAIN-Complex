@@ -72,7 +72,9 @@ If you rehearse the story first, tell Claude "reset the demo data" before the pr
 - **Logged into the wrong account:** **Log out** (top right of the app) or **Log out** (bottom left of the dashboard).
 - **No internet at the venue:** run both locally from your Mac (`npm run dev:mobile` and `npm run dev:admin`) and use a phone hotspot.
 
-## Re-uploading the websites after changes
-```
-./scripts/deploy.sh
-```
+## Updating the websites after changes
+Both websites are connected to the GitHub repository: **every push to `main` rebuilds and publishes them automatically** (about 1 minute).
+- App: Vercel project `lg-complex-app`, folder `apps/mobile`, build `npx expo export -p web` → `dist`
+- Admin: Vercel project `lg-complex-admin`, folder `apps/admin` (Next.js)
+
+`./scripts/deploy.sh` is a manual fallback that builds on your Mac and uploads directly.
