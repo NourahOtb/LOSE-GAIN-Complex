@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#111111"/>
+  <!-- thin L -->
+  <path d="M250 300 V724 H430" fill="none" stroke="#FFFFFF" stroke-width="34" stroke-linecap="square"/>
+  <!-- divider -->
+  <rect x="501" y="250" width="22" height="524" fill="#FFFFFF"/>
+  <!-- bold G -->
+  <path d="M800 372 A148 148 0 1 0 800 652 V530 H690" fill="none" stroke="#FFFFFF" stroke-width="92" stroke-linecap="butt" stroke-linejoin="miter"/>
+</svg>
