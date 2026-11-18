@@ -326,3 +326,103 @@ export async function savePricing(config: unknown) {
   revalidatePath("/prices");
   return { ok: "Saved · new registrations use these prices now" };
 }
+
+// ---------- accounts (Task 14g): staff and desk-created families, through the "accounts" server function ----------
+
+const ACCOUNT_ERRORS: Record<string, string> = {
+  not_allowed: "Your role can't do this.",
+  email_taken: "There's already an account with this email.",
+  bad_phone: "Enter a Kuwait mobile number (8 digits).",
+  bad_request: "Check the name and email.",
+  sport_required: "Pick the coach's sport.",
+};
+
+type AccountsData = { user_id?: string; temp_password?: string; ok?: boolean };
+async function callAccounts(body: Record<string, unknown>): Promise<{ error: string } | { data: AccountsData }> {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.functions.invoke("accounts", { body });
+  if (error) {
+    let code = "";
+    try {
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") code = ((await ctx.json()) as { error?: string }).error ?? "";
+    } catch {
+      // generic
+    }
+    return { error: ACCOUNT_ERRORS[code] ?? "Something went wrong. Try again." };
+  }
+  return { data: data as AccountsData };
+}
+
+export async function createStaff(form: { full_name: string; email: string; phone: string; role: string; sport: string }) {
+  const r = await callAccounts({ action: "create_staff", ...form, phone: form.phone || null });
+  if ("error" in r) return r;
+  revalidatePath("/staff");
+  return { ok: "Account created", tempPassword: r.data.temp_password ?? "" };
+}
+
+export async function updateStaff(userId: string, patch: { role?: string; sport?: string | null; is_active?: boolean; full_name?: string; phone?: string }) {
+  const r = await callAccounts({ action: "update_staff", user_id: userId, ...patch });
+  if ("error" in r) return r;
+  revalidatePath("/staff");
+  return { ok: patch.is_active === false ? "Switched off" : patch.is_active === true ? "Switched on" : "Saved" };
+}
+
+export async function resetPassword(userId: string) {
+  const r = await callAccounts({ action: "reset_password", user_id: userId });
+  if ("error" in r) return r;
+  revalidatePath("/staff");
+  return { ok: "New temporary password", tempPassword: r.data.temp_password ?? "" };
+}
+
+export async function createFamily(form: { full_name: string; email: string; phone: string; account_type: "family" | "single"; relationship: string; lang: "ar" | "en" }) {
+  const r = await callAccounts({ action: "create_family", ...form });
+  if ("error" in r) return r;
+  revalidatePath("/kids");
+  return { ok: "Family account created", userId: r.data.user_id ?? "", tempPassword: r.data.temp_password ?? "" };
+}
+
+const HEALTH_OK = ["asthma", "allergies", "epilepsy", "heart", "injury", "medication", "other"];
+
+/** Reception adds a kid (or, for a "Just me" account, the member themself) to a family. */
+export async function addMember(parentId: string, form: { full_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string }) {
+  const { supabase } = await requireStaff();
+  const { data: parent } = await supabase.from("profiles").select("account_type, full_name").eq("id", parentId).eq("role", "parent").maybeSingle();
+  if (!parent) return { error: "Family not found." };
+  const single = parent.account_type === "single";
+  const name = (single ? parent.full_name : form.full_name).trim();
+  if (!name || !/^\d{4}-\d{2}-\d{2}$/.test(form.birth_date)) return { error: "Enter the name and date of birth." };
+  if (!["male", "female"].includes(form.gender)) return { error: "Pick boy/male or girl/female." };
+  const emergency = form.emergency_phone.trim() ? normalizeKuwaitPhone(form.emergency_phone) : null;
+  if (form.emergency_phone.trim() && !emergency) return { error: "The emergency number must be a Kuwait mobile (8 digits)." };
+  const { data, error } = await supabase
+    .from("kids")
+    .insert({
+      parent_id: parentId,
+      full_name: name,
+      birth_date: form.birth_date,
+      gender: form.gender,
+      is_self: single,
+      emergency_phone: emergency,
+      health_conditions: form.health.filter((h) => HEALTH_OK.includes(h)),
+      health_other: form.health_other.trim() || null,
+      health_confirmed: true,
+    })
+    .select("id")
+    .single();
+  if (error || !data) return { error: error?.message.includes("single") || error?.message.includes("account") ? "A \"Just me\" account has only one member." : "Could not add the member." };
+  revalidatePath(`/families/${parentId}`);
+  revalidatePath("/kids");
+  return { ok: "Member added", id: data.id as string };
+}
+
+/** Change your own password (also after logging in with a temporary one). */
+export async function changeMyPassword(password: string, again: string) {
+  const { supabase } = await requireStaff({ passwordPage: true });
+  if (password.length < 8) return { error: "Use at least 8 characters." };
+  if (password !== again) return { error: "The two passwords don't match." };
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message.includes("different") ? "Choose a password different from the old one." : "Could not change the password." };
+  await supabase.rpc("password_changed");
+  return { ok: "Password changed" };
+}

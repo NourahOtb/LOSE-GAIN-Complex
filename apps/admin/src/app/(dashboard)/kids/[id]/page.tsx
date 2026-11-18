@@ -53,7 +53,10 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
           </p>
           {guardian && !kid.is_self ? (
             <p className="text-ink-soft">
-              Guardian: {guardian.full_name}
+              Guardian:{" "}
+              <Link href={`/families/${kid.parent_id}`} className="underline underline-offset-2">
+                {guardian.full_name}
+              </Link>
               {guardian.relationship ? ` · ${REL[guardian.relationship] ?? guardian.relationship}` : ""}
               {guardian.phone ? ` · ${guardian.phone}` : ""}
             </p>

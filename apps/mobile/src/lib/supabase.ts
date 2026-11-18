@@ -33,6 +33,8 @@ export type Profile = {
   is_active: boolean;
   account_type: 'family' | 'single';
   relationship: Relationship | null;
+  /** logged in with a temporary password from reception: must choose their own */
+  must_change_password: boolean;
 };
 
 export const RELATIONSHIPS = ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle', 'aunt', 'guardian'] as const;

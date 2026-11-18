@@ -55,6 +55,10 @@ export default function SettingsScreen() {
           ))}
         </Group>
 
+        <Group title={t('pw.group')}>
+          <Row label={t('pw.change')} on={false} first onPress={() => router.push('/password')} />
+        </Group>
+
         <Group title={t('about.open')}>
           <Row label={t('about.open')} on={false} first onPress={() => router.push('/about')} icon={<InfoIcon color={p.ink} size={20} />} />
         </Group>

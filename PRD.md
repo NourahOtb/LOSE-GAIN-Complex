@@ -295,7 +295,7 @@ We are building:
 - **Edit details** (staff): name, date of birth, boy/girl, emergency phone, health checklist. **Photo**: take one with the tablet camera or choose a file (shrunk in the browser), or remove it.
 - **Register at the desk**: sport, days, times, length and first day; **Check price** uses the same server price check as the app (family discount, clashes, rules), then **Register**, then **Paid · KNET** or **Link** straight away.
 - Coaches can no longer edit a member's details directly (only levels, belts, stripes and notes through their own functions).
-- *Not yet:* creating a brand-new family at the desk (needs the staff-accounts server function, 14g).
+- New families at the desk: built in 14g (see 7.5g).
 
 ### 7.5c Desk payment link *(built 2026-11-18)*
 - On any registration waiting for payment (Today page and the member page), reception taps **Send payment link**: the server creates a **UPayments link valid for 24 hours** for that exact amount, in the family's language.
@@ -333,6 +333,18 @@ We are building:
 - **Live at once** for new registrations and renewals: the app's price preview, the `register` server function (which saves the real price), desk registration and the AI assistant all read the same saved prices. **Registrations already made keep their price.**
 - **Change history:** who changed what, from → to, and when.
 - The structure (which days and packages exist) stays in code; only the numbers are edited. If the saved list were ever broken, the built-in prices are used.
+
+### 7.5g Staff accounts and new families at the desk *(built 2026-11-18)*
+- **Dashboard → Staff** (owner and managers): the team with role, login email, last log-in, and who is still on a temporary password.
+  - The **owner** adds and manages every role (owner, manager, receptionist, accountant, coach + sport).
+  - A **manager** adds and manages **coaches and receptionists** only. *(Owner's choice 2026-11-18; the roles table said owner only.)*
+  - Nobody can change their own role or switch themself off.
+- **First password:** a **temporary password is shown once** to whoever created the account. After logging in with it, the person must choose their own (dashboard and app). **New temporary password** gives a fresh one if someone forgets.
+- **Switching someone off** blocks logging in, but keeps their name on past check-ins, notes and payments. They can be switched back on.
+- **Change password:** in the dashboard (sidebar) and in the app (Settings → Account).
+- **New family at the desk** (owner, manager, reception): Members & families → **+ New family** → guardian name, relationship, mobile, email, app language, "family" or "just me". A temporary password is shown with a ready **WhatsApp** message (Arabic or English) containing the app link and the login. Then **add the kids** (name, birth date, boy/girl, emergency number, health checklist confirmed with the guardian) and **Register →** each one at the desk.
+- Family page (from the guardian's name): login email, last log-in, new temporary password, kids.
+- Accounts are created only by the `accounts` server function, which holds the key that can create log-ins.
 
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.

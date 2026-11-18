@@ -105,7 +105,7 @@ Built one at a time, in this order; Claude asks before each and asks any missing
 | 14d | **Approvals** ✅ | Guardians pause up to 1 week themselves (once per registration); injury pause, change of days and cancelling are requests that reception approves on the Approvals page; reception changes days on the member page; refunds recorded only by owner / accountant (amount + KNET / bank / cash) |
 | 14e | **Closure days** ✅ | Close the complex for a day (holidays); every affected registration moves its end date; families notified |
 | 14f | **Prices + discounts editor** ✅ | Prices move from code into the database; owner edits tables and discounts; app, `register` and assistant all read the same saved prices |
-| 14g | **Staff accounts + roles** | Owner adds staff (server function creates the login), sets manager / receptionist / accountant / coach, switches accounts off |
+| 14g | **Staff accounts + roles** ✅ | Owner manages all staff, managers coaches and reception; temporary password shown once, then the person chooses their own; switch off keeps history; reception creates new families at the desk with a WhatsApp login message |
 | 14h | **Reports + Excel export** | Members (active, new, not renewed), attendance per class / member, month-over-month; download as Excel |
 | 14i | **Money reports** | Revenue by day / month, sport, online vs desk, discounts given (owner + accountant) |
 | 14j | **Waitlist** | Class capacity enforced; full class → join waitlist; staff approve when a place opens; family notified |

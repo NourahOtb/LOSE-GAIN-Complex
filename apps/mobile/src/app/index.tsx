@@ -20,6 +20,7 @@ export default function Gate() {
   }
   if (!lang) return <Redirect href="/language" />;
   if (!session || !profile) return <Redirect href="/login" />;
+  if (profile.must_change_password) return <Redirect href="/password" />;
   if (profile.role === 'parent') return <Redirect href="/parent" />;
   if (profile.role === 'coach') return <Redirect href="/coach" />;
   return <Redirect href="/staff" />;

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const LINKS = [
+const LINKS: { href: string; label: string; roles?: string[] }[] = [
   { href: "/", label: "Today" },
   { href: "/check-in", label: "Check-in" },
   { href: "/approvals", label: "Approvals" },
@@ -12,14 +12,15 @@ const LINKS = [
   { href: "/classes", label: "Classes" },
   { href: "/closures", label: "Closures" },
   { href: "/prices", label: "Prices" },
+  { href: "/staff", label: "Staff", roles: ["super_admin", "manager"] },
   { href: "/chats", label: "Chats" },
 ];
 
-export function NavLinks({ compact }: { compact?: boolean }) {
+export function NavLinks({ compact, role }: { compact?: boolean; role?: string }) {
   const path = usePathname();
   return (
     <nav className={compact ? "flex min-w-0 flex-1 gap-4 overflow-x-auto whitespace-nowrap py-1 text-sm" : "mt-8 flex flex-col gap-0.5"}>
-      {LINKS.map((l) => {
+      {LINKS.filter((l) => !l.roles || (role && l.roles.includes(role))).map((l) => {
         const on = l.href === "/" ? path === "/" : path.startsWith(l.href);
         return (
           <Link

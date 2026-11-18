@@ -65,7 +65,12 @@ export default async function KidsPage() {
 
   return (
     <div>
-      <h1 className="text-[26px] font-semibold">Members &amp; families</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[26px] font-semibold">Members &amp; families</h1>
+        <Link href="/families/new" className="rounded border-[1.5px] border-ink bg-ink px-3.5 py-2 text-sm font-semibold text-surface">
+          + New family
+        </Link>
+      </div>
       <p className="text-ink-soft">
         {kids.filter((k) => !k.is_self).length} kids · {kids.filter((k) => k.is_self).length} adult members · health conditions in red
       </p>
@@ -116,10 +121,14 @@ export default async function KidsPage() {
                   </td>
                   <td className="px-3 py-2.5">
                     {k.is_self ? (
-                      <div className="font-semibold">Adult member</div>
+                      <Link href={`/families/${k.parent_id}`} className="font-semibold underline-offset-2 hover:underline">
+                        Adult member
+                      </Link>
                     ) : (
                       <div>
-                        {parent?.full_name}
+                        <Link href={`/families/${k.parent_id}`} className="underline-offset-2 hover:underline">
+                          {parent?.full_name}
+                        </Link>
                         {parent?.relationship ? <span className="text-ink-soft"> · {REL[parent.relationship] ?? parent.relationship}</span> : null}
                       </div>
                     )}
