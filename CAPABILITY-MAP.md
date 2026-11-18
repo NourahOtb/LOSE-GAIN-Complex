@@ -58,7 +58,7 @@ Each step adds screens in **all three surfaces** at once. For example, "catalog"
 ## Answered (2026-11-16)
 
 - **Trial classes** are free, on **Thursdays or Saturdays** (the parent picks one).
-- **Pause:** up to **1 week** self-service. Longer pauses are for injuries only and need receptionist or coach approval.
+- **Pause:** up to **1 week** self-service (once per registration). Longer pauses are for injuries only and need reception approval (built 2026-11-18, Task 14d).
 - **Payment gateway:** **UPayments**.
 - **Adult classes:** men's swimming only for now. Women's classes may come later, so the system must allow adding new adult classes without code changes.
 - **Brand colors:** black and white only.

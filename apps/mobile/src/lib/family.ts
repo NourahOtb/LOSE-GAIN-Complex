@@ -53,7 +53,7 @@ export async function loadFamily(parentId: string): Promise<FamilyData> {
   const [subsRes, cancelsRes] = await Promise.all([
     supabase
       .from('subscriptions')
-      .select('id, kid_id, kind, swim_days, bjj_days, start_time, bjj_times, start_date, end_date, status, sessions_total, sessions_used, total, weeks, payment_link_at, freeze_status, freeze_start')
+      .select('id, kid_id, kind, swim_days, bjj_days, start_time, bjj_times, start_date, end_date, status, sessions_total, sessions_used, total, weeks, payment_link_at, freeze_status, freeze_start, pause_start, pause_end')
       .in('kid_id', kids.map((k) => k.id))
       .in('status', ['active', 'pending_payment'])
       .order('end_date'),

@@ -80,3 +80,15 @@ describe('jiu-jitsu time per day (Warriors: 4 PM some days, 5 PM others)', () =>
     expect(marks.find((m) => m.day === 'sun')?.mark).toBe('cancelled');
   });
 });
+
+describe('paused days', () => {
+  const paused = { ...yousef, pause_start: '2026-11-16', pause_end: '2026-11-18' };
+  it('marks paused days in the week', () => {
+    expect(weekMarks(paused, 'jiujitsu', [], monday3pm).map((m) => m.mark)).toEqual(['done', 'none', 'paused', 'none', 'paused', 'none']);
+  });
+  it('the next class skips the pause', () => {
+    const n = nextClass([paused], [], monday3pm);
+    expect(n).toBeNull(); // Yousef ends 19 Nov (a Thursday, no class) — nothing left after the pause
+    expect(nextClass([paused, sara], [], monday3pm)?.sub.kid_id).toBe('sara');
+  });
+});

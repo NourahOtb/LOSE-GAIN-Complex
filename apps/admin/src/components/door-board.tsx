@@ -12,7 +12,7 @@ export type DoorRow = {
   sub: string;
   photo: string | null;
   health: string[];
-  status: "paid" | "unpaid" | "later" | "expired" | "none";
+  status: "paid" | "unpaid" | "paused" | "later" | "expired" | "none";
   sessionsLeft: number | null;
   endsOn: string | null;
   startsOn: string | null;
@@ -198,6 +198,8 @@ export function DoorBoard({
                         </span>
                       ) : r.status === "unpaid" ? (
                         <span className="rounded bg-danger px-2 py-0.5 text-xs font-semibold text-white">Not paid yet</span>
+                      ) : r.status === "paused" ? (
+                        <span className="rounded bg-danger px-2 py-0.5 text-xs font-semibold text-white">Paused until {r.endsOn ? short(r.endsOn) : ""}</span>
                       ) : r.status === "later" ? (
                         <span className="rounded bg-danger px-2 py-0.5 text-xs font-semibold text-white">Not this day · starts {r.startsOn ? short(r.startsOn) : ""}</span>
                       ) : r.status === "expired" ? (

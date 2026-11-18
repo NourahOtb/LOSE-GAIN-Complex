@@ -1,4 +1,4 @@
-import { ageOn, timeOf } from "@lg/shared";
+import { ageOn, isPaused, timeOf } from "@lg/shared";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { CLASS_COLS, type ClassRow, type Sub } from "./data";
@@ -15,7 +15,7 @@ export type Member = {
   parent_id: string;
 };
 /** paid = active registration covers the class; unpaid = registration waiting for payment; expired / none = no current registration */
-export type DoorStatus = "paid" | "unpaid" | "later" | "expired" | "none";
+export type DoorStatus = "paid" | "unpaid" | "paused" | "later" | "expired" | "none";
 export type RosterRow = { member: Member; status: DoorStatus; sessionsLeft: number | null; endsOn: string | null; startsOn?: string | null };
 
 const group = (m: Member, sport: string) => {
@@ -53,6 +53,7 @@ export async function loadDoor(supabase: SupabaseClient, dateIso: string, weekda
       .filter((s) => s.status !== "expired" && dateIso >= s.start_date && dateIso <= s.end_date && days(s).includes(cls.weekday))
       .sort((a, b) => (a.status === "active" ? -1 : 1) - (b.status === "active" ? -1 : 1));
     const s = covering[0];
+    if (s && isPaused(s, dateIso)) return { status: "paused", sessionsLeft: s.sessions_total - s.sessions_used, endsOn: s.pause_end };
     if (s) return { status: s.status === "active" ? "paid" : "unpaid", sessionsLeft: s.sessions_total - s.sessions_used, endsOn: s.end_date };
     // a registration that hasn't started yet, otherwise the most recent one that ended
     const later = mine.filter((s) => s.status !== "expired" && s.start_date > dateIso).sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
@@ -71,6 +72,7 @@ export async function loadDoor(supabase: SupabaseClient, dateIso: string, weekda
             s.status !== "expired" &&
             dateIso >= s.start_date &&
             dateIso <= s.end_date &&
+            !isPaused(s, dateIso) &&
             (cls.sport === "swimming" ? s.swim_days : s.bjj_days).includes(cls.weekday) &&
             timeOf(s, cls.sport, cls.weekday).slice(0, 5) === cls.start_time.slice(0, 5) &&
             group(m, cls.sport) === cls.age_group,

@@ -1,4 +1,4 @@
-import { addDays, ageOn, daysUntil, isoDate, timeOf, weekdayOf } from "@lg/shared";
+import { addDays, ageOn, daysUntil, isoDate, isPaused, timeOf, weekdayOf } from "@lg/shared";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type Sub = {
@@ -11,6 +11,8 @@ export type Sub = {
   kind: "classes" | "open_pool";
   freeze_status: "requested" | "approved" | "rejected" | null;
   freeze_start: string | null;
+  pause_start: string | null;
+  pause_end: string | null;
   start_date: string;
   end_date: string;
   weeks: number;
@@ -67,6 +69,14 @@ export const HEALTH: Record<string, string> = {
   other: "Other",
 };
 
+/** guardian request types (Approvals) */
+export const REQUEST_KIND: Record<"pause" | "injury_pause" | "switch" | "cancel", string> = {
+  pause: "Pause (1 week, self-service)",
+  injury_pause: "Injury pause",
+  switch: "Change days or time",
+  cancel: "Cancel registration",
+};
+
 export const kd = (n: number) => `${Number(n).toFixed(3)}`;
 export const time12 = (t: string) => {
   const [h, m] = t.slice(0, 5).split(":").map(Number);
@@ -89,7 +99,7 @@ export function packageLabel(s: Sub) {
 
 export async function loadDashboard(supabase: SupabaseClient) {
   const today = new Date();
-  const [subs, kids, parents, classes, cancels, coaches, closures, handoffs] = await Promise.all([
+  const [subs, kids, parents, classes, cancels, coaches, closures, handoffs, waiting] = await Promise.all([
     supabase.from("subscriptions").select("*").in("status", ["active", "pending_payment"]).order("created_at", { ascending: false }),
     supabase.from("kids").select("id, parent_id, member_no, full_name, birth_date, health_conditions, health_other, emergency_phone, swim_level, belt, is_self").order("full_name"),
     supabase.from("profiles").select("id, full_name, phone").eq("role", "parent"),
@@ -98,6 +108,7 @@ export async function loadDashboard(supabase: SupabaseClient) {
     supabase.from("profiles").select("id, full_name").eq("role", "coach"),
     supabase.from("open_pool_closures").select("on_date, session, reason").gte("on_date", isoDate(today)).order("on_date"),
     supabase.from("assistant_handoffs").select("id, parent_id, summary, created_at").eq("status", "open").order("created_at"),
+    supabase.from("requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
   return {
     today,
@@ -107,6 +118,7 @@ export async function loadDashboard(supabase: SupabaseClient) {
     classes: (classes.data ?? []) as ClassRow[],
     cancels: (cancels.data ?? []) as { class_id: string; on_date: string; compensation: string }[],
     handoffs: (handoffs.data ?? []) as { id: string; parent_id: string; summary: string; created_at: string }[],
+    requestsWaiting: waiting.count ?? 0,
     poolClosures: (closures.data ?? []) as { on_date: string; session: "morning" | "evening" | "day"; reason: string | null }[],
     coaches: Object.fromEntries(((coaches.data ?? []) as { id: string; full_name: string }[]).map((c) => [c.id, c.full_name])),
   };
@@ -116,7 +128,7 @@ export type Dashboard = Awaited<ReturnType<typeof loadDashboard>>;
 /** Kids booked into a class on a date (active subscriptions that cover that date). */
 export function booked(d: Dashboard, cls: ClassRow, dateIso: string) {
   return d.subs.filter((s) => {
-    if (s.kind !== "classes" || s.status !== "active" || dateIso < s.start_date || dateIso > s.end_date) return false;
+    if (s.kind !== "classes" || s.status !== "active" || dateIso < s.start_date || dateIso > s.end_date || isPaused(s, dateIso)) return false;
     const days = cls.sport === "swimming" ? s.swim_days : s.bjj_days;
     if (!days.includes(cls.weekday)) return false;
     if (timeOf(s, cls.sport, cls.weekday).slice(0, 5) !== cls.start_time.slice(0, 5)) return false;

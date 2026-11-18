@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { daysUntil } from "@lg/shared";
 
 import { CancelClass } from "@/components/cancel-class";
@@ -38,6 +39,16 @@ export default async function TodayPage() {
           <p className="text-ink-soft">Hello, {profile.full_name}</p>
         </div>
       </div>
+
+      {d.requestsWaiting > 0 ? (
+        <Link href="/approvals" className="mt-4 flex items-center justify-between gap-3 rounded-md bg-ink px-4 py-3 text-surface">
+          <span>
+            <span className="num mr-2 text-[22px]">{d.requestsWaiting}</span>
+            request{d.requestsWaiting === 1 ? "" : "s"} from guardians waiting for approval
+          </span>
+          <span className="font-semibold">Open Approvals →</span>
+        </Link>
+      ) : null}
 
       <div className="mt-5 grid grid-cols-4 gap-6 border-b-2 border-ink pb-4 max-sm:grid-cols-2">
         {stats.map((s) => (

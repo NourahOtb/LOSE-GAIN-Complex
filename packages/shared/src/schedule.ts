@@ -12,6 +12,9 @@ export type SubLike = {
   start_date: string;
   end_date: string;
   status: string;
+  /** a pause (dates included): no classes on these days */
+  pause_start?: string | null;
+  pause_end?: string | null;
 };
 export type CancelLike = { on_date: string; sport: 'swimming' | 'jiujitsu'; start_time: string };
 export type Sport = 'swimming' | 'jiujitsu';
@@ -42,6 +45,9 @@ const atTime = (day: Date, time: string) => {
   return new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
 };
 
+/** the member paused this registration on this date */
+export const isPaused = (sub: SubLike, date: string) => !!sub.pause_start && !!sub.pause_end && date >= sub.pause_start && date <= sub.pause_end;
+
 const isCancelled = (cancels: CancelLike[], date: string, sport: Sport, time: string) =>
   cancels.some((c) => c.on_date === date && c.sport === sport && hhmm(c.start_time) === hhmm(time));
 
@@ -64,7 +70,7 @@ export function nextClass(subs: SubLike[], cancels: CancelLike[], now: Date): Ne
     const wd = weekdayOf(day);
     const iso = isoDate(day);
     for (const sub of subs) {
-      if (sub.status !== 'active' || iso < sub.start_date || iso > sub.end_date) continue;
+      if (sub.status !== 'active' || iso < sub.start_date || iso > sub.end_date || isPaused(sub, iso)) continue;
       for (const sport of ['swimming', 'jiujitsu'] as const) {
         if (!daysFor(sub, sport).includes(wd)) continue;
         const time = timeOf(sub, sport, wd);
@@ -78,7 +84,7 @@ export function nextClass(subs: SubLike[], cancels: CancelLike[], now: Date): Ne
   return best;
 }
 
-export type Mark = 'none' | 'done' | 'next' | 'upcoming' | 'cancelled';
+export type Mark = 'none' | 'done' | 'next' | 'upcoming' | 'cancelled' | 'paused';
 
 /** One mark per day Sat→Thu for this sport in the week that contains `now`. */
 export function weekMarks(sub: SubLike, sport: Sport, cancels: CancelLike[], now: Date): { day: Weekday; date: string; mark: Mark }[] {
@@ -89,6 +95,7 @@ export function weekMarks(sub: SubLike, sport: Sport, cancels: CancelLike[], now
     const d = addDays(start, i);
     const iso = isoDate(d);
     if (!daysFor(sub, sport).includes(day) || iso < sub.start_date || iso > sub.end_date) return { day, date: iso, mark: 'none' };
+    if (isPaused(sub, iso)) return { day, date: iso, mark: 'paused' };
     const time = timeOf(sub, sport, day);
     if (isCancelled(cancels, iso, sport, time)) return { day, date: iso, mark: 'cancelled' };
     if (atTime(d, time) <= now) return { day, date: iso, mark: 'done' };

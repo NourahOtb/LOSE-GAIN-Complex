@@ -186,7 +186,13 @@ export default function ParentHome() {
                         ? ` · ${t('home.starts', { date: new Date(s.start_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })}`
                         : ''}
                     </T>
+                    {s.pause_end && s.pause_end >= isoDate(now) ? (
+                      <T size={12} w="semibold" color={p.bjj}>
+                        {t('home.paused', { date: new Date(s.pause_end + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' }) })}
+                      </T>
+                    ) : null}
                     {isPending ? <PayOnline subscriptionId={s.id} lastAttempt={attempts[s.id]} /> : null}
+                    <Button variant="link" title={t('manage.link')} onPress={() => router.push({ pathname: '/manage/[id]', params: { id: s.id } })} style={{ alignSelf: 'flex-start', marginTop: 2 }} />
                     {kid.belt && s.bjj_days.length > 0 ? <BeltBar belt={kid.belt} stripes={kid.stripes?.[0]?.count ?? 0} height={12} width={150} /> : null}
                     {kid.swim_level && s.swim_days.length > 0 ? <Label color={p.swim}>{t('kids.level', { n: kid.swim_level })}</Label> : null}
                   </View>
@@ -245,7 +251,8 @@ function Lane({ name, sportLabel, color, marks, isRTL }: { name: string; sportLa
                     height: 26,
                     borderRadius: 13,
                     borderWidth: 3,
-                    borderColor: m === 'cancelled' ? p.danger : color,
+                    borderColor: m === 'cancelled' ? p.danger : m === 'paused' ? p.line : color,
+                    borderStyle: m === 'paused' ? 'dashed' : 'solid',
                     backgroundColor: m === 'done' ? color : p.bg,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -373,6 +380,7 @@ function PoolRow({ sub, name, lastAttempt, onChanged }: { sub: FamilyData['subs'
             <Button variant="link" title={t('pool.freeze')} onPress={() => setOpen(true)} style={{ alignSelf: 'flex-start' }} />
           )
         ) : null}
+        {!open ? <Button variant="link" title={t('manage.link')} onPress={() => router.push({ pathname: '/manage/[id]', params: { id: sub.id } })} style={{ alignSelf: 'flex-start' }} /> : null}
       </View>
     </View>
   );

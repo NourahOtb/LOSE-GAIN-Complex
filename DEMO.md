@@ -48,6 +48,13 @@ Demo accounts and the shared password are in `docs/demo-accounts.local.md` on yo
 2. Press **Paid · KNET** on the new registration → it becomes active. The parent gets **"Payment received"** in their app inbox.
 3. Show **Kids & families**: health in red, swim levels, belts with stripes.
 
+### 3b. Pause and approvals (1 minute, optional)
+1. In the app as Noura: Home → **Pause or change** under Sara → **Pause up to 1 week** → pick a day and 3 days → **Pause now**. The end date moves by 3 days.
+2. Same screen → **Change days or time** → write a note → **Send request**.
+3. In the dashboard: Today shows **"1 request waiting"** → **Approvals** → **Approve** (optionally with a message). Noura gets it in the inbox.
+4. Open Sara's member page → **Change days** on the registration → pick the new days → **Save days**.
+5. After rehearsing, ask Claude to "undo the approvals test" so Sara is back to normal.
+
 ### 4. The coach (2 minutes), in the app as Coach Fahad
 1. **Classes → Wed → 5:00 PM · Mat 2**: the new kid is in the class.
 2. Point out the **health marks** and **"2 kids may be ready for a stripe"**.

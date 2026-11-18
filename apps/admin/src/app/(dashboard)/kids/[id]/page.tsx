@@ -1,13 +1,15 @@
 import { ageOn } from "@lg/shared";
 import Link from "next/link";
 
+import { ChangeDays } from "@/components/change-days";
 import { DeskRegister } from "@/components/desk-register";
 import { MarkPaid } from "@/components/mark-paid";
 import { SendLink } from "@/components/send-link";
 import { MemberEditor } from "@/components/member-editor";
 import { MemberPhoto } from "@/components/member-photo";
 import { requireStaff } from "@/lib/auth";
-import { kd, packageLabel, shortDate, type Sub } from "@/lib/data";
+import { kuwaitToday } from "@/lib/checkin";
+import { kd, packageLabel, REQUEST_KIND as KIND, shortDate, type Sub } from "@/lib/data";
 
 const REL: Record<string, string> = { father: "Father", mother: "Mother", grandfather: "Grandfather", grandmother: "Grandmother", brother: "Brother", sister: "Sister", uncle: "Uncle", aunt: "Aunt", guardian: "Legal guardian" };
 const STATUS: Record<string, string> = { active: "Active", pending_payment: "Waiting for payment", expired: "Expired", cancel_requested: "Cancel requested", cancelled: "Cancelled" };
@@ -27,6 +29,13 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
     photo = data?.signedUrl ?? null;
   }
   const age = ageOn(kid.birth_date);
+  const todayIso = kuwaitToday();
+  const { data: reqs } = await supabase
+    .from("requests")
+    .select("id, kind, status, pause_start, pause_days, note, created_at")
+    .in("subscription_id", (subs ?? []).map((s) => s.id).concat(["00000000-0000-0000-0000-000000000000"]))
+    .order("created_at", { ascending: false })
+    .limit(10);
   const adult = kid.is_self || age >= 16;
 
   return (
@@ -90,8 +99,18 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
                         {shortDate(s.start_date)} → {shortDate(s.end_date)} · {STATUS[s.status] ?? s.status}
                         {s.kind === "classes" && s.status === "active" ? ` · ${s.sessions_total - s.sessions_used} left` : ""}
                       </div>
+                      {s.pause_start && s.pause_end && s.pause_end >= todayIso ? (
+                        <div className="text-xs font-semibold text-bjj">
+                          Paused {shortDate(s.pause_start)} → {shortDate(s.pause_end)}
+                        </div>
+                      ) : null}
                     </div>
                     <span className="font-semibold">{kd(s.total)} KD</span>
+                    {s.kind === "classes" && ["active", "pending_payment"].includes(s.status) ? (
+                      <div className="w-full">
+                        <ChangeDays subId={s.id} swim={s.swim_days} bjj={s.bjj_days} swimTime={s.start_time} kid={!adult} />
+                      </div>
+                    ) : null}
                     {s.status === "pending_payment" ? (
                       <div className="flex w-full flex-wrap justify-end gap-2">
                         <MarkPaid id={s.id} />
@@ -103,6 +122,37 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
               </ul>
             )}
           </section>
+
+          {(reqs ?? []).length ? (
+            <section aria-labelledby="reqs">
+              <h2 id="reqs" className="label mb-2">
+                Requests
+              </h2>
+              <ul className="text-[14px]">
+                {(reqs ?? []).map((r) => (
+                  <li key={r.id} className="border-b border-line py-2">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <span className="font-semibold">{KIND[r.kind as keyof typeof KIND]}</span>
+                      <span className={`text-xs font-semibold ${r.status === "approved" ? "text-swim" : r.status === "rejected" ? "text-danger" : "text-bjj"}`}>
+                        {r.status === "pending" ? (
+                          <Link href="/approvals" className="underline underline-offset-2">
+                            Waiting
+                          </Link>
+                        ) : r.status === "approved" ? (
+                          "Approved"
+                        ) : (
+                          "Rejected"
+                        )}
+                      </span>
+                    </div>
+                    <div className="text-xs text-ink-soft">
+                      {[r.pause_start ? `${r.pause_days} days from ${shortDate(r.pause_start)}` : "", r.note ?? ""].filter(Boolean).join(" · ")}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <section aria-labelledby="desk">
             <h2 id="desk" className="label mb-2">

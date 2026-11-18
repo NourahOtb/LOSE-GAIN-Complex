@@ -175,7 +175,7 @@ We are building:
 
 ### 6.7 Changes by parents (self-service within limits)
 - **Cancel a class = reschedule it:** a parent cancelling a single class (self-service, within the notice rule set by the admin, *notice period TBD*) keeps the session and books it on another day. The session is not lost.
-- **Pause:** up to **1 week** self-service. Longer pauses are for **injuries only** and need **receptionist or coach approval**.
+- **Pause:** up to **1 week** self-service (starts at once, **once per registration**, the end date moves by the paused days). Longer pauses are for **injuries only** and need **reception approval** (owner / manager / receptionist; coaches can see the reason). *(Updated 2026-11-18: reception approves, not coaches.)*
 - **Cancel a membership:** different from cancelling a class. The parent sends a request, and a **receptionist handles it**. **Refunds are decided by the admin** case by case.
 - **Switching** sport, day group or time **mid-subscription**: not allowed by default, because the package stays as is until it ends. A parent can **request an exception**, which the **receptionist approves**.
 - **Renew:** always manual (no automatic charging). The parent picks the same package or a new one.
@@ -302,6 +302,21 @@ We are building:
 - Then **Copy link** or **WhatsApp** (opens WhatsApp with the guardian's number and a ready message in Arabic or English). The guardian also gets an **inbox message** in the app, where **Pay online** works too.
 - When it's paid, the registration turns active by itself (UPayments notifies our server) and is recorded as paid by **payment link**. "Paid · KNET" / "Paid · link" stay for marking payments by hand.
 - A payment is matched to its registration even if a newer link was created later.
+
+### 7.5d Approvals *(built 2026-11-18)*
+- **In the app** (Home → **Pause or change** on any registration), the guardian can:
+  - **Pause up to 1 week** by themselves: pick the first day (tomorrow or later) and 1–7 days. It applies at once, the end date moves by the same days, and no sessions are lost. Once per registration.
+  - **Ask for a longer pause for an injury** (1–8 weeks, with a note about what happened).
+  - **Ask to change days or time** (with a note).
+  - **Ask to cancel the registration** (reason optional).
+  - See their requests and their status, and withdraw one that isn't answered yet.
+- **Dashboard → Approvals** (Today shows "N requests waiting"): owner, manager or receptionist **approve or reject**, with an optional message. The guardian gets the answer in the app inbox (English + Arabic).
+  - Injury pause approved → the registration is paused and its end date moves.
+  - Change approved → reception changes the days on the **member page** (**Change days**: same number of days, so the price stays the same; jiu-jitsu times follow the timetable; clashes are blocked).
+  - Cancel approved → the registration is cancelled. If it was paid, it waits under **Refunds to record**.
+- **Refunds:** only the **owner or accountant** record the refund amount (0 = no refund, never more than was paid) and how it was returned (KNET / bank transfer / cash). The money itself is returned outside the app. The guardian gets an inbox message.
+- During a pause: no class shows in the app, the door check-in shows **"Paused until …"** and doesn't use a session, and class counts leave the member out.
+- *Not yet:* the AI assistant can explain these options but can't send the requests itself.
 
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.

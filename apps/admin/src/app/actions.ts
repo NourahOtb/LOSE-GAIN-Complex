@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireStaff } from "@/lib/auth";
+import { DAY, time12 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 
 export type FormState = { error?: string; ok?: string } | undefined;
@@ -233,4 +234,48 @@ export async function sendPaymentLink(subscriptionId: string) {
     };
   }
   return { ok: "Link ready", link: String(data.link), phone: (data.phone as string | null) ?? null, name: (data.name as string | undefined) ?? "", lang: (data.lang as string | undefined) ?? "en" };
+}
+
+const REQUEST_ERRORS: Record<string, string> = {
+  not_pending: "This request was already answered.",
+  already_paused: "This registration is already paused.",
+  not_active: "The registration isn't active any more.",
+  class_overlap: "The new end date runs into another registration of this member. Change that one first.",
+  "not allowed": "Your role can't do this.",
+};
+const requestError = (message: string, fallback: string) => Object.entries(REQUEST_ERRORS).find(([k]) => message.includes(k))?.[1] ?? fallback;
+
+/** Approve or reject a guardian's request (owner, manager or receptionist). The guardian is told in the app inbox. */
+export async function decideRequest(id: string, approve: boolean, reply: string) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("decide_request", { p_id: id, p_approve: approve, p_reply: reply.trim() || null });
+  if (error) return { error: requestError(error.message, "Could not save the decision.") };
+  revalidatePath("/", "layout");
+  return { ok: approve ? "Approved · guardian notified" : "Rejected · guardian notified" };
+}
+
+/** Owner or accountant records how much was refunded for a cancelled registration (0 = no refund). */
+export async function recordRefund(id: string, amount: number, method: "knet" | "bank_transfer" | "cash") {
+  const { supabase } = await requireStaff();
+  if (!Number.isFinite(amount) || amount < 0) return { error: "Enter an amount (0 for no refund)." };
+  const { error } = await supabase.rpc("record_refund", { p_id: id, p_amount: amount, p_method: method });
+  if (error) return { error: error.message.includes("bad_amount") ? "The refund can't be more than what was paid." : requestError(error.message, "Could not record the refund.") };
+  revalidatePath("/", "layout");
+  return { ok: amount > 0 ? "Refund recorded · guardian notified" : "Recorded: no refund" };
+}
+
+/** Reception changes a registration's days (same number of days, so the price stays the same). */
+export async function changeDays(subId: string, swim: string[], bjj: string[], swimTime: string) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("change_registration_days", { p_sub: subId, p_swim: swim, p_bjj: bjj, p_swim_time: swimTime });
+  if (error) {
+    if (error.message.includes("class_overlap")) {
+      const [day, t] = error.message.replace(/.*class_overlap /, "").split(" ");
+      return { error: `Clashes with another class of this member (${DAY[day] ?? day} ${t ? time12(t) : ""}).` };
+    }
+    if (error.message.includes("same_count")) return { error: "Keep the same number of days for each sport." };
+    return { error: requestError(error.message, "Could not change the days.") };
+  }
+  revalidatePath("/", "layout");
+  return { ok: "Days updated · guardian notified" };
 }
