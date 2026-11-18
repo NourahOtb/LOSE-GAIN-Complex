@@ -80,7 +80,7 @@ export async function decideFreeze(subscriptionId: string, approve: boolean) {
 }
 
 /** Change a class's time, length, coach, place, or switch it off (super admin and manager). */
-export async function updateClass(classId: string, form: { start: string; duration: number; coach: string; location: string; active: boolean }) {
+export async function updateClass(classId: string, form: { start: string; duration: number; coach: string; location: string; active: boolean; capacity?: number }) {
   const { supabase, profile } = await requireStaff();
   if (profile.role !== "super_admin" && profile.role !== "manager") return { error: "Only the owner or a manager can change classes." };
   if (!/^\d{2}:\d{2}$/.test(form.start)) return { error: "Enter a time like 18:00." };
@@ -93,6 +93,10 @@ export async function updateClass(classId: string, form: { start: string; durati
     p_active: form.active,
   });
   if (error) return { error: error.message.includes("unique") || error.message.includes("duplicate") ? "Another class already uses that place at that time." : "Could not save the class." };
+  if (form.capacity !== undefined) {
+    const { error: capErr } = await supabase.rpc("set_class_capacity", { p_class: classId, p_capacity: form.capacity });
+    if (capErr) return { error: "Places must be between 1 and 200." };
+  }
   revalidatePath("/", "layout");
   return { ok: "Saved" };
 }
@@ -186,7 +190,7 @@ export async function deskRegister(params: Record<string, unknown>, dryRun: bool
   const { supabase } = await requireStaff();
   const { data, error } = await supabase.functions.invoke("register", { body: { ...params, dry_run: dryRun } });
   if (error) {
-    let body: { error?: string; slot?: string } = {};
+    let body: { error?: string; slot?: string; full?: { class_id: string; sport: string; day: string; time: string }[] } = {};
     try {
       const ctx = (error as { context?: Response }).context;
       if (ctx && typeof ctx.json === "function") body = await ctx.json();
@@ -202,7 +206,9 @@ export async function deskRegister(params: Record<string, unknown>, dryRun: bool
       gender_required: "Set boy/male or girl/female on the member first.",
       bad_start: "The first day must be one of the chosen days within the next 2 weeks.",
       overlap: `Clash: this member already has a class on ${body.slot ?? "that day and time"}.`,
+      full: `Full: ${(body.full ?? []).map((f) => `${f.sport === "swimming" ? "Swimming" : "Jiu-jitsu"} ${DAY[f.day] ?? f.day} ${time12(f.time)}`).join(", ")}.`,
     };
+    if (body.error === "full") return { error: msg.full, full: true, fullClasses: (body.full ?? []).map((f) => f.class_id) };
     return { error: msg[body.error ?? ""] ?? "Could not register." };
   }
   if (!dryRun) {
@@ -433,4 +439,32 @@ export async function sendCheckOn(kidId: string, missed: number) {
   const { error } = await supabase.rpc("send_check_on", { p_kid: kidId, p_missed: missed });
   if (error) return { error: error.message.includes("not allowed") ? "Only the owner or a manager can send this." : "Could not send the message." };
   return { ok: "Sent to the app inbox" };
+}
+
+// ---------- waitlist (Task 14j) ----------
+
+/** Reception offers a free place to a family on the waitlist: they get a message and 48 hours to register. */
+export async function offerWaitlist(id: string) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("offer_waitlist", { p_id: id });
+  if (error) return { error: error.message.includes("not allowed") ? "Your role can't offer places." : error.message.includes("not_waiting") ? "This family isn't waiting any more." : "Could not send the offer." };
+  revalidatePath("/waitlist");
+  return { ok: "Offer sent · 48 hours to register" };
+}
+
+export async function removeWaitlist(id: string) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("leave_waitlist", { p_id: id });
+  if (error) return { error: "Could not remove them." };
+  revalidatePath("/waitlist");
+  return { ok: "Removed" };
+}
+
+/** Reception puts a member on a class's waitlist (e.g. at the desk). */
+export async function addToWaitlist(kidId: string, classId: string) {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.rpc("join_waitlist", { p_kid: kidId, p_class: classId });
+  if (error) return { error: "Could not add them to the waitlist." };
+  revalidatePath("/waitlist");
+  return { ok: `On the waitlist · number ${data}` };
 }

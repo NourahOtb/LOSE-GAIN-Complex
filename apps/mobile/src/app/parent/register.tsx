@@ -1,7 +1,7 @@
 import { addDays, ageOn, DURATION_WEEKS, formatKD, isoDate, priceOpenPool, priceSubscription, startOptions, WEEKDAYS, weekdayOf, type Duration, type Weekday } from '@lg/shared';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { DateStrip } from '@/components/date-strip';
 import { HomeHeader } from '@/components/home-header';
@@ -45,6 +45,11 @@ export default function RegisterScreen() {
   const [genderBusy, setGenderBusy] = useState(false);
   const [closed, setClosed] = useState<string[]>([]);
   const pricing = usePricing();
+  // class places (Task 14j): booked / capacity per class for the chosen dates, and this family's waitlist offers
+  const [spaces, setSpaces] = useState<Record<string, { booked: number; capacity: number }>>({});
+  const [offers, setOffers] = useState<string[]>([]);
+  const [waitMsg, setWaitMsg] = useState('');
+  const [waitBusy, setWaitBusy] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -124,6 +129,78 @@ export default function RegisterScreen() {
       : startOptions([...new Set([...swim, ...bjj])], (day) => (bjj.includes(day as Weekday) && !swim.includes(day as Weekday) ? bjjTimeFor(day) : swimTime), new Date())
   ).filter((d) => !closed.includes(d));
   const startIso = pickedStart && startDates.includes(pickedStart) ? pickedStart : (startDates[0] ?? null);
+
+  // ---------- full classes and the waitlist ----------
+  const from = startIso ?? isoDate(new Date());
+  const to = isoDate(addDays(new Date(from + 'T00:00:00'), DURATION_WEEKS[duration] * 7));
+  const [spacesTick, setSpacesTick] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    supabase.rpc('class_spaces', { p_from: from, p_to: to }).then(({ data }) => {
+      if (alive) setSpaces(Object.fromEntries(((data ?? []) as { class_id: string; booked: number; capacity: number }[]).map((x) => [x.class_id, x])));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [from, to, spacesTick]);
+  useEffect(() => {
+    if (!kidId) return;
+    supabase
+      .from('waitlist')
+      .select('class_id, offer_expires')
+      .eq('kid_id', kidId)
+      .eq('status', 'offered')
+      .then(({ data }) => setOffers(((data ?? []) as { class_id: string; offer_expires: string }[]).filter((o) => o.offer_expires > new Date().toISOString()).map((o) => o.class_id)));
+  }, [kidId]);
+  const swimGroup = mode === 'adultSwim' ? 'adults' : 'kids';
+  const bjjGroup = mode === 'kid' ? 'kids' : 'adults';
+  const classAt = (sport: 'swimming' | 'jiujitsu', day: string, tm: string) =>
+    classes.find((c) => c.sport === sport && c.weekday === day && !c.is_free && c.start_time.slice(0, 5) === tm.slice(0, 5) && c.age_group === (sport === 'swimming' ? swimGroup : bjjGroup));
+  const isFull = (cls: ClassRow | undefined) => {
+    const x = cls ? spaces[cls.id] : undefined;
+    return !!cls && !!x && x.booked >= x.capacity && !offers.includes(cls.id);
+  };
+  const wanted =
+    mode === 'pool'
+      ? []
+      : [
+          ...swim.map((d) => ({ sport: 'swimming' as const, day: d, time: swimTime, cls: classAt('swimming', d, swimTime) })),
+          ...bjj.map((d) => ({ sport: 'jiujitsu' as const, day: d, time: bjjTimeFor(d), cls: classAt('jiujitsu', d, bjjTimeFor(d)) })),
+        ];
+  const fullSlots = wanted.filter((w) => isFull(w.cls));
+  const slotText = (w: { sport: 'swimming' | 'jiujitsu'; day: string; time: string }) => `${t(`sport.${w.sport}`)} ${t(`day.${w.day}` as StringKey)} ${clockTime(w.time, lang ?? 'en')}`;
+  // other days / times with space, for each full class
+  const suggestions = fullSlots.flatMap((w) => {
+    const out: { key: string; label: string; apply: () => void }[] = [];
+    const chosen = w.sport === 'swimming' ? swim : bjj;
+    const days = w.sport === 'swimming' ? (mode === 'adultSwim' ? adultDays : WEEKDAYS) : bjjChoiceDays;
+    if (w.sport === 'swimming' && mode === 'kid') {
+      const other = swimTime === '16:00' ? '17:00' : '16:00';
+      if (!isFull(classAt('swimming', w.day, other)) && classAt('swimming', w.day, other) && !fullSlots.some((f) => f.sport === 'swimming' && f.day !== w.day)) {
+        out.push({ key: `t-${w.day}`, label: `${t(`day.${w.day}` as StringKey)} ${clockTime(other, lang ?? 'en')}`, apply: () => setTime(other as '16:00' | '17:00') });
+      }
+    }
+    for (const d of days) {
+      if (chosen.includes(d as Weekday)) continue;
+      const tm = w.sport === 'swimming' ? swimTime : bjjTimeFor(d);
+      const c = classAt(w.sport, d, tm);
+      if (!c || isFull(c)) continue;
+      const swap = (cur: Weekday[]) => cur.map((x) => (x === w.day ? (d as Weekday) : x));
+      out.push({ key: `${w.sport}-${w.day}-${d}`, label: `${t(`day.${d}` as StringKey)} ${clockTime(tm, lang ?? 'en')}`, apply: () => (w.sport === 'swimming' ? setSwimDays(swap) : setBjjDays(swap)) });
+    }
+    return out.slice(0, 4).map((o) => ({ ...o, sport: w.sport, instead: w.day }));
+  });
+  const joinWaitlist = async () => {
+    if (!kidId) return;
+    setWaitBusy(true);
+    let pos = 0;
+    for (const w of fullSlots) {
+      const { data } = await supabase.rpc('join_waitlist', { p_kid: kidId, p_class: w.cls!.id });
+      pos = Math.max(pos, Number(data ?? 0));
+    }
+    setWaitBusy(false);
+    setWaitMsg(t('wait.joined', { n: pos }));
+  };
 
   // family size for the discount: kids already registered + this one
   // (the family discount counts kids only, not adult members)
@@ -205,6 +282,10 @@ export default function RegisterScreen() {
         return setError(t('reg.err.overlap', { kid: member?.full_name ?? '', day: t(`day.${d}` as StringKey), time: clockTime(tm ?? '16:00', lang ?? 'en') }));
       }
       if (code === 'gender_required') return setError(t('reg.genderFirst'));
+      if (code === 'full') {
+        setSpacesTick((n) => n + 1);
+        return setError(t('wait.fullErr'));
+      }
       if (code && ['too_few_days', 'too_many_days', 'five_plus_bjj_only', 'not_offered', 'duplicate_day', 'invalid_day', 'separate_sports'].includes(code)) {
         return setError(t(`reg.err.${code}` as StringKey));
       }
@@ -424,11 +505,46 @@ export default function RegisterScreen() {
           />
         </Section>
 
+        {fullSlots.length ? (
+          <View style={{ borderWidth: 2, borderColor: p.danger, borderRadius: 8, padding: 14, gap: 10 }}>
+            <T w="semibold" color={p.danger}>
+              {t('wait.full', { list: fullSlots.map(slotText).join(' · ') })}
+            </T>
+            <T size={13} style={{ lineHeight: 19 }}>
+              {t('wait.hint')}
+            </T>
+            {suggestions.length ? (
+              <View style={{ gap: 6 }}>
+                <Label>{t('wait.try')}</Label>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {suggestions.map((s) => (
+                    <Pressable
+                      key={s.key}
+                      onPress={s.apply}
+                      accessibilityRole="button"
+                      style={({ pressed }) => ({ borderWidth: 1.5, borderColor: s.sport === 'swimming' ? p.swim : p.bjj, borderRadius: 18, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: pressed ? p.tile : p.surface })}>
+                      <T w="semibold" size={13}>
+                        {t('wait.instead', { slot: s.label, day: t(`day.${s.instead}` as StringKey) })}
+                      </T>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+            {waitMsg ? (
+              <T w="semibold" color={p.swim}>
+                {waitMsg}
+              </T>
+            ) : (
+              <Button variant="ghost" title={t('wait.join')} onPress={joinWaitlist} loading={waitBusy} />
+            )}
+          </View>
+        ) : null}
         {selfClash ? (
           <ErrorText>{t('reg.err.overlap', { kid: member?.full_name ?? '', day: t(`day.${selfClash}` as StringKey), time: clockTime(swimTime, lang ?? 'en') })}</ErrorText>
         ) : null}
         <ErrorText>{error}</ErrorText>
-        <Button title={t('reg.submit')} onPress={submit} loading={busy} disabled={!price.ok || !kidId || !startIso || !!selfClash} />
+        <Button title={t('reg.submit')} onPress={submit} loading={busy} disabled={!price.ok || !kidId || !startIso || !!selfClash || fullSlots.length > 0} />
       </ScrollView>
     </Screen>
   );

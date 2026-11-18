@@ -61,7 +61,7 @@ export default async function ClassesPage() {
                       <td className="px-3 py-2.5 text-right">
                         {canEdit ? (
                           <ClassEditor
-                            cls={{ id: c.id, start: c.start_time.slice(0, 5), duration: c.duration_min, coach: c.coach_id ?? "", location: c.location, sport: c.sport }}
+                            cls={{ id: c.id, start: c.start_time.slice(0, 5), duration: c.duration_min, coach: c.coach_id ?? "", location: c.location, sport: c.sport, capacity: c.capacity }}
                             coaches={coaches.filter((x) => !x.sport || x.sport === sport)}
                           />
                         ) : null}

@@ -98,5 +98,5 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] 14g. Staff accounts + roles (owner all, managers coaches/reception), temporary passwords, switch off, change password, new family at the desk + WhatsApp ✅ 2026-11-18
 - [x] 14h. Reports + Excel export: members (active, new, not renewed in 30 days), attendance by class / member, missed 2+ with Check on them (inbox + WhatsApp), month vs last month, Excel download ✅ 2026-11-18
 - [x] 14i. Money reports: net income, payments, discounts, refunds, each day, by sport (split by days), online vs desk, by member, waiting for payment, Excel ✅ 2026-11-18
-- [ ] 14j. Waitlist with class capacity
+- [x] 14j. Waitlist + capacity: places per class, app shows Full + other times + Join the waitlist, Waitlist page with Offer (48 h), over the limit and Add to waitlist at the desk ✅ 2026-11-19
 

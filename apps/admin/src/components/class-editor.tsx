@@ -20,7 +20,7 @@ export function ClassEditor({
   cls,
   coaches,
 }: {
-  cls: { id: string; start: string; duration: number; coach: string; location: string; sport: "swimming" | "jiujitsu" };
+  cls: { id: string; start: string; duration: number; coach: string; location: string; sport: "swimming" | "jiujitsu"; capacity: number };
   coaches: { id: string; full_name: string }[];
 }) {
   const [open, setOpen] = useState(false);
@@ -28,12 +28,13 @@ export function ClassEditor({
   const [duration, setDuration] = useState(cls.duration);
   const [coach, setCoach] = useState(cls.coach);
   const [location, setLocation] = useState(cls.location);
+  const [capacity, setCapacity] = useState(cls.capacity);
   const [pending, run] = useTransition();
   const [msg, setMsg] = useState<{ error?: string; ok?: string } | null>(null);
 
   const save = (active: boolean) =>
     run(async () => {
-      const r = await updateClass(cls.id, { start, duration, coach, location, active });
+      const r = await updateClass(cls.id, { start, duration, coach, location, active, capacity: capacity !== cls.capacity ? capacity : undefined });
       setMsg(r);
       if (r.ok) setOpen(false);
     });
@@ -58,6 +59,10 @@ export function ClassEditor({
       <label>
         <span className="label">Length (minutes)</span>
         <input type="number" min={15} max={240} step={15} value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={field} />
+      </label>
+      <label>
+        <span className="label">Places (capacity)</span>
+        <input type="number" min={1} max={200} value={capacity} onChange={(e) => setCapacity(Number(e.target.value))} className={field} />
       </label>
       <label>
         <span className="label">Coach</span>

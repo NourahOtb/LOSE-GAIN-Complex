@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 
-import { deskRegister } from "@/app/actions";
+import { addToWaitlist, deskRegister } from "@/app/actions";
 import { MarkPaid } from "@/components/mark-paid";
 
 const DAYS: [string, string][] = [
@@ -35,6 +35,11 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
   const [start, setStart] = useState("");
   const [pending, run] = useTransition();
   const [quote, setQuote] = useState<{ total?: number; end_date?: string; family_pct?: number } | null>(null);
+  // a chosen class is full: reception may register over the limit
+  const [fullMsg, setFullMsg] = useState("");
+  const [overLimit, setOverLimit] = useState(false);
+  const [fullClasses, setFullClasses] = useState<string[]>([]);
+  const [waitNote, setWaitNote] = useState("");
   const [created, setCreated] = useState<{ id: string; total: number } | null>(null);
   const [error, setError] = useState("");
 
@@ -64,10 +69,13 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
     adult_time: adultTime,
     duration: sport === "pool" ? "4w" : duration,
     start_date: startDate,
+    over_limit: overLimit,
   });
   const reset = () => {
     setQuote(null);
     setError("");
+    setFullMsg("");
+    setOverLimit(false);
   };
   const toggle = (list: string[], set: (v: string[]) => void, d: string) => {
     reset();
@@ -155,6 +163,43 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
       </div>
 
       {error ? <p className="font-semibold text-danger">{error}</p> : null}
+      {fullMsg ? (
+        <div className="rounded-md border-[1.5px] border-danger bg-danger-bg p-3 text-sm">
+          <p className="font-semibold text-danger">{fullMsg}</p>
+          <label className="mt-2 flex items-center gap-2 font-semibold">
+            <input
+              type="checkbox"
+              checked={overLimit}
+              onChange={(e) => {
+                setOverLimit(e.target.checked);
+                setQuote(null);
+              }}
+              className="accent-[var(--ink)]"
+            />
+            Register over the limit
+          </label>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-ink-soft">Or pick other days, or</span>
+            <button
+              type="button"
+              disabled={pending || !!waitNote}
+              onClick={() =>
+                run(async () => {
+                  let note = "";
+                  for (const c of fullClasses) {
+                    const r = await addToWaitlist(kidId, c);
+                    note = r.error ?? r.ok ?? "";
+                  }
+                  setWaitNote(note);
+                })
+              }
+              className="h-8 rounded border-[1.5px] border-ink bg-surface px-2.5 text-xs font-semibold disabled:opacity-50">
+              Add to the waitlist
+            </button>
+            {waitNote ? <span className="text-xs font-semibold">{waitNote}</span> : null}
+          </div>
+        </div>
+      ) : null}
       {quote?.total !== undefined ? (
         <p className="text-[16px]">
           <span className="num text-[28px]">{quote.total.toFixed(3)} KD</span>
@@ -171,8 +216,13 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
             run(async () => {
               setError("");
               const r = await deskRegister(params(), true);
-              if (r.error) setError(r.error);
-              else setQuote(r.data ?? null);
+              if (r.full) {
+                setFullMsg(r.error ?? "");
+                setFullClasses(r.fullClasses ?? []);
+                setWaitNote("");
+              }
+              if (r.error && !r.full) setError(r.error);
+              else if (!r.error) setQuote(r.data ?? null);
             })
           }
           className="h-10 rounded border-[1.5px] border-ink px-4 font-semibold disabled:opacity-40">

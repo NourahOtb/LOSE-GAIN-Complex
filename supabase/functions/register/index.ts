@@ -4,6 +4,9 @@
 //   { kid_id, kind: 'classes'|'open_pool', swim_days, bjj_days, swim_time?, adult_time?, duration, start_date }
 //   -> { id, total }  or  { error }
 //   dry_run: true → only check and price it (nothing is saved)
+//   over_limit: true → staff at the desk register into a full class anyway
+//   -> 409 { error: 'full', full: [{ class_id, sport, day, time }] } when a chosen class is full
+//      (a family with a waitlist offer for that class may still register)
 //
 // The server checks the member belongs to this account, works out the class times from the timetable,
 // counts the family discount itself, and calculates the price with the same rules as the app
@@ -160,6 +163,37 @@ Deno.serve(async (req) => {
       }
     }
 
+    // class capacity: a full class needs a waitlist offer (family) or "over the limit" (staff at the desk)
+    const targetClasses: string[] = [];
+    if (kind === 'classes') {
+      const { data: active } = await db.from('classes').select('id, sport, weekday, start_time, age_group').eq('is_active', true).eq('is_free', false);
+      const pick = (sport: string, day: string, t: string, group: string) =>
+        (active ?? []).find((c) => c.sport === sport && c.weekday === day && String(c.start_time).slice(0, 5) === t && c.age_group === group);
+      const wanted = [
+        ...swim.map((d) => ({ sport: 'swimming', day: d, time: swimTime, c: pick('swimming', d, swimTime, member === 'adult' ? 'adults' : 'kids') })),
+        ...bjj.map((d) => ({ sport: 'jiujitsu', day: d, time: bjjTimes[d], c: pick('jiujitsu', d, bjjTimes[d], member === 'kid' ? 'kids' : 'adults') })),
+      ];
+      for (const w of wanted) if (w.c) targetClasses.push(w.c.id);
+      if (targetClasses.length) {
+        const { data: spaces } = await db.rpc('class_spaces', { p_from: start, p_to: end });
+        const space = new Map(((spaces ?? []) as { class_id: string; booked: number; capacity: number }[]).map((x) => [x.class_id, x]));
+        const { data: offers } = await db
+          .from('waitlist')
+          .select('class_id')
+          .eq('kid_id', kid.id)
+          .eq('status', 'offered')
+          .gt('offer_expires', new Date().toISOString());
+        const offered = new Set((offers ?? []).map((o) => o.class_id));
+        const full = wanted.filter((w) => {
+          const x = w.c ? space.get(w.c.id) : undefined;
+          return x && x.booked >= x.capacity && !offered.has(w.c!.id);
+        });
+        if (full.length && !(isStaff && body.over_limit === true)) {
+          return json({ error: 'full', full: full.map((w) => ({ class_id: w.c!.id, sport: w.sport, day: w.day, time: w.time })) }, 409);
+        }
+      }
+    }
+
     // dry run: check and price only (used by the AI assistant to prepare a Confirm card)
     if (body.dry_run === true) {
       return json({
@@ -199,6 +233,10 @@ Deno.serve(async (req) => {
     if (error || !created) {
       console.error('insert failed', error);
       return json({ error: 'server_error' }, 500);
+    }
+    // waitlist places for these classes are now used
+    if (targetClasses.length) {
+      await db.from('waitlist').update({ status: 'registered' }).eq('kid_id', kid.id).in('class_id', targetClasses).in('status', ['waiting', 'offered']);
     }
     return json({ id: created.id, total: created.total });
   } catch (e) {

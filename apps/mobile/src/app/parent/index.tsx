@@ -11,7 +11,7 @@ import { PaceClock } from '@/components/pace-clock';
 import { Button, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { checkPayment, startOnlinePayment, type PayStatus } from '@/lib/payments';
-import { ageGroupOf } from '@/lib/data';
+import { ageGroupOf, clockTime } from '@/lib/data';
 import { findClass, loadFamily, type FamilyData } from '@/lib/family';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
@@ -72,13 +72,26 @@ export default function ParentHome() {
   );
 
   // alerts: cancellations this week, renewals within 3 days
-  const alerts: { text: string; action?: () => void }[] = [];
+  const alerts: { text: string; action?: () => void; cta?: string }[] = [];
   const todayIso = isoDate(now);
   const soon = isoDate(addDays(now, 14));
   const closedSet = new Set(data.closures.map((c) => c.on_date));
   for (const c of data.closures.filter((x) => x.on_date >= todayIso && x.on_date <= soon)) {
     const date = new Date(c.on_date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' });
     alerts.push({ text: c.reason ? t('home.closedReason', { date, reason: c.reason }) : t('home.closed', { date }) });
+  }
+  // waitlist: an offered place first (it has a deadline), then classes they're waiting for
+  const classById = new Map(data.classes.map((c) => [c.id, c]));
+  const clsText = (classId: string) => {
+    const c = classById.get(classId);
+    return c ? `${t(`sport.${c.sport}`)} ${t(`day.${c.weekday}` as StringKey)} ${clockTime(c.start_time, lang ?? 'en')}` : '';
+  };
+  for (const w of data.waitlist) {
+    const kid = kidById.get(w.kid_id)?.full_name ?? '';
+    if (w.status === 'offered' && w.offer_expires) {
+      const date = new Date(w.offer_expires).toLocaleString(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+      alerts.unshift({ text: t('home.offer', { kid, cls: clsText(w.class_id), date }), action: () => router.push('/parent/register'), cta: t('tab.register') });
+    } else alerts.push({ text: t('home.waiting', { kid, cls: clsText(w.class_id) }) });
   }
   for (const lane of lanes) {
     for (const m of weekMarks(lane.sub, lane.sport, data.cancels, now)) {
@@ -221,7 +234,7 @@ export default function ParentHome() {
             </T>
             {a.action ? (
               <T w="semibold" size={14} color={p.onInk}>
-                {t('home.renew')}
+                {a.cta ?? t('home.renew')}
               </T>
             ) : null}
           </Pressable>

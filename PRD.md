@@ -171,7 +171,7 @@ We are building:
 ### 6.6 Capacity and waitlist
 - Each class and level has a **maximum number of kids**, set by the admin.
 - When it's full, the parent can **join a waitlist** (first come, first served) and is notified when a spot opens.
-- The **receptionist or coach** can approve a kid **over the limit**.
+- The **receptionist or coach** can approve a kid **over the limit**. *(Built 2026-11-18: reception, managers and the owner at the desk; coaches don't use the dashboard. See 7.5h.)*
 
 ### 6.7 Changes by parents (self-service within limits)
 - **Cancel a class = reschedule it:** a parent cancelling a single class (self-service, within the notice rule set by the admin, *notice period TBD*) keeps the session and books it on another day. The session is not lost.
@@ -345,6 +345,12 @@ We are building:
 - **New family at the desk** (owner, manager, reception): Members & families → **+ New family** → guardian name, relationship, mobile, email, app language, "family" or "just me". A temporary password is shown with a ready **WhatsApp** message (Arabic or English) containing the app link and the login. Then **add the kids** (name, birth date, boy/girl, emergency number, health checklist confirmed with the guardian) and **Register →** each one at the desk.
 - Family page (from the guardian's name): login email, last log-in, new temporary password, kids.
 - Accounts are created only by the `accounts` server function, which holds the key that can create log-ins.
+
+### 7.5h Capacity and waitlist *(built 2026-11-18)*
+- **Places per class:** Classes → Edit → **Places (capacity)** (owner, manager). A class is full when the members booked into it (paid or waiting for payment, for the chosen dates) reach that number. Today's page already shows booked / places.
+- **In the app:** if a chosen day and time is full, the registration screen shows **"Full: …"**, suggests **other days or times with space** (one tap swaps the day or time) and offers **Join the waitlist** ("You're number 2 on the waitlist"). Registering into a full class is blocked by the server too.
+- **Dashboard → Waitlist:** each class with its queue (first come, first served), booked / places and how many places are open. Reception taps **Offer the place** on the first family: they get an inbox message (English + Arabic) and an alert on Home with **Register**, and have **48 hours**. The offer lets them into the full class; when they register, their waitlist place is marked used. Offers that ran out are shown so reception can offer the next family. **Remove** takes someone off the list.
+- **At the desk:** a full class shows **Register over the limit** (tick to register anyway) and **Add to the waitlist**.
 
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.

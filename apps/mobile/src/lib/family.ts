@@ -38,6 +38,8 @@ export type FamilyData = {
   cancels: CancelLike[];
   /** days the whole complex is closed (holidays) */
   closures: { on_date: string; reason: string | null }[];
+  /** waitlist places (waiting, or offered with a deadline) */
+  waitlist: { kid_id: string; class_id: string; status: 'waiting' | 'offered'; offer_expires: string | null }[];
   classes: ClassRow[];
   coaches: Record<string, string>;
 };
@@ -63,6 +65,8 @@ export async function loadFamily(parentId: string): Promise<FamilyData> {
     supabase.from('class_cancellations').select('on_date, class_id').gte('on_date', since),
     supabase.from('closures').select('on_date, reason').gte('on_date', since).order('on_date'),
   ]);
+  const { data: wl } = await supabase.from('waitlist').select('kid_id, class_id, status, offer_expires').in('kid_id', kids.map((k) => k.id)).in('status', ['waiting', 'offered']);
+  const waitlist = ((wl ?? []) as FamilyData['waitlist']).filter((w) => w.status === 'waiting' || (w.offer_expires ?? '') > new Date().toISOString());
   const closures = (closuresRes.data ?? []) as FamilyData['closures'];
 
   const byId = new Map(classes.map((c) => [c.id, c]));
@@ -80,7 +84,7 @@ export async function loadFamily(parentId: string): Promise<FamilyData> {
   const coaches: Record<string, string> = {};
   for (const c of (coachesRes.data ?? []) as { id: string; full_name: string }[]) coaches[c.id] = c.full_name;
 
-  return { kids, subs: (subsRes.data ?? []) as Sub[], cancels, closures, classes, coaches };
+  return { kids, subs: (subsRes.data ?? []) as Sub[], cancels, closures, waitlist, classes, coaches };
 }
 
 /** The timetable class a member's session happens in (sport + day + time + age group). */
