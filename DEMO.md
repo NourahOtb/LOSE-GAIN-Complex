@@ -59,7 +59,7 @@ Demo accounts and the shared password are in `docs/demo-accounts.local.md` on yo
 In the dashboard → **Closures** → pick a date and a reason (e.g. "National Day") → **Close the complex**. It says how many registrations were extended. In the app, that day is crossed out and Home says the complex is closed. Then **Open after all** to undo it.
 
 ### 3d. A family walks in without the app (1 minute, optional)
-As reception: **Members & families → + New family** → name, mobile, email → **Create account**. Show the temporary password and the **WhatsApp** button (ready message with the app link). **Next: add the kids** → add a kid → **Register →**. After rehearsing, ask Claude to delete the practice family.
+As reception: **Members & families → + New family** → guardian name, mobile, email, then the kids in the same form (first and last name, birth date, boy/girl, health; **+ Add another kid**; tick "The guardian also trains here" if they do) → **Create account + N members**. Show the temporary password and the **WhatsApp** button (ready message with the app link), then **Register →** next to a kid. After rehearsing, ask Claude to delete the practice family.
 
 ### 4. The coach (2 minutes), in the app as Coach Fahad
 1. **Classes → Wed → 5:00 PM · Mat 2**: the new kid is in the class.
