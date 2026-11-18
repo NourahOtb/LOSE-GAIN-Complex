@@ -1,3 +1,5 @@
+import { ageOn } from '@lg/shared';
+
 export type Belt =
   | 'white' | 'grey_white' | 'grey' | 'grey_black'
   | 'yellow_white' | 'yellow' | 'yellow_black'
@@ -19,7 +21,16 @@ export type Kid = {
   swim_level_since: string | null;
   belt: Belt | null;
   belt_since: string | null;
+  is_self: boolean;
 };
+
+/** Which timetable group a member trains in: adults (16+ or the account holder), Titans (jiu-jitsu 11–15), or kids. */
+export function ageGroupOf(sport: 'swimming' | 'jiujitsu', kid: Pick<Kid, 'birth_date' | 'is_self'>): 'kids' | 'titans' | 'adults' {
+  const age = ageOn(kid.birth_date);
+  if (kid.is_self || age >= 16) return 'adults';
+  if (sport === 'jiujitsu' && age >= 11) return 'titans';
+  return 'kids';
+}
 
 export type Stripe = { id: string; kid_id: string; belt: string; awarded_on: string; coach_id: string | null };
 

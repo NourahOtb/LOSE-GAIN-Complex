@@ -31,4 +31,9 @@ export type Profile = {
   sport: 'swimming' | 'jiujitsu' | null;
   preferred_language: 'ar' | 'en';
   is_active: boolean;
+  account_type: 'family' | 'single';
+  relationship: Relationship | null;
 };
+
+export const RELATIONSHIPS = ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle', 'aunt', 'guardian'] as const;
+export type Relationship = (typeof RELATIONSHIPS)[number];

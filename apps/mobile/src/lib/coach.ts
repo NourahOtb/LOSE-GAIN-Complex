@@ -1,6 +1,6 @@
 import { ageOn, isoDate, type Sport } from '@lg/shared';
 
-import type { Belt, Kid, Stripe } from './data';
+import { ageGroupOf, type Belt, type Kid, type Stripe } from './data';
 import type { ClassRow, Sub } from './family';
 import { supabase } from './supabase';
 
@@ -53,9 +53,7 @@ export function kidsInClass(data: CoachData, cls: ClassRow, dateIso: string) {
     .map((s) => ({ sub: s, kid: data.kids.find((k) => k.id === s.kid_id)! }))
     .filter(({ kid }) => {
       if (!kid) return false;
-      if (sport !== 'jiujitsu') return true;
-      const titan = ageOn(kid.birth_date) >= 11;
-      return cls.age_group === (titan ? 'titans' : 'kids');
+      return cls.age_group === ageGroupOf(sport, kid);
     });
 }
 

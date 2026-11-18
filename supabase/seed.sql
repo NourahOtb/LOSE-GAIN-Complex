@@ -32,7 +32,8 @@ begin
           jsonb_build_object('sub', v_id::text, 'email', u.email, 'email_verified', true), 'email', now(), now(), now());
       end;
     end if;
-    update public.profiles p set role = u.role::public.app_role, sport = u.sport, full_name = u.name
+    update public.profiles p set role = u.role::public.app_role, sport = u.sport, full_name = u.name,
+        relationship = case when u.role = 'parent' then 'mother' end
       from auth.users a where a.id = p.id and a.email = u.email;
   end loop;
 
@@ -48,6 +49,7 @@ begin
   union all select 'swimming','kids','olympic_pool', d, '17:00', 20, v_hamad from unnest(array['sat','sun','mon','tue','wed','thu']) d
   union all select 'jiujitsu','titans','mat_1', d, '16:00', 12, v_fahad from unnest(array['sat','sun','mon','tue','wed','thu']) d
   union all select 'jiujitsu','kids','mat_2', d, '17:00', 10, v_fahad from unnest(array['sat','sun','mon','tue','wed','thu']) d
+  union all select 'swimming','adults','olympic_pool', d, '16:00', 15, v_hamad from unnest(array['sun','tue','thu']) d
   on conflict do nothing;
 
   if not exists (select 1 from public.kids where parent_id = v_noura) then

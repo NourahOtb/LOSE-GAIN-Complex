@@ -36,6 +36,7 @@ export default function KidProfile() {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [guardian, setGuardian] = useState<{ full_name: string; relationship: string | null } | null>(null);
 
   const load = useCallback(async () => {
     const [k, s, n, c] = await Promise.all([
@@ -46,6 +47,10 @@ export default function KidProfile() {
     ]);
     const kidRow = k.data as Kid | null;
     setKid(kidRow);
+    if (kidRow && !kidRow.is_self) {
+      const { data: g } = await supabase.from('profiles').select('full_name, relationship').eq('id', kidRow.parent_id).maybeSingle();
+      setGuardian(g ?? null);
+    }
     setLevel(kidRow?.swim_level ?? null);
     setStripes((s.data ?? []) as Stripe[]);
     setNotes((n.data ?? []) as Note[]);
@@ -102,6 +107,14 @@ export default function KidProfile() {
             {kid.full_name}
           </T>
           <T color={p.inkSoft}>{t('kids.years', { n: ageOn(kid.birth_date) })}</T>
+          {canEdit && kid.is_self ? <T color={p.inkSoft}>{t('guardian.adult')}</T> : null}
+          {canEdit && !kid.is_self && guardian ? (
+            <T color={p.inkSoft}>
+              {guardian.relationship
+                ? t('guardian.line', { name: guardian.full_name, rel: t(`rel.${guardian.relationship}` as StringKey) })
+                : guardian.full_name}
+            </T>
+          ) : null}
         </View>
 
         {/* health first */}

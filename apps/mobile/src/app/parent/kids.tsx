@@ -21,6 +21,8 @@ export default function KidsScreen() {
   const p = usePalette();
   const [kids, setKids] = useState<KidRow[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const single = profile?.account_type === 'single';
+  const hasMe = (kids ?? []).some((k) => k.is_self);
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -45,13 +47,13 @@ export default function KidsScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, gap: 16 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <T w="semibold" size={24}>
-          {t('kids.title')}
+          {single ? t('me.title') : t('kids.familyTitle')}
         </T>
 
         {kids === null ? (
           <ActivityIndicator color={p.ink} />
         ) : kids.length === 0 ? (
-          <T color={p.inkSoft}>{t('kids.empty')}</T>
+          <T color={p.inkSoft}>{single ? t('me.empty') : t('kids.empty')}</T>
         ) : (
           <View style={{ borderTopWidth: 2, borderTopColor: p.ink }}>
             {kids.map((k) => {
@@ -61,9 +63,18 @@ export default function KidsScreen() {
                 <View key={k.id} style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: p.line, gap: 8 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <View style={{ flex: 1 }}>
-                      <T w="semibold" size={18}>
-                        {k.full_name}
-                      </T>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <T w="semibold" size={18}>
+                          {k.full_name}
+                        </T>
+                        {k.is_self && !single ? (
+                          <View style={{ borderWidth: 1, borderColor: p.ink, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 1 }}>
+                            <T w="semibold" size={11}>
+                              {t('kids.you')}
+                            </T>
+                          </View>
+                        ) : null}
+                      </View>
                       <T size={13} color={p.inkSoft}>
                         {t('kids.years', { n: ageOn(k.birth_date) })} · {t('kids.member', { n: k.member_no })}
                       </T>
@@ -105,7 +116,16 @@ export default function KidsScreen() {
           </View>
         )}
 
-        <Button title={`+  ${t('kids.add')}`} onPress={() => router.push('/add-kid')} />
+        {single ? (
+          kids && !hasMe ? <Button title={t('me.complete')} onPress={() => router.push({ pathname: '/add-kid', params: { self: '1' } })} /> : null
+        ) : (
+          <View style={{ gap: 10 }}>
+            <Button title={`+  ${t('kids.add')}`} onPress={() => router.push('/add-kid')} />
+            {kids && !hasMe ? (
+              <Button variant="ghost" title={`+  ${t('kids.addMe')}`} onPress={() => router.push({ pathname: '/add-kid', params: { self: '1' } })} />
+            ) : null}
+          </View>
+        )}
       </ScrollView>
     </Screen>
   );

@@ -54,7 +54,7 @@ We are building:
 |---|---|---|
 | **Parent** | Register kids quickly, see schedule, level and remaining sessions, pay, pause or renew, talk to coaches | App / app website |
 | **Second parent** (spouse) | Same as parent, same kids, own login | App / app website |
-| **Adult member** (men's swimming) | Same as parent, for themselves | App / app website (parent account) |
+| **Adult member** (adult classes) | Same as a guardian, for themselves | App / app website ("Just me" member account, or a family account that adds "myself as a member") |
 | **Teen** (Titans, 11–15) | See own schedule, level and coach notes | App / app website, **view only** |
 | **Coach** | Know who's in each class, kids' levels and health, update levels, write notes, chat with parents, manage private classes | App / app website (coach screens). A coach who is also a parent switches between **Coach** and **My family** with one login. |
 | **Super admin** (owners) | Full control: prices, discount rules, staff, money, audit log, all data | Admin dashboard |
@@ -193,7 +193,10 @@ We are building:
 
 ### 7.1 Everyone
 - First screen of the app: choose **العربية / English** (can be changed later in settings). The admin dashboard is English.
-- Sign up (parents only), log in, forgot password, log out.
+- Sign up, log in, forgot password, log out. Sign-up is **"Create a member account"** and first asks **"Who is this account for?"**:
+  - **My family** ("I'm registering my kids"): asks the **relationship to the kids** (father, mother, grandfather, grandmother, brother, sister, uncle, aunt, other / legal guardian). In the app this person is the **guardian (ولي الأمر)**. They can also **add themselves as a member**.
+  - **Just me** ("I'm joining myself"): the adult fills in their own health checklist and emergency contact right after sign-up and registers for **adult classes only**. A "Just me" account can't add kids.
+  - Coaches and staff see "Guardian: name · relationship" or "Adult member". *(Built 2026-11-18.)*
 - **Two ways to log in** to the same account: **email + password** or **mobile number + SMS code**. If one has a problem, the other still works. The super admin can switch either off temporarily.
 - A parent can **invite a second parent** (spouse), who gets their own login to the same kids.
 - A parent can create a **view-only login for a teen** (Titans).

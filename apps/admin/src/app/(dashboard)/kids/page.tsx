@@ -23,28 +23,44 @@ function Belt({ belt, stripes }: { belt: string; stripes: number }) {
   );
 }
 
+const REL: Record<string, string> = {
+  father: "Father",
+  mother: "Mother",
+  grandfather: "Grandfather",
+  grandmother: "Grandmother",
+  brother: "Brother",
+  sister: "Sister",
+  uncle: "Uncle",
+  aunt: "Aunt",
+  guardian: "Legal guardian",
+};
+
 export default async function KidsPage() {
   const { supabase } = await requireStaff();
   const [kidsRes, parentsRes, stripesRes, subsRes] = await Promise.all([
     supabase.from("kids").select("*").order("full_name"),
-    supabase.from("profiles").select("id, full_name, phone").eq("role", "parent"),
+    supabase.from("profiles").select("id, full_name, phone, relationship").eq("role", "parent"),
     supabase.from("stripes").select("kid_id, belt"),
     supabase.from("subscriptions").select("kid_id, status, end_date").in("status", ["active", "pending_payment"]),
   ]);
-  const kids = (kidsRes.data ?? []) as (Kid & { belt_since: string | null })[];
-  const parents = new Map((parentsRes.data ?? []).map((p: { id: string; full_name: string; phone: string | null }) => [p.id, p]));
+  const kids = (kidsRes.data ?? []) as (Kid & { belt_since: string | null; is_self: boolean })[];
+  const parents = new Map(
+    (parentsRes.data ?? []).map((p: { id: string; full_name: string; phone: string | null; relationship: string | null }) => [p.id, p]),
+  );
   const stripes = (stripesRes.data ?? []) as { kid_id: string; belt: string }[];
   const subs = (subsRes.data ?? []) as { kid_id: string; status: string; end_date: string }[];
 
   return (
     <div>
-      <h1 className="text-[26px] font-semibold">Kids &amp; families</h1>
-      <p className="text-ink-soft">{kids.length} kids · health conditions in red</p>
+      <h1 className="text-[26px] font-semibold">Members &amp; families</h1>
+      <p className="text-ink-soft">
+        {kids.filter((k) => !k.is_self).length} kids · {kids.filter((k) => k.is_self).length} adult members · health conditions in red
+      </p>
       <div className="mt-5 overflow-x-auto rounded-md border border-line bg-surface">
         <table className="w-full min-w-[760px] text-[14px]">
           <thead>
             <tr className="border-b border-ink text-left">
-              {["Kid", "Parent", "Health", "Swimming", "Jiu-jitsu", "Status"].map((h) => (
+              {["Member", "Guardian", "Health", "Swimming", "Jiu-jitsu", "Status"].map((h) => (
                 <th key={h} className="label px-3 py-2.5 font-bold">
                   {h}
                 </th>
@@ -66,7 +82,14 @@ export default async function KidsPage() {
                     </div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <div>{parent?.full_name}</div>
+                    {k.is_self ? (
+                      <div className="font-semibold">Adult member</div>
+                    ) : (
+                      <div>
+                        {parent?.full_name}
+                        {parent?.relationship ? <span className="text-ink-soft"> · {REL[parent.relationship] ?? parent.relationship}</span> : null}
+                      </div>
+                    )}
                     <div className="text-xs text-ink-soft">{parent?.phone}</div>
                     {k.emergency_phone ? <div className="text-xs text-ink-soft">Emergency {k.emergency_phone}</div> : null}
                   </td>

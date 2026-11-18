@@ -1,4 +1,4 @@
-import { addDays, DURATION_WEEKS, formatKD, isoDate, priceSubscription, startOptions, WEEKDAYS, type Duration, type Weekday } from '@lg/shared';
+import { addDays, ageOn, DEFAULT_PRICING, DURATION_WEEKS, formatKD, isoDate, priceSubscription, startOptions, WEEKDAYS, type Duration, type Weekday } from '@lg/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -31,8 +31,8 @@ export default function RegisterScreen() {
   const [sport, setSport] = useState<SportChoice>('swimming');
   const [swimDays, setSwimDays] = useState<Weekday[]>([]);
   const [bjjDays, setBjjDays] = useState<Weekday[]>([]);
-  const [time, setTime] = useState<'16:00' | '17:00'>('16:00');
-  const [duration, setDuration] = useState<Duration>('4w');
+  const [kidTime, setTime] = useState<'16:00' | '17:00'>('16:00');
+  const [kidDuration, setDuration] = useState<Duration>('4w');
   const [pickedStart, setPickedStart] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -57,16 +57,29 @@ export default function RegisterScreen() {
     }, [profile]),
   );
 
-  const swim = sport === 'swimming' || sport === 'both' ? swimDays : [];
-  const bjj = sport === 'jiujitsu' || sport === 'both' ? bjjDays : [];
+  // adults (16+, or "me" on the account): adult swimming only for now, 4 PM, 4 weeks
+  const single = profile?.account_type === 'single';
+  const isAdult = (k: Kid) => k.is_self || ageOn(k.birth_date) >= 16;
+  const member = kids.find((k) => k.id === kidId);
+  const adult = !!member && isAdult(member);
+  const adultDays = DEFAULT_PRICING.adultDays;
+  const swim = adult ? swimDays.filter((d) => adultDays.includes(d)) : sport === 'swimming' || sport === 'both' ? swimDays : [];
+  const bjj = adult ? [] : sport === 'jiujitsu' || sport === 'both' ? bjjDays : [];
+  const time = adult ? '16:00' : kidTime;
+  const duration: Duration = adult ? '4w' : kidDuration;
 
   // start dates: the chosen class days over the next 2 weeks; default = the first one
   const startDates = startOptions([...new Set([...swim, ...bjj])], time, new Date());
   const startIso = pickedStart && startDates.includes(pickedStart) ? pickedStart : (startDates[0] ?? null);
 
   // family size for the discount: kids already registered + this one
-  const familyKidCount = useMemo(() => new Set([...registeredKidIds, ...(kidId ? [kidId] : [])]).size, [registeredKidIds, kidId]);
-  const price = priceSubscription({ member: 'kid', swimDays: swim, bjjDays: bjj, duration, familyKidCount });
+  // (the family discount counts kids only, not adult members)
+  const familyKidCount = useMemo(() => {
+    const kidIds = new Set(kids.filter((k) => !isAdult(k)).map((k) => k.id));
+    return new Set([...registeredKidIds, ...(kidId ? [kidId] : [])].filter((id) => kidIds.has(id))).size;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registeredKidIds, kidId, kids]);
+  const price = priceSubscription({ member: adult ? 'adult' : 'kid', swimDays: swim, bjjDays: bjj, duration, familyKidCount });
   const picked = swim.length + bjj.length;
 
   const recommended = swimDays.some((d) => GROUP_B.includes(d)) && !swimDays.some((d) => GROUP_A.includes(d)) ? GROUP_B : GROUP_A;
@@ -74,12 +87,12 @@ export default function RegisterScreen() {
     set((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
 
   const fmt = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString(lang === 'ar' ? 'ar-KW' : 'en-GB', { day: 'numeric', month: 'short' });
-  const sportLabel = t(`sport.${sport}` as StringKey);
+  const sportLabel = t(`sport.${adult ? 'swimming' : sport}` as StringKey);
   const lengthLabel = t(`dur.${duration}` as StringKey);
 
   const submit = async () => {
     setError('');
-    if (!kidId) return setError(t('reg.noKids'));
+    if (!kidId) return setError(single ? t('reg.noMe') : t('reg.noKids'));
     if (!price.ok) return setError(t(`reg.err.${price.error}` as StringKey));
     if (!startIso) return setError(t('reg.pickDaysFirst'));
     setBusy(true);
@@ -157,8 +170,12 @@ export default function RegisterScreen() {
         <Section title={t('reg.who')}>
           {kids.length === 0 ? (
             <View style={{ gap: 10 }}>
-              <T color={p.inkSoft}>{t('reg.noKids')}</T>
-              <Button variant="ghost" title={`+  ${t('kids.add')}`} onPress={() => router.push('/add-kid')} />
+              <T color={p.inkSoft}>{single ? t('reg.noMe') : t('reg.noKids')}</T>
+              {single ? (
+                <Button variant="ghost" title={t('me.complete')} onPress={() => router.push({ pathname: '/add-kid', params: { self: '1' } })} />
+              ) : (
+                <Button variant="ghost" title={`+  ${t('kids.add')}`} onPress={() => router.push('/add-kid')} />
+              )}
             </View>
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -167,6 +184,16 @@ export default function RegisterScreen() {
           )}
         </Section>
 
+        {adult ? (
+          <View style={{ backgroundColor: p.tile, padding: 14, borderRadius: 4, gap: 6 }}>
+            <T w="semibold">{t('reg.adultInfo')}</T>
+            <T size={13} color={p.inkSoft}>
+              {t('reg.adultNoSport')}
+            </T>
+          </View>
+        ) : null}
+
+        {adult ? null : (
         <Section title={t('reg.sport')}>
           <Segmented
             options={(['swimming', 'jiujitsu', 'both'] as const).map((s) => ({ value: s, label: t(`sport.${s}`) }))}
@@ -174,35 +201,42 @@ export default function RegisterScreen() {
             onChange={setSport}
           />
         </Section>
+        )}
 
-        {sport !== 'jiujitsu' ? (
+        {adult || sport !== 'jiujitsu' ? (
           <Section title={t('reg.swimDays')} accent={p.swim}>
-            <DayPicker days={WEEKDAYS} selected={swimDays} onToggle={toggle(setSwimDays)} recommended={recommended} accent={p.swim} labelFor={(d) => t(`day.${d}`)} />
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: p.swim, marginTop: 6 }} />
-              <T size={12} color={p.inkSoft} style={{ flex: 1, lineHeight: 17 }}>
-                {t('reg.daysHint')}
-              </T>
-            </View>
+            <DayPicker days={adult ? adultDays : WEEKDAYS} selected={swim} onToggle={toggle(setSwimDays)} recommended={adult ? [] : recommended} accent={p.swim} labelFor={(d) => t(`day.${d}`)} />
+            {adult ? null : (
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: p.swim, marginTop: 6 }} />
+                <T size={12} color={p.inkSoft} style={{ flex: 1, lineHeight: 17 }}>
+                  {t('reg.daysHint')}
+                </T>
+              </View>
+            )}
           </Section>
         ) : null}
 
-        {sport !== 'swimming' ? (
+        {!adult && sport !== 'swimming' ? (
           <Section title={t('reg.bjjDays')} accent={p.bjj}>
             <DayPicker days={WEEKDAYS} selected={bjjDays} onToggle={toggle(setBjjDays)} accent={p.bjj} labelFor={(d) => t(`day.${d}`)} />
           </Section>
         ) : null}
 
+        {adult ? null : (
         <Section title={t('reg.time')}>
           <Segmented options={[{ value: '16:00', label: t('reg.4pm') }, { value: '17:00', label: t('reg.5pm') }]} value={time} onChange={setTime} />
         </Section>
+        )}
 
+        {adult ? null : (
         <Section title={t('reg.length')}>
           <View style={{ gap: 8 }}>
             <Segmented options={DURATIONS.slice(0, 3).map((d) => ({ value: d, label: t(`dur.${d}`) }))} value={duration} onChange={setDuration} />
             <Segmented options={DURATIONS.slice(3).map((d) => ({ value: d, label: t(`dur.${d}`) }))} value={duration} onChange={setDuration} />
           </View>
         </Section>
+        )}
 
         <Section title={t('reg.startTitle')}>
           {startDates.length > 0 ? (

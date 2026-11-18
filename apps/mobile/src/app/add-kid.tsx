@@ -1,5 +1,5 @@
 import { ageOn, normalizeKuwaitPhone, parseDob } from '@lg/shared';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
@@ -14,7 +14,11 @@ export default function AddKidScreen() {
   const { t } = useI18n();
   const { profile } = useAuth();
   const p = usePalette();
-  const [name, setName] = useState('');
+  // self=1: the account holder adds themself as an adult member; first=1: straight after sign-up
+  const params = useLocalSearchParams<{ self?: string; first?: string }>();
+  const isSelf = params.self === '1';
+  const isFirst = params.first === '1';
+  const [name, setName] = useState(isSelf ? (profile?.full_name ?? '') : '');
   const [dob, setDob] = useState('');
   const [emergency, setEmergency] = useState('');
   const [health, setHealth] = useState<HealthKey[]>([]);
@@ -34,7 +38,8 @@ export default function AddKidScreen() {
     const birth = parseDob(dob);
     if (!birth) return setError(t('err.birth'));
     const age = ageOn(birth);
-    if (age < 4 || age > 15) return setError(t('err.age'));
+    if (isSelf && age < 16) return setError(t('err.ageAdult'));
+    if (!isSelf && (age < 4 || age > 15)) return setError(t('err.age'));
     const phone = normalizeKuwaitPhone(emergency);
     if (!phone) return setError(t('err.phone'));
     if (!none && health.length === 0) return setError(t('err.health'));
@@ -49,10 +54,12 @@ export default function AddKidScreen() {
       health_conditions: none ? [] : health,
       health_other: other.trim() || null,
       health_confirmed: true,
+      is_self: isSelf,
     });
     setBusy(false);
-    if (err) return setError(t('err.generic'));
-    router.back();
+    if (err) return setError(err.code === '23505' ? t('err.selfExists') : t('err.generic'));
+    if (isFirst) router.replace('/parent/register');
+    else router.back();
   };
 
   return (
@@ -61,13 +68,14 @@ export default function AddKidScreen() {
         <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <T w="semibold" size={24}>
-              {t('kid.new')}
+              {isSelf ? t('me.new') : t('kid.new')}
             </T>
-            <Button variant="link" title="✕" onPress={() => router.back()} />
+            <Button variant="link" title="✕" onPress={() => (isFirst || !router.canGoBack() ? router.replace('/') : router.back())} />
           </View>
+          {isSelf ? <T color={p.inkSoft}>{t('me.intro')}</T> : null}
 
-          <Field label={t('kid.name')} value={name} onChangeText={setName} autoComplete="name" />
-          <Field label={t('kid.birth')} hint={t('kid.birthHint')} value={dob} onChangeText={setDob} placeholder="10/03/2019" keyboardType="numbers-and-punctuation" />
+          <Field label={isSelf ? t('me.name') : t('kid.name')} value={name} onChangeText={setName} autoComplete="name" />
+          <Field label={t('kid.birth')} hint={t('kid.birthHint')} value={dob} onChangeText={setDob} placeholder={isSelf ? '15/06/1990' : '10/03/2019'} keyboardType="numbers-and-punctuation" />
           <Field
             label={t('kid.emergency')}
             hint={t('kid.emergencyHint')}
@@ -81,7 +89,7 @@ export default function AddKidScreen() {
           <View style={{ gap: 10, marginTop: 6 }}>
             <View style={{ borderTopWidth: 2, borderTopColor: p.ink, paddingTop: 12, gap: 4 }}>
               <Label>{t('kid.health')}</Label>
-              <T>{t('kid.healthQ')}</T>
+              <T>{isSelf ? t('me.healthQ') : t('kid.healthQ')}</T>
             </View>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {HEALTH_KEYS.map((h) => (
@@ -102,7 +110,7 @@ export default function AddKidScreen() {
           </View>
 
           <ErrorText>{error}</ErrorText>
-          <Button title={t('kid.save')} onPress={save} loading={busy} />
+          <Button title={isSelf ? t('me.save') : t('kid.save')} onPress={save} loading={busy} />
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -128,7 +136,7 @@ function Chip({ label, on, onPress, danger }: { label: string; on: boolean; onPr
         opacity: pressed ? 0.8 : 1,
         alignSelf: 'flex-start',
       })}>
-      <T w="semibold" size={14} color={on ? '#FFFFFF' : p.ink}>
+      <T w="semibold" size={14} color={on ? (danger ? '#FFFFFF' : p.onInk) : p.ink}>
         {label}
       </T>
     </Pressable>

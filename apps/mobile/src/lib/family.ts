@@ -61,9 +61,8 @@ export async function loadFamily(parentId: string): Promise<FamilyData> {
   return { kids, subs: (subsRes.data ?? []) as Sub[], cancels, classes, coaches };
 }
 
-/** The timetable class a kid's session happens in (sport + day + time; titans for 11+ in jiu-jitsu). */
-export function findClass(classes: ClassRow[], sport: 'swimming' | 'jiujitsu', weekday: string, startTime: string, age: number) {
+/** The timetable class a member's session happens in (sport + day + time + age group). */
+export function findClass(classes: ClassRow[], sport: 'swimming' | 'jiujitsu', weekday: string, startTime: string, group: ClassRow['age_group']) {
   const matches = classes.filter((c) => c.sport === sport && c.weekday === weekday && c.start_time.slice(0, 5) === startTime.slice(0, 5));
-  if (sport === 'jiujitsu') return matches.find((c) => c.age_group === (age >= 11 ? 'titans' : 'kids')) ?? matches[0];
-  return matches[0];
+  return matches.find((c) => c.age_group === group) ?? matches[0];
 }

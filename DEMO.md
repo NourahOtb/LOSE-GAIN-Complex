@@ -29,7 +29,7 @@ Demo accounts and the shared password are in `docs/demo-accounts.local.md` on yo
 
 ### 2. A new parent joins (2 minutes), in the app
 1. Open the app → **العربية / English** screen. Tap **العربية** to show Arabic right-to-left, then switch back with **English** (top right).
-2. **Create a parent account**: name, Kuwait mobile, email, password.
+2. **Create a member account** → "Who is this account for?" → **My family** → relationship (for example **Mother**) → name, Kuwait mobile, email, password. *(Or show **Just me**: an adult fills in their own details and goes straight to adult swimming.)*
 3. **Kids → + Add a kid**: name, birth date, emergency phone, **health checklist** (point out it's required, and coaches see it in red).
 4. **Register**:
    - pick the kid → **Jiu-jitsu** → tap **Sat, Mon, Wed**

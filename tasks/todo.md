@@ -18,14 +18,15 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 
 ## Phase 2
 
-### 11. Member sign-up + kid photo and boy/girl ⏳ waiting for your go-ahead
-**11a. Sign-up**
-- [ ] Database: account type + relationship on profiles, "self" members (migration 0007)
-- [ ] Sign-up: "Create a member account" + "Who is this account for?" (My family / Just me)
-- [ ] My family → relationship dropdown; "Guardian" wording (EN + AR)
-- [ ] Just me → own health checklist, emergency contact, adult classes only, own home screen
-- [ ] "Add myself as a member" for family accounts
-- [ ] Coaches + admin see "Guardian: name · relationship" / "Adult member"
+### 11. Member sign-up + kid photo and boy/girl (11a done, 11b next)
+**11a. Sign-up** ✅ done 2026-11-18
+- [x] Database: account type + relationship on profiles, "self" members (migration 0007), adult swimming 4 PM classes
+- [x] Sign-up: "Create a member account" + "Who is this account for?" (My family / Just me)
+- [x] My family → relationship dropdown; "Guardian" wording (EN + AR)
+- [x] Just me → own health checklist, emergency contact, adult swimming only, "Me" tab
+- [x] "Add myself as a member" for family accounts
+- [x] Coaches + admin see "Guardian: name · relationship" / "Adult member"
+- [x] Tested in English and Arabic (website); price rule: adults get no family / multi-month discounts (tests added)
 
 **11b. Add a kid: photo + boy/girl**
 - [ ] Database: `gender` on kids + private photo storage with security rules

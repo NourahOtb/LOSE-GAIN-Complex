@@ -96,7 +96,8 @@ export function priceSubscription(input: PriceInput, cfg: PricingConfig = DEFAUL
   let blockPrice: number | undefined;
   if (member === 'adult') {
     if (bjjDays.length > 0 || swimDays.some((d) => !cfg.adultDays.includes(d))) return { ok: false, error: 'not_offered' };
-    if (duration === '1w' || duration === '2w') return { ok: false, error: 'not_offered' };
+    // adults: 4-week packages only, and no multi-month discount (kids only)
+    if (duration !== '4w') return { ok: false, error: 'not_offered' };
     blockPrice = cfg.adults[daysPerWeek];
   } else {
     const block = (weeks >= 4 ? 4 : weeks) as 1 | 2 | 4;

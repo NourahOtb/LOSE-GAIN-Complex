@@ -98,3 +98,15 @@ describe('adult men swimming', () => {
     expect(priceSubscription({ member: 'adult', swimDays: ['sun', 'tue'], bjjDays: [], duration: '1w', familyKidCount: 1 })).toMatchObject({ ok: false, error: 'not_offered' });
   });
 });
+
+describe('adult members: no family or multi-month discounts (owner, 2026-11-18)', () => {
+  const adult = (over: Partial<Parameters<typeof priceSubscription>[0]> = {}) =>
+    priceSubscription({ member: 'adult', swimDays: ['sun', 'tue', 'thu'], bjjDays: [], duration: '4w', familyKidCount: 3, ...over });
+  it('4 weeks has no family discount', () => {
+    expect(adult()).toMatchObject({ ok: true, total: 90, familyPct: 0 });
+  });
+  it('3, 6 and 12 month packages are not offered to adults', () => {
+    expect(adult({ duration: '3m' })).toMatchObject({ ok: false, error: 'not_offered' });
+    expect(adult({ duration: '12m' })).toMatchObject({ ok: false, error: 'not_offered' });
+  });
+});

@@ -9,6 +9,7 @@ import { PaceClock } from '@/components/pace-clock';
 import { Button, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { checkPayment, startOnlinePayment, type PayStatus } from '@/lib/payments';
+import { ageGroupOf } from '@/lib/data';
 import { findClass, loadFamily, type FamilyData } from '@/lib/family';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
@@ -91,7 +92,7 @@ export default function ParentHome() {
     if (!next) return null;
     const kid = kidById.get(next.sub.kid_id);
     const wd = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][next.at.getDay()];
-    const cls = kid ? findClass(data.classes, next.sport, wd, next.sub.start_time, ageOn(kid.birth_date)) : undefined;
+    const cls = kid ? findClass(data.classes, next.sport, wd, next.sub.start_time, ageGroupOf(next.sport, kid)) : undefined;
     const isToday = next.at.toDateString() === now.toDateString();
     const isTomorrow = next.at.toDateString() === new Date(now.getTime() + 86400000).toDateString();
     const when = isToday ? t('home.today') : isTomorrow ? t('home.tomorrow') : next.at.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' });
