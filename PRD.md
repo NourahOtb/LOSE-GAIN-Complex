@@ -290,6 +290,13 @@ We are building:
 - **Walk-ins:** type a name to check in someone who isn't on the class list.
 - Only the owner, managers and receptionists can check members in (enforced by the database); others see it read-only.
 
+### 7.5b Member page and desk registration *(built 2026-11-18)*
+- Click a member's name in **Members & families** to open their page: photo, age, guardian with relationship and phone, and all their registrations.
+- **Edit details** (staff): name, date of birth, boy/girl, emergency phone, health checklist. **Photo**: take one with the tablet camera or choose a file (shrunk in the browser), or remove it.
+- **Register at the desk**: sport, days, times, length and first day; **Check price** uses the same server price check as the app (family discount, clashes, rules), then **Register**, then **Paid · KNET** or **Link** straight away.
+- Coaches can no longer edit a member's details directly (only levels, belts, stripes and notes through their own functions).
+- *Not yet:* creating a brand-new family at the desk (needs the staff-accounts server function, 14g).
+
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.
 - **Members:** active, new, expiring this week, not renewed (churn), per sport, level and class.

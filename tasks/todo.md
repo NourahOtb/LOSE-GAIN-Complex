@@ -90,7 +90,7 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 
 ### 14. More admin dashboard areas (owner picked 10) ⏳ one at a time
 - [x] 14a. Door check-in (tablet): tap to mark present, sessions go down, undo, red warnings, walk-ins ✅ 2026-11-18
-- [ ] 14b. Edit members + register at the desk
+- [x] 14b. Member page: edit details, photo (camera / file), register at the desk + mark paid ✅ 2026-11-18 (new families at the desk: with 14g)
 - [ ] 14c. Desk payment link (copy / WhatsApp, also in the app)
 - [ ] 14d. Approvals: pause, switch, refund requests
 - [ ] 14e. Closure days: close the complex, end dates move, families notified

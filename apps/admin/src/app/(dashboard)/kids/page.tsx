@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ageOn } from "@lg/shared";
 
 import { requireStaff } from "@/lib/auth";
@@ -103,7 +104,9 @@ export default async function KidsPage() {
                         </div>
                       )}
                       <div>
-                        <div className="font-semibold">{k.full_name}</div>
+                        <Link href={`/kids/${k.id}`} className="font-semibold underline-offset-2 hover:underline">
+                          {k.full_name}
+                        </Link>
                         <div className="text-xs text-ink-soft">
                           {ageOn(k.birth_date)} yrs
                           {k.gender ? ` · ${genderLabel(k.gender, k.is_self || ageOn(k.birth_date) >= 16)}` : ""} · Member {k.member_no}

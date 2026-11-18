@@ -1,6 +1,6 @@
 // Registrations are created ONLY here, so the price can't be changed by the app.
 //
-//   POST /register  (member, signed in)
+//   POST /register  (member signed in, or staff at the desk for any member)
 //   { kid_id, kind: 'classes'|'open_pool', swim_days, bjj_days, swim_time?, adult_time?, duration, start_date }
 //   -> { id, total }  or  { error }
 //   dry_run: true → only check and price it (nothing is saved)
@@ -61,9 +61,11 @@ Deno.serve(async (req) => {
     const bjj = kind === 'open_pool' ? [] : daysList(body.bjj_days ?? []);
     if (!swim || !bjj) return json({ error: 'bad_request' }, 400);
 
-    // the member must be on this account
+    // the member must be on this account, or the caller is staff registering at the desk
+    const { data: me } = await db.from('profiles').select('role, is_active').eq('id', user.id).maybeSingle();
+    const isStaff = !!me?.is_active && ['super_admin', 'manager', 'receptionist', 'accountant'].includes(me.role);
     const { data: kid } = await db.from('kids').select('id, parent_id, birth_date, is_self, gender').eq('id', body.kid_id).maybeSingle();
-    if (!kid || kid.parent_id !== user.id) return json({ error: 'not_found' }, 404);
+    if (!kid || (kid.parent_id !== user.id && !isStaff)) return json({ error: 'not_found' }, 404);
 
     const today = kuwaitToday();
     const age = ageOn(kid.birth_date, today);
@@ -101,7 +103,7 @@ Deno.serve(async (req) => {
     // family discount: kids (not adults) on this account with a current registration, plus this one
     let familyKidCount = 0;
     if (member !== 'adult') {
-      const { data: famKids } = await db.from('kids').select('id, birth_date, is_self').eq('parent_id', user.id);
+      const { data: famKids } = await db.from('kids').select('id, birth_date, is_self').eq('parent_id', kid.parent_id);
       const kidIds = (famKids ?? []).filter((k) => !k.is_self && ageOn(k.birth_date, today) < 16).map((k) => k.id);
       const { data: subs } = await db.from('subscriptions').select('kid_id').in('kid_id', kidIds.length ? kidIds : ['00000000-0000-0000-0000-000000000000']).in('status', ['active', 'pending_payment']);
       familyKidCount = new Set([...(subs ?? []).map((s) => s.kid_id), kid.id]).size;

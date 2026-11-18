@@ -1,5 +1,6 @@
 "use server";
 
+import { normalizeKuwaitPhone } from "@lg/shared";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -120,4 +121,92 @@ export async function undoCheckIn(kidId: string, classId: string, dateIso: strin
   if (error) return { error: "Could not undo." };
   revalidatePath("/check-in");
   return { ok: "Undone" };
+}
+
+const HEALTH_KEYS = ["asthma", "allergies", "epilepsy", "heart", "injury", "medication", "other"];
+
+/** Staff edit a member's details (the database allows staff and the member's own family). */
+export async function updateMember(
+  kidId: string,
+  f: { full_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string },
+) {
+  const { supabase } = await requireStaff();
+  if (!f.full_name.trim()) return { error: "Name is required." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.birth_date)) return { error: "Enter the date of birth." };
+  if (!["male", "female"].includes(f.gender)) return { error: "Choose boy/male or girl/female." };
+  const phone = f.emergency_phone.trim() ? normalizeKuwaitPhone(f.emergency_phone) : null;
+  if (f.emergency_phone.trim() && !phone) return { error: "Emergency phone: 8-digit Kuwait mobile number." };
+  const { error } = await supabase
+    .from("kids")
+    .update({
+      full_name: f.full_name.trim(),
+      birth_date: f.birth_date,
+      gender: f.gender,
+      emergency_phone: phone,
+      health_conditions: f.health.filter((h) => HEALTH_KEYS.includes(h)),
+      health_other: f.health_other.trim() || null,
+      health_confirmed: true,
+    })
+    .eq("id", kidId);
+  if (error) return { error: "Could not save." };
+  revalidatePath(`/kids/${kidId}`);
+  revalidatePath("/kids");
+  return { ok: "Saved" };
+}
+
+/** Staff add or replace a member's photo (already shrunk to a small JPEG in the browser). */
+export async function saveMemberPhoto(kidId: string, form: FormData) {
+  const { supabase } = await requireStaff();
+  const file = form.get("photo");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a photo." };
+  if (file.size > 2 * 1024 * 1024) return { error: "Photo is too large." };
+  const { data: kid } = await supabase.from("kids").select("parent_id").eq("id", kidId).maybeSingle();
+  if (!kid) return { error: "Member not found." };
+  const path = `${kid.parent_id}/${kidId}.jpg`;
+  const up = await supabase.storage.from("kid-photos").upload(path, await file.arrayBuffer(), { contentType: "image/jpeg", upsert: true });
+  if (up.error) return { error: "Could not upload the photo." };
+  await supabase.from("kids").update({ photo_url: path }).eq("id", kidId);
+  revalidatePath(`/kids/${kidId}`);
+  revalidatePath("/kids");
+  return { ok: "Photo saved" };
+}
+
+export async function removeMemberPhoto(kidId: string) {
+  const { supabase } = await requireStaff();
+  const { data: kid } = await supabase.from("kids").select("photo_url").eq("id", kidId).maybeSingle();
+  if (kid?.photo_url) await supabase.storage.from("kid-photos").remove([kid.photo_url]);
+  await supabase.from("kids").update({ photo_url: null }).eq("id", kidId);
+  revalidatePath(`/kids/${kidId}`);
+  return { ok: "Photo removed" };
+}
+
+/** Register a member at the desk through the same server price check as the app. dryRun = price only. */
+export async function deskRegister(params: Record<string, unknown>, dryRun: boolean) {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.functions.invoke("register", { body: { ...params, dry_run: dryRun } });
+  if (error) {
+    let body: { error?: string; slot?: string } = {};
+    try {
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") body = await ctx.json();
+    } catch {
+      // generic
+    }
+    const msg: Record<string, string> = {
+      too_few_days: "Pick at least 2 days.",
+      too_many_days: "Up to 6 days a week.",
+      five_plus_bjj_only: "5 and 6 days a week are for jiu-jitsu only.",
+      not_offered: "This package isn't offered for this member (check days, length or class).",
+      separate_sports: "Register swimming and jiu-jitsu separately for this member.",
+      gender_required: "Set boy/male or girl/female on the member first.",
+      bad_start: "The first day must be one of the chosen days within the next 2 weeks.",
+      overlap: `Clash: this member already has a class on ${body.slot ?? "that day and time"}.`,
+    };
+    return { error: msg[body.error ?? ""] ?? "Could not register." };
+  }
+  if (!dryRun) {
+    revalidatePath(`/kids/${String(params.kid_id)}`);
+    revalidatePath("/");
+  }
+  return { ok: dryRun ? "price" : "registered", data: data as { id?: string; total?: number; start_date?: string; end_date?: string; family_pct?: number; months_pct?: number; base?: number } };
 }
