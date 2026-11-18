@@ -43,10 +43,12 @@ Facts about the complex:
 
 How you work:
 - Use your tools to look things up. Never guess a member's schedule, sessions left or a price: call get_my_family, get_timetable, get_price_list or check_price.
-- You can't change anything yourself. To register, renew or pay, call prepare_registration or prepare_payment: the app then shows a Confirm card with the price, and only the guardian's tap makes it happen. Say "tap Confirm below" — never say it is done.
+- You can't change anything yourself. To register, renew or pay, call prepare_registration or prepare_payment: the app then shows a card with the price, and only the guardian's tap makes it happen. Tell them to tap the button below: "Confirm" in English, "تأكيد" in Arabic ("Pay online" / "ادفع أونلاين" for payments). Never say it is done.
 - Renewing = preparing a new registration with the same days and times, starting on a class day after the current end date (or the nearest allowed date within the next 2 weeks).
 - Pausing, cancelling, refunds, complaints, injuries, switching mid-subscription, make-up classes, private classes or anything unusual: call handoff_to_reception with a short, clear summary, then tell the guardian reception will reply in the app inbox.
 - Keep answers short and warm: a few sentences or a short list. Use the member's name. Prices in KD with 3 decimals (for example 90.000 KD).
+- Write plain text only: no Markdown, no ** or #, no tables. For a list, start lines with "- ". No emojis.
+- Classes that already started or ended today are not "next": compare with the current Kuwait time given at the end.
 - Reply in the language the guardian writes in (Arabic or English); if unsure, use the app language given at the end.
 - Only talk about LOSE | GAIN Complex, its classes, the guardian's family and general sports and safety questions related to the classes. Don't give medical advice; suggest asking a doctor and telling the coach.`;
 
@@ -62,6 +64,16 @@ const ageOn = (birth: string) => {
   return a;
 };
 const DAY_NAME: Record<string, string> = { sat: 'Sat', sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu' };
+const DAY_AR: Record<string, string> = { sat: 'السبت', sun: 'الأحد', mon: 'الاثنين', tue: 'الثلاثاء', wed: 'الأربعاء', thu: 'الخميس' };
+const arDigits = (x: string) => x.replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+const t12ar = (t: string) => {
+  const [h, m] = t.slice(0, 5).split(':').map(Number);
+  return arDigits(`${h % 12 || 12}${m ? `:${String(m).padStart(2, '0')}` : ''}`) + (h < 12 ? ' ص' : ' م');
+};
+const LENGTH: Record<string, [string, string]> = {
+  '1w': ['1 week', 'أسبوع'], '2w': ['2 weeks', 'أسبوعان'], '4w': ['4 weeks', '٤ أسابيع'],
+  '3m': ['3 months', '٣ أشهر'], '6m': ['6 months', '٦ أشهر'], '12m': ['12 months', '١٢ شهراً'],
+};
 const t12 = (t: string) => {
   const [h, m] = t.slice(0, 5).split(':').map(Number);
   return `${h % 12 || 12}${m ? `:${String(m).padStart(2, '0')}` : ''} ${h < 12 ? 'AM' : 'PM'}`;
@@ -210,17 +222,22 @@ Deno.serve(async (req) => {
           if (!r.ok) return JSON.stringify({ shown: false, error: r.error ?? 'not_offered' });
           const f = await family();
           const kid = f.kids.find((k) => k.id === params.kid_id);
+          const ar = lang === 'ar';
+          const day = (d: string) => (ar ? DAY_AR[d] : DAY_NAME[d]);
+          const tm = (x: string) => (ar ? t12ar(x) : t12(x));
           const parts: string[] = [];
-          if (params.kind === 'open_pool') parts.push('Open pool');
-          if ((params.swim_days as string[]).length) parts.push(`Swimming ${(params.swim_days as string[]).map((d) => DAY_NAME[d]).join(', ')} ${t12(String(r.swim_time ?? '16:00'))}`);
+          if (params.kind === 'open_pool') parts.push(ar ? 'المسبح المفتوح' : 'Open pool');
+          if ((params.swim_days as string[]).length) {
+            parts.push(`${ar ? 'السباحة' : 'Swimming'} ${(params.swim_days as string[]).map(day).join(ar ? '، ' : ', ')} ${tm(String(r.swim_time ?? '16:00'))}`);
+          }
           if ((params.bjj_days as string[]).length) {
             const times = (r.bjj_times ?? {}) as Record<string, string>;
-            parts.push(`Jiu-jitsu ${(params.bjj_days as string[]).map((d) => `${DAY_NAME[d]} ${t12(times[d] ?? '18:00')}`).join(', ')}`);
+            parts.push(`${ar ? 'الجوجيتسو' : 'Jiu-jitsu'} ${(params.bjj_days as string[]).map((d) => `${day(d)} ${tm(times[d] ?? '18:00')}`).join(ar ? '، ' : ', ')}`);
           }
           proposals.push({
             type: 'register',
             member: kid?.full_name ?? '',
-            label: `${parts.join(' + ')} · ${params.duration.replace('w', ' weeks').replace('m', ' months').replace('1 weeks', '1 week')}`,
+            label: `${parts.join(' + ')} · ${(LENGTH[params.duration] ?? [params.duration, params.duration])[ar ? 1 : 0]}`,
             start_date: String(r.start_date),
             end_date: String(r.end_date),
             total: Number(r.total),
@@ -238,7 +255,8 @@ Deno.serve(async (req) => {
           const s = f.subs.find((x) => x.id === String(input.registration_id ?? ''));
           if (!s || s.status !== 'pending_payment') return JSON.stringify({ shown: false, error: 'not_waiting_for_payment' });
           const kid = f.kids.find((k) => k.id === s.kid_id);
-          proposals.push({ type: 'pay', member: kid?.full_name ?? '', label: s.kind === 'open_pool' ? 'Open pool' : 'Registration', total: Number(s.total), subscription_id: s.id });
+          const label = s.kind === 'open_pool' ? (lang === 'ar' ? 'المسبح المفتوح' : 'Open pool') : lang === 'ar' ? 'تسجيل بانتظار الدفع' : 'Registration waiting for payment';
+          proposals.push({ type: 'pay', member: kid?.full_name ?? '', label, total: Number(s.total), subscription_id: s.id });
           return JSON.stringify({ shown: true });
         },
       }),
@@ -256,11 +274,12 @@ Deno.serve(async (req) => {
     ];
 
     const client = new Anthropic({ apiKey });
-    const today = new Date(Date.now() + 3 * 3600_000).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const kw = new Date(Date.now() + 3 * 3600_000);
+    const today = `${kw.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}, ${kw.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}`;
     const messages = [
       ...history,
       // per-request facts as a system note after the latest message, so the instructions above stay cached
-      { role: 'system', content: `Today is ${today} (Kuwait). App language: ${lang === 'ar' ? 'Arabic' : 'English'}. Guardian: ${me.full_name}.` },
+      { role: 'system', content: `Now: ${today} (Kuwait time). App language: ${lang === 'ar' ? 'Arabic' : 'English'}. Guardian: ${me.full_name}.` },
     ];
 
     // deno-lint-ignore no-explicit-any

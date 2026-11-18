@@ -64,7 +64,9 @@ export default function AssistantScreen() {
       setError(t((['not_configured', 'daily_limit'].includes(code) ? `ai.err.${code}` : 'ai.err.generic') as StringKey));
       return;
     }
-    setTurns((cur) => [...cur, { role: 'assistant', content: String(data.reply), proposals: (data.proposals ?? []) as Proposal[] }]);
+    // plain text only (in case the model adds Markdown)
+    const reply = String(data.reply).replace(/\*\*/g, '').replace(/^#+\s*/gm, '');
+    setTurns((cur) => [...cur, { role: 'assistant', content: reply, proposals: (data.proposals ?? []) as Proposal[] }]);
   };
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/'));

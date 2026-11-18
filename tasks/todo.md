@@ -73,13 +73,13 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Tested with two accounts side by side; privacy checked (other guardians, other coaches and reception can't read)
 - [ ] Later: phone push for new messages, automatic 12-hour alert message to the manager
 
-### 13. AI assistant for guardians ⏳ waiting for the Anthropic key
-- [ ] **You:** Anthropic account, credit, API key, saved as the Supabase secret `ANTHROPIC_API_KEY`
+### 13. AI assistant for guardians ✅ done 2026-11-18
+- [x] **You:** Anthropic account, credit, API key, saved as the Supabase secret `ANTHROPIC_API_KEY`
 - [x] Server function `assistant` with read tools (family, timetable, price list, exact price check)
 - [x] "Prepare a registration / payment" → Confirm card in the app → the same safe `register` server check and payment flow
 - [x] Hand-off to reception → "Assistant requests" on admin Today, reply → guardian's inbox
 - [x] App: "Ask the assistant" on Home and in Chat (EN + AR), daily limit 40 messages
-- [ ] Test real conversations in English and Arabic once the key is saved
+- [x] Tested for real in English and Arabic: questions (it knows the current time), renewal card + Confirm, hand-off + reply; plain-text answers; Arabic cards
 
 ### 14. More admin dashboard areas (you choose which)
 - [ ] Owner picks areas from the list Claude gave
