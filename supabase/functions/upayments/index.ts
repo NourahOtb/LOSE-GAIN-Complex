@@ -20,14 +20,35 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-// Sandbox by default. For live payments set UPAYMENTS_BASE_URL and UPAYMENTS_TOKEN as function secrets.
-const UPAY_BASE = Deno.env.get('UPAYMENTS_BASE_URL') ?? 'https://sandboxapi.upayments.com/api/v1';
+// Test (sandbox) or live is a visible setting in the database (app_settings.payments_mode), never a silent
+// fallback: in live mode the real UPAYMENTS_BASE_URL and UPAYMENTS_TOKEN secrets are required, otherwise
+// online payment is refused. Staff see "TEST mode" on the dashboard while it's sandbox.
+const SANDBOX_BASE = 'https://sandboxapi.upayments.com/api/v1';
 // Public test token published by UPayments on their "Test environment details" page (sandbox only).
-const UPAY_TOKEN = Deno.env.get('UPAYMENTS_TOKEN') ?? 'NWty8gdjt79cf756hdtyu6u8jht5ns6gfhgy8hdjL';
+const SANDBOX_TOKEN = 'NWty8gdjt79cf756hdtyu6u8jht5ns6gfhgy8hdjL';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+let cachedCfg: { base: string; token: string; at: number } | null = null;
+/** UPayments address and key for the current mode; null when live mode is chosen but the secrets are missing. */
+async function upayConfig() {
+  if (cachedCfg && Date.now() - cachedCfg.at < 60_000) return cachedCfg;
+  const { data } = await db.from('app_settings').select('value').eq('key', 'payments_mode').maybeSingle();
+  if (data?.value === 'live') {
+    const base = Deno.env.get('UPAYMENTS_BASE_URL');
+    const token = Deno.env.get('UPAYMENTS_TOKEN');
+    if (!base || !token || base.includes('sandbox')) {
+      console.error('payments_mode is live but the live UPayments secrets are missing');
+      return null;
+    }
+    cachedCfg = { base, token, at: Date.now() };
+  } else {
+    cachedCfg = { base: SANDBOX_BASE, token: SANDBOX_TOKEN, at: Date.now() };
+  }
+  return cachedCfg;
+}
 
 // Where parents land after paying. Only these sites are allowed.
 const RETURN_BASES = ['https://lg-complex-app.vercel.app', 'http://localhost:8081'];
@@ -50,9 +71,20 @@ type Sub = {
   payment_order_id: string | null;
   payment_session_id: string | null;
   payment_link_sent: boolean;
+  payment_track_id: string | null;
   kids: { full_name: string; parent_id: string };
 };
-const SUB_COLS = 'id, kid_id, total, status, payment_order_id, payment_session_id, payment_link_sent, kids!inner(full_name, parent_id)';
+const SUB_COLS = 'id, kid_id, total, status, payment_order_id, payment_session_id, payment_link_sent, payment_track_id, kids!inner(full_name, parent_id)';
+
+/** Money arrived for a registration that is already paid (a second link) or was cancelled: record it so staff refund it. */
+async function recordExtraPayment(sub: Sub, txn: any, trackId: string | undefined, reason: 'paid_twice' | 'paid_after_cancel') {
+  const track = String(txn?.track_id ?? trackId ?? '');
+  if (!track || track === sub.payment_track_id) return; // the same payment seen again
+  await db.from('payment_alerts').upsert(
+    { subscription_id: sub.id, track_id: track, amount: parseFloat(txn?.total_price ?? '0') || 0, reason },
+    { onConflict: 'track_id', ignoreDuplicates: true },
+  );
+}
 
 async function signedInUser(req: Request) {
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
@@ -63,11 +95,13 @@ async function signedInUser(req: Request) {
 
 /** Call UPayments with a 12 s time-out; never throws. */
 async function upay(path: string, init: RequestInit = {}) {
+  const cfg = await upayConfig();
+  if (!cfg) return { ok: false, status: 0, body: null };
   try {
-    const res = await fetch(`${UPAY_BASE}/${path}`, {
+    const res = await fetch(`${cfg.base}/${path}`, {
       ...init,
       signal: AbortSignal.timeout(12000),
-      headers: { Authorization: `Bearer ${UPAY_TOKEN}`, Accept: 'application/json', 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+      headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/json', 'Content-Type': 'application/json', ...(init.headers ?? {}) },
     });
     const text = await res.text();
     let body: any = null;
@@ -85,14 +119,22 @@ async function upay(path: string, init: RequestInit = {}) {
 
 /** Activate the subscription if UPayments' own transaction record says it was captured for the right amount. */
 async function applyTransaction(sub: Sub, txn: any, trackId?: string) {
-  if (sub.status === 'active') return 'paid';
   const result = String(txn?.result ?? '').toUpperCase();
+  if (sub.status === 'active') {
+    if (result === 'CAPTURED') await recordExtraPayment(sub, txn, trackId, 'paid_twice');
+    return 'paid';
+  }
   if (result !== 'CAPTURED') {
     return txn?.isTerminalStatus === false || !result ? 'pending' : 'not_paid';
   }
+  if (sub.status !== 'pending_payment') {
+    // paid after the registration was cancelled (e.g. not paid in time): staff refund it
+    await recordExtraPayment(sub, txn, trackId, 'paid_after_cancel');
+    return 'unknown';
+  }
   const amountOk = Math.abs(parseFloat(txn.total_price ?? '0') - Number(sub.total)) < 0.001;
   if (!amountOk) {
-    console.error('amount mismatch', sub.id, txn.total_price, sub.total);
+    console.error('amount mismatch', sub.id);
     return 'unknown';
   }
   const { data: updated } = await db
@@ -101,7 +143,17 @@ async function applyTransaction(sub: Sub, txn: any, trackId?: string) {
     .eq('id', sub.id)
     .eq('status', 'pending_payment')
     .select('id');
-  if (updated?.length) {
+  if (!updated?.length) {
+    // someone else settled it a moment ago (another link or the webhook)
+    const { data: now } = await db.from('subscriptions').select(SUB_COLS).eq('id', sub.id).maybeSingle<Sub>();
+    if (now && now.status === 'active') {
+      await recordExtraPayment(now, txn, trackId, 'paid_twice');
+      return 'paid';
+    }
+    if (now) await recordExtraPayment(now, txn, trackId, 'paid_after_cancel');
+    return 'unknown';
+  }
+  {
     const name = sub.kids.full_name;
     await db.from('notifications').insert({
       user_id: sub.kids.parent_id,
@@ -159,6 +211,7 @@ Deno.serve(async (req) => {
       const { data: caller } = await db.from('profiles').select('role, is_active').eq('id', user.id).maybeSingle();
       // reception sends a link for a family (copy / WhatsApp); families pay their own
       const byStaff = !!caller?.is_active && ['super_admin', 'manager', 'receptionist', 'accountant'].includes(caller.role);
+      if (!(await upayConfig())) return json({ error: 'provider_unavailable' }, 503);
       if (!sub || (sub.kids.parent_id !== user.id && !byStaff)) return json({ error: 'not_found' }, 404);
       if (sub.status !== 'pending_payment') return json({ error: 'not_waiting_for_payment' }, 409);
 
@@ -194,7 +247,7 @@ Deno.serve(async (req) => {
       const r = await upay('charge', { method: 'POST', body: JSON.stringify(charge) });
       const link: string | undefined = r.body?.data?.link;
       if (!r.ok || !link) {
-        console.error('charge failed', r.status, JSON.stringify(r.body));
+        console.error('charge failed', r.status, String(r.body?.message ?? '').slice(0, 120));
         return json({ error: r.status === 0 || r.status >= 500 ? 'provider_unavailable' : 'payment_link_failed' }, 502);
       }
       let sessionId: string | null = null;

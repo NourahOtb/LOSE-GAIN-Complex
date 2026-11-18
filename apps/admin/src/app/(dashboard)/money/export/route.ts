@@ -88,6 +88,19 @@ export async function GET(req: NextRequest) {
     m.refundList,
   );
 
+  sheet(
+    "Exception discounts",
+    [
+      { header: "Member", key: "member", width: 24 },
+      { header: "Package", key: "what", width: 26 },
+      { header: "Extra %", key: "pct", width: 10 },
+      { header: "Amount (KD)", key: "amount", width: 14, money: true },
+      { header: "Given by", key: "by", width: 18 },
+      { header: "Reason", key: "reason", width: 40 },
+    ],
+    m.exceptions,
+  );
+
   const buf = await wb.xlsx.writeBuffer();
   return new NextResponse(buf as ArrayBuffer, {
     headers: {

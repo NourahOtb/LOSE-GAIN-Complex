@@ -11,6 +11,8 @@
 //    the app shows a Confirm card and the member's own tap does the real action
 //    (through the same "register" server function and payment flow as the buttons).
 //  - Anything it can't handle is handed to reception (assistant_handoffs).
+//  - It only works after the member agreed (once) to share their family's details with the AI service;
+//    the whole complex has a daily cap (assistant_take) as well as 40 messages per member.
 
 import Anthropic from 'npm:@anthropic-ai/sdk';
 import { betaTool } from 'npm:@anthropic-ai/sdk/helpers/beta/json-schema';
@@ -89,8 +91,10 @@ Deno.serve(async (req) => {
     const { data: auth } = await db.auth.getUser(token);
     const user = auth.user;
     if (!user) return json({ error: 'not_signed_in' }, 401);
-    const { data: me } = await db.from('profiles').select('full_name, role, account_type, relationship').eq('id', user.id).maybeSingle();
-    if (!me || me.role !== 'parent') return json({ error: 'not_allowed' }, 403);
+    const { data: me } = await db.from('profiles').select('full_name, role, account_type, relationship, is_active, ai_consent_at').eq('id', user.id).maybeSingle();
+    if (!me || me.role !== 'parent' || !me.is_active) return json({ error: 'not_allowed' }, 403);
+    // the member agreed (once) that their family's details are sent to the AI service to answer
+    if (!me.ai_consent_at) return json({ error: 'consent_required' }, 403);
 
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) return json({ error: 'not_configured' }, 503);

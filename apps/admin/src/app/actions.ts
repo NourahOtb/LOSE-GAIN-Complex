@@ -206,6 +206,9 @@ export async function deskRegister(params: Record<string, unknown>, dryRun: bool
       gender_required: "Set boy/male or girl/female on the member first.",
       bad_start: "The first day must be one of the chosen days within the next 2 weeks.",
       overlap: `Clash: this member already has a class on ${body.slot ?? "that day and time"}.`,
+      bad_discount: "The extra discount must be between 0 and 100 %.",
+      discount_reason_required: "Write the reason for the extra discount.",
+      not_allowed: "Your role can't register members or give discounts.",
       full: `Full: ${(body.full ?? []).map((f) => `${f.sport === "swimming" ? "Swimming" : "Jiu-jitsu"} ${DAY[f.day] ?? f.day} ${time12(f.time)}`).join(", ")}.`,
     };
     if (body.error === "full") return { error: msg.full, full: true, fullClasses: (body.full ?? []).map((f) => f.class_id) };
@@ -215,7 +218,7 @@ export async function deskRegister(params: Record<string, unknown>, dryRun: bool
     revalidatePath(`/kids/${String(params.kid_id)}`);
     revalidatePath("/");
   }
-  return { ok: dryRun ? "price" : "registered", data: data as { id?: string; total?: number; start_date?: string; end_date?: string; family_pct?: number; months_pct?: number; base?: number } };
+  return { ok: dryRun ? "price" : "registered", data: data as { id?: string; total?: number; start_date?: string; end_date?: string; family_pct?: number; months_pct?: number; base?: number; extra_pct?: number } };
 }
 
 /** Reception creates a 24-hour UPayments link for a waiting registration (also sent to the guardian's app inbox). */
@@ -429,7 +432,8 @@ export async function changeMyPassword(password: string, again: string) {
   if (password !== again) return { error: "The two passwords don't match." };
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: error.message.includes("different") ? "Choose a password different from the old one." : "Could not change the password." };
-  await supabase.rpc("password_changed");
+  const { data: changed } = await supabase.rpc("password_changed");
+  if (changed === false) return { error: "Choose a password different from the temporary one." };
   return { ok: "Password changed" };
 }
 
@@ -467,4 +471,13 @@ export async function addToWaitlist(kidId: string, classId: string) {
   if (error) return { error: "Could not add them to the waitlist." };
   revalidatePath("/waitlist");
   return { ok: `On the waitlist · number ${data}` };
+}
+
+/** A second payment (paid twice, or paid after the registration was cancelled) has been refunded or sorted out. */
+export async function resolvePaymentAlert(id: string) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("resolve_payment_alert", { p_id: id });
+  if (error) return { error: "Could not save." };
+  revalidatePath("/");
+  return { ok: "Marked as handled" };
 }

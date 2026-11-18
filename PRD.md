@@ -375,6 +375,16 @@ We are building:
 - Lists of every payment (member, package, how it was paid, discount) and every refund.
 - **Download Excel:** Summary (this month vs last), Each day, Payments, Refunds (KD with 3 decimals).
 
+### 7.6c Security review fixes *(2026-11-19)*
+See [docs/security-review-2026-11-19.md](docs/security-review-2026-11-19.md). What changed for people:
+- **Exception discount at the desk:** owner, manager or reception can add an extra discount % (with a required reason) when registering; it's saved with who gave it and listed on the Money page and in its Excel.
+- **Accountant:** money only (payments, refunds, money reports). Registering members, cancelling classes, editing members and photos are for owner, manager and reception.
+- **Coaches:** see schedules and guardian names, not phone numbers or prices; can cancel only classes of their own sport, not past dates.
+- **Unpaid registrations** are cancelled automatically if still unpaid 7 days after the first class day; the family is told.
+- **Paid twice** (or paid after a cancellation) shows as "Refund needed" on Today.
+- **Online payments** show "TEST mode" on Today until they're switched to live.
+- **AI assistant:** a one-time "Before you start" screen explains what is sent to the AI service; the member taps Allow first.
+
 ### 7.7 Notifications
 Sent whenever something important changes or needs attention:
 - Class cancelled (by a coach or staff), and what the parent gets (make-up, extension)

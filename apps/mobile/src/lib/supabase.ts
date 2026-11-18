@@ -35,6 +35,8 @@ export type Profile = {
   relationship: Relationship | null;
   /** logged in with a temporary password from reception: must choose their own */
   must_change_password: boolean;
+  /** agreed to use the AI assistant (family details are sent to the AI service) */
+  ai_consent_at: string | null;
 };
 
 export const RELATIONSHIPS = ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle', 'aunt', 'guardian'] as const;

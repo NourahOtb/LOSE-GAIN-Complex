@@ -25,10 +25,8 @@ export async function loadCoachData(sport: Sport): Promise<CoachData> {
   const since = isoDate(new Date(Date.now() - 14 * 86400000));
   const [kids, subs, stripes, classes, cancelled] = await Promise.all([
     supabase.from('kids').select('*').order('full_name'),
-    supabase
-      .from('subscriptions')
-      .select('id, kid_id, kind, swim_days, bjj_days, start_time, bjj_times, start_date, end_date, status, sessions_total, sessions_used, total, weeks')
-      .in('status', ['active', 'pending_payment']),
+    // schedule only (coaches don't see prices or payments)
+    supabase.rpc('coach_roster'),
     supabase.from('stripes').select('*').order('awarded_on'),
     supabase.from('classes').select(CLASS_COLS).eq('sport', sport).eq('is_active', true).order('start_time'),
     supabase.from('class_cancellations').select('class_id, on_date').gte('on_date', since),

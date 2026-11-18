@@ -30,7 +30,11 @@ export default function PasswordScreen() {
       setBusy(false);
       return setError(/different/i.test(err.message) ? t('pw.same') : t('err.generic'));
     }
-    await supabase.rpc('password_changed');
+    const { data: changed } = await supabase.rpc('password_changed');
+    if (changed === false) {
+      setBusy(false);
+      return setError(t('pw.same'));
+    }
     await refreshProfile();
     setBusy(false);
     setA('');

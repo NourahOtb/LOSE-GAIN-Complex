@@ -49,8 +49,9 @@ export default function KidProfile() {
     const kidRow = k.data as Kid | null;
     setKid(kidRow);
     if (kidRow && !kidRow.is_self) {
-      const { data: g } = await supabase.from('profiles').select('full_name, relationship').eq('id', kidRow.parent_id).maybeSingle();
-      setGuardian(g ?? null);
+      // guardian's name only (coaches don't see parents' phone numbers)
+      const { data: g } = await supabase.rpc('guardian_of', { p_kid: kidRow.id });
+      setGuardian(((g ?? []) as { full_name: string; relationship: string | null }[])[0] ?? null);
     }
     setLevel(kidRow?.swim_level ?? null);
     setStripes((s.data ?? []) as Stripe[]);

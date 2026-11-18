@@ -20,6 +20,10 @@ type Sub = {
   status: string;
   payment_method: string | null;
   paid_at: string | null;
+  extra_discount_pct: number;
+  discount_reason: string | null;
+  discount_by: string | null;
+  created_at: string;
 };
 type Member = { id: string; full_name: string; birth_date: string; is_self: boolean };
 
@@ -30,13 +34,15 @@ const fils = (n: number) => Math.round(n * 1000) / 1000;
 const kwDay = (ts: string) => new Date(new Date(ts).getTime() + 3 * 3600_000).toISOString().slice(0, 10);
 
 export async function loadMoneyData(supabase: SupabaseClient) {
-  const [subs, members, refunds] = await Promise.all([
-    supabase.from("subscriptions").select("id, kid_id, kind, swim_days, bjj_days, weeks, base_price, total, status, payment_method, paid_at"),
+  const [subs, members, refunds, staff] = await Promise.all([
+    supabase.from("subscriptions").select("id, kid_id, kind, swim_days, bjj_days, weeks, base_price, total, status, payment_method, paid_at, extra_discount_pct, discount_reason, discount_by, created_at"),
     supabase.from("kids").select("id, full_name, birth_date, is_self"),
     supabase.from("requests").select("id, subscription_id, refund_amount, refund_method, refunded_at").eq("refund_status", "refunded"),
+    supabase.from("profiles").select("id, full_name").neq("role", "parent"),
   ]);
   return {
-    subs: ((subs.data ?? []) as Sub[]).map((s) => ({ ...s, total: Number(s.total), base_price: Number(s.base_price) })),
+    subs: ((subs.data ?? []) as Sub[]).map((s) => ({ ...s, total: Number(s.total), base_price: Number(s.base_price), extra_discount_pct: Number(s.extra_discount_pct ?? 0) })),
+    staffNames: Object.fromEntries(((staff.data ?? []) as { id: string; full_name: string }[]).map((p) => [p.id, p.full_name])) as Record<string, string>,
     members: (members.data ?? []) as Member[],
     refunds: ((refunds.data ?? []) as { id: string; subscription_id: string; refund_amount: number; refund_method: string | null; refunded_at: string }[]).map((r) => ({ ...r, refund_amount: Number(r.refund_amount) })),
   };
@@ -118,6 +124,19 @@ export function buildMoney(d: MoneyData, month: string) {
       const s = subById.get(r.subscription_id);
       return { day: kwDay(r.refunded_at), member: s ? name(s.kid_id) : "—", kidId: s?.kid_id ?? "", what: s ? what(s) : "", method: REFUND_METHOD[r.refund_method ?? ""] ?? "", amount: r.refund_amount };
     }),
+    /** exception discounts given at the desk on registrations created this month */
+    exceptions: d.subs
+      .filter((s) => s.extra_discount_pct > 0 && s.status !== "cancelled" && inMonth(s.created_at))
+      .map((s) => ({
+        member: name(s.kid_id),
+        kidId: s.kid_id,
+        what: what(s),
+        pct: s.extra_discount_pct,
+        amount: fils(s.base_price * (s.extra_discount_pct / 100)),
+        reason: s.discount_reason ?? "",
+        by: s.discount_by ? (d.staffNames[s.discount_by] ?? "Staff") : "",
+        paid: !!s.paid_at,
+      })),
     /** waiting for payment right now (not tied to the month) */
     waiting: fils(d.subs.filter((s) => s.status === "pending_payment").reduce((n, s) => n + s.total, 0)),
     waitingCount: d.subs.filter((s) => s.status === "pending_payment").length,

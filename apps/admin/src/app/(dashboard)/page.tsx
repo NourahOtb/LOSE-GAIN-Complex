@@ -7,6 +7,7 @@ import { SendLink } from "@/components/send-link";
 import { requireStaff } from "@/lib/auth";
 import { Handoffs } from "@/components/handoffs";
 import { OpenPool } from "@/components/open-pool";
+import { PaymentAlerts, type PaymentAlert } from "@/components/payment-alerts";
 import { booked, classLabel, expiringWithin, isoDate, kd, loadDashboard, packageLabel, shortDate, time12, weekdayOf } from "@/lib/data";
 
 export default async function TodayPage() {
@@ -20,6 +21,19 @@ export default async function TodayPage() {
   const active = d.subs.filter((s) => s.status === "active");
   const pending = d.subs.filter((s) => s.status === "pending_payment");
   const expiring = expiringWithin(d, 7);
+  const [{ data: mode }, { data: alerts }] = await Promise.all([
+    supabase.from("app_settings").select("value").eq("key", "payments_mode").maybeSingle(),
+    supabase.from("payment_alerts").select("id, subscription_id, amount, reason, created_at, subscriptions(kid_id, kids(full_name))").is("resolved_at", null).order("created_at"),
+  ]);
+  const paymentAlerts: PaymentAlert[] = ((alerts ?? []) as unknown as { id: string; amount: number; reason: PaymentAlert["reason"]; created_at: string; subscriptions: { kid_id: string; kids: { full_name: string } | null } | null }[]).map((a) => ({
+    id: a.id,
+    member: a.subscriptions?.kids?.full_name ?? "Member",
+    kidId: a.subscriptions?.kid_id ?? "",
+    amount: Number(a.amount),
+    reason: a.reason,
+    when: new Date(a.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kuwait" }),
+  }));
+  const testPayments = mode?.value !== "live";
   const closedToday = d.closures.find((c) => c.on_date === todayIso);
   const nextClosure = d.closures.find((c) => c.on_date > todayIso);
   const todays = d.classes.filter((c) => c.weekday === wd);
@@ -42,6 +56,12 @@ export default async function TodayPage() {
         </div>
       </div>
 
+      {testPayments ? (
+        <p className="mt-4 rounded-md bg-warn-bg px-4 py-3 text-sm text-warn-ink">
+          <span className="font-semibold">Online payments are in TEST mode.</span> Test cards work and no real money is taken. Switch to live only after adding the real UPayments keys.
+        </p>
+      ) : null}
+      <PaymentAlerts items={paymentAlerts} />
       {d.requestsWaiting > 0 ? (
         <Link href="/approvals" className="mt-4 flex items-center justify-between gap-3 rounded-md bg-ink px-4 py-3 text-surface">
           <span>

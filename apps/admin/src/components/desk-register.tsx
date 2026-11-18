@@ -34,7 +34,10 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
   const [duration, setDuration] = useState("4w");
   const [start, setStart] = useState("");
   const [pending, run] = useTransition();
-  const [quote, setQuote] = useState<{ total?: number; end_date?: string; family_pct?: number } | null>(null);
+  const [quote, setQuote] = useState<{ total?: number; end_date?: string; family_pct?: number; extra_pct?: number } | null>(null);
+  // exception discount for special cases (owner / manager / reception), reason required
+  const [extra, setExtra] = useState("");
+  const [reason, setReason] = useState("");
   // a chosen class is full: reception may register over the limit
   const [fullMsg, setFullMsg] = useState("");
   const [overLimit, setOverLimit] = useState(false);
@@ -70,6 +73,8 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
     duration: sport === "pool" ? "4w" : duration,
     start_date: startDate,
     over_limit: overLimit,
+    extra_discount_pct: extra.trim() === "" ? 0 : Number(extra),
+    discount_reason: reason,
   });
   const reset = () => {
     setQuote(null);
@@ -162,6 +167,35 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
         </label>
       </div>
 
+      <div className="grid grid-cols-[110px_1fr] gap-3">
+        <label>
+          <span className="label">Extra discount %</span>
+          <input
+            inputMode="decimal"
+            value={extra}
+            placeholder="0"
+            onChange={(e) => {
+              reset();
+              setExtra(e.target.value);
+            }}
+            className={select}
+          />
+        </label>
+        <label>
+          <span className="label">Reason {extra && Number(extra) > 0 ? "(required)" : "(only for an exception)"}</span>
+          <input
+            value={reason}
+            maxLength={200}
+            placeholder="e.g. sibling of staff, hardship, owner approved"
+            onChange={(e) => {
+              reset();
+              setReason(e.target.value);
+            }}
+            className={select}
+          />
+        </label>
+      </div>
+
       {error ? <p className="font-semibold text-danger">{error}</p> : null}
       {fullMsg ? (
         <div className="rounded-md border-[1.5px] border-danger bg-danger-bg p-3 text-sm">
@@ -204,6 +238,7 @@ export function DeskRegister({ kidId, adult, female }: { kidId: string; adult: b
         <p className="text-[16px]">
           <span className="num text-[28px]">{quote.total.toFixed(3)} KD</span>
           {quote.family_pct ? <span className="text-ink-soft"> · family discount {quote.family_pct}%</span> : null}
+          {quote.extra_pct ? <span className="text-ink-soft"> · extra discount {quote.extra_pct}%</span> : null}
           {quote.end_date ? <span className="text-ink-soft"> · ends {label(quote.end_date)}</span> : null}
         </p>
       ) : null}

@@ -5,6 +5,7 @@
 //   -> { id, total }  or  { error }
 //   dry_run: true → only check and price it (nothing is saved)
 //   over_limit: true → staff at the desk register into a full class anyway
+//   extra_discount_pct + discount_reason → staff at the desk give an exception discount (0–100 %, reason required)
 //   -> 409 { error: 'full', full: [{ class_id, sport, day, time }] } when a chosen class is full
 //      (a family with a waitlist offer for that class may still register)
 //
@@ -67,7 +68,15 @@ Deno.serve(async (req) => {
 
     // the member must be on this account, or the caller is staff registering at the desk
     const { data: me } = await db.from('profiles').select('role, is_active').eq('id', user.id).maybeSingle();
-    const isStaff = !!me?.is_active && ['super_admin', 'manager', 'receptionist', 'accountant'].includes(me.role);
+    // desk registration: owner, manager, reception (the accountant handles money, not registrations)
+    const isStaff = !!me?.is_active && ['super_admin', 'manager', 'receptionist'].includes(me.role);
+
+    // exception discount (desk only), with a reason
+    const extraPct = body.extra_discount_pct === undefined || body.extra_discount_pct === null || body.extra_discount_pct === '' ? 0 : Number(body.extra_discount_pct);
+    const discountReason = String(body.discount_reason ?? '').trim().slice(0, 200);
+    if (!Number.isFinite(extraPct) || extraPct < 0 || extraPct > 100) return json({ error: 'bad_discount' }, 400);
+    if (extraPct > 0 && !isStaff) return json({ error: 'not_allowed' }, 403);
+    if (extraPct > 0 && !discountReason) return json({ error: 'discount_reason_required' }, 400);
     const { data: kid } = await db.from('kids').select('id, parent_id, birth_date, is_self, gender').eq('id', body.kid_id).maybeSingle();
     if (!kid || (kid.parent_id !== user.id && !isStaff)) return json({ error: 'not_found' }, 404);
 
@@ -129,10 +138,12 @@ Deno.serve(async (req) => {
             familyKidCount,
           }, cfg);
     if (!price.ok) return json({ error: price.error }, 400);
+    const allPct = Math.min(100, price.totalPct + extraPct);
+    const total = extraPct > 0 ? Math.round(price.base * (1 - allPct / 100) * 1000) / 1000 : price.total;
 
     // first day: within the next 2 weeks, on a chosen class day (open pool: any day but Friday)
     const start = String(body.start_date ?? '');
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || start < today || start > addDays(today, 14)) return json({ error: 'bad_start' }, 400);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || Number.isNaN(Date.parse(start + 'T00:00:00Z')) || addDays(start, 0) !== start || start < today || start > addDays(today, 14)) return json({ error: 'bad_start' }, 400);
     const wd = weekdayOf(start);
     if (kind === 'open_pool' ? wd === 'fri' : ![...swim, ...bjj].includes(wd as Weekday)) return json({ error: 'bad_start' }, 400);
 
@@ -198,8 +209,9 @@ Deno.serve(async (req) => {
     if (body.dry_run === true) {
       return json({
         ok: true,
-        total: price.total,
+        total,
         base: price.base,
+        extra_pct: extraPct,
         family_pct: price.familyPct,
         months_pct: price.monthsPct,
         sessions: price.sessions,
@@ -223,15 +235,18 @@ Deno.serve(async (req) => {
         end_date: addDays(start, weeks * 7),
         sessions_total: price.sessions,
         base_price: price.base,
-        discount_pct: price.totalPct,
-        total: price.total,
+        discount_pct: allPct,
+        total,
+        extra_discount_pct: extraPct,
+        discount_reason: extraPct > 0 ? discountReason : null,
+        discount_by: extraPct > 0 ? user.id : null,
         status: 'pending_payment',
       })
       .select('id, total')
       .single();
     if (error?.message?.includes('class_overlap')) return json({ error: 'overlap', slot: error.message.replace('class_overlap ', '') }, 409);
     if (error || !created) {
-      console.error('insert failed', error);
+      console.error('insert failed', error?.code ?? 'no-row');
       return json({ error: 'server_error' }, 500);
     }
     // waitlist places for these classes are now used

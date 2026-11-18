@@ -19,7 +19,7 @@ type Turn = { role: 'user' | 'assistant'; content: string; proposals?: Proposal[
 
 /** AI assistant for guardians. It answers and prepares; only the guardian's Confirm tap changes anything. */
 export default function AssistantScreen() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const { t, lang, f, isRTL } = useI18n();
   const p = usePalette();
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -61,7 +61,7 @@ export default function AssistantScreen() {
       } catch {
         // generic
       }
-      setError(t((['not_configured', 'daily_limit'].includes(code) ? `ai.err.${code}` : 'ai.err.generic') as StringKey));
+      setError(t((['not_configured', 'daily_limit', 'consent_required'].includes(code) ? `ai.err.${code}` : 'ai.err.generic') as StringKey));
       return;
     }
     // plain text only (in case the model adds Markdown)
@@ -70,6 +70,36 @@ export default function AssistantScreen() {
   };
 
   const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
+
+  // first time: the member agrees that family details are sent to the AI service
+  if (profile && !profile.ai_consent_at) {
+    return (
+      <Screen edges={['top', 'bottom']}>
+        <ScrollView contentContainerStyle={{ padding: 24, gap: 18 }}>
+          <Button variant="link" title={isRTL ? '→' : '←'} onPress={back} style={{ alignSelf: 'flex-start' }} />
+          <T w="semibold" size={24}>
+            {t('ai.consentTitle')}
+          </T>
+          <View style={{ backgroundColor: p.tile, padding: 16, borderRadius: 8 }}>
+            <T size={15} style={{ lineHeight: 22 }}>
+              {t('ai.consentBody')}
+            </T>
+          </View>
+          <Button
+            title={t('ai.consentAllow')}
+            loading={busy}
+            onPress={async () => {
+              setBusy(true);
+              await supabase.rpc('give_ai_consent');
+              await refreshProfile();
+              setBusy(false);
+            }}
+          />
+          <Button variant="ghost" title={t('ai.consentLater')} onPress={back} />
+        </ScrollView>
+      </Screen>
+    );
+  }
   const suggestions: StringKey[] = ['ai.s1', 'ai.s2', 'ai.s3', 'ai.s4'];
 
   return (

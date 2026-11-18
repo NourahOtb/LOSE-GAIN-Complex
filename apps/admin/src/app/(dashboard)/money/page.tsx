@@ -157,6 +157,33 @@ export default async function MoneyPage({ searchParams }: PageProps<"/money">) {
           ) : (
             <p className="text-ink-soft">No payments this month.</p>
           )}
+          {m.exceptions.length ? (
+            <>
+              <h2 className="label mb-2 mt-6">Exception discounts · {m.exceptions.length}</h2>
+              <ul className="text-[14px]">
+                {m.exceptions.map((x, i) => (
+                  <li key={i} className="border-b border-line py-2">
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <Link href={`/kids/${x.kidId}`} className="font-semibold underline-offset-2 hover:underline">
+                        {x.member}
+                      </Link>
+                      <span className="min-w-0 flex-1 text-xs text-ink-soft">
+                        {x.what}
+                        {x.paid ? "" : " · not paid yet"}
+                      </span>
+                      <span className="font-semibold tabular-nums">
+                        −{x.pct}% ({kd(x.amount)})
+                      </span>
+                    </div>
+                    <div className="text-xs text-ink-soft">
+                      {x.by ? `${x.by}: ` : ""}
+                      {x.reason}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
           {m.refundList.length ? (
             <>
               <h2 className="label mb-2 mt-6">Refunds · {m.refundList.length}</h2>

@@ -11,7 +11,8 @@
 //  - Manager: only coaches and receptionists (add, change, switch off, new password).
 //  - Owner, manager, receptionist: create a family at the desk, and give a family a new temporary password.
 //  - Nobody changes their own role or switches themself off.
-//  - Temporary passwords are shown once; the person must choose their own after logging in.
+//  - Temporary passwords are shown once; the person must choose their own after logging in
+//    (remember_temp_password keeps its hash, so the forced change can't be skipped).
 //  - Switching off keeps the account (and history) but blocks logging in.
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -86,7 +87,8 @@ Deno.serve(async (req) => {
       if (role === 'coach' && !sport) return json({ error: 'sport_required' }, 400);
       const u = await createUser(mail, { full_name: name, phone: ph, preferred_language: 'en' });
       if ('error' in u) return json({ error: u.error }, 409);
-      const { error } = await db.from('profiles').update({ role, sport, must_change_password: true, full_name: name, phone: ph }).eq('id', u.id);
+      const { error } = await db.from('profiles').update({ role, sport, full_name: name, phone: ph }).eq('id', u.id);
+      await db.rpc('remember_temp_password', { p_user: u.id });
       if (error) {
         await db.auth.admin.deleteUser(u.id);
         return json({ error: 'create_failed' }, 500);
@@ -106,7 +108,7 @@ Deno.serve(async (req) => {
         const password = tempPassword();
         const { error } = await db.auth.admin.updateUserById(id, { password });
         if (error) return json({ error: 'failed' }, 500);
-        await db.from('profiles').update({ must_change_password: true }).eq('id', id);
+        await db.rpc('remember_temp_password', { p_user: id });
         return json({ temp_password: password });
       }
 
@@ -156,7 +158,7 @@ Deno.serve(async (req) => {
       const rel = type === 'family' && RELATIONSHIPS.includes(String(body.relationship)) ? String(body.relationship) : null;
       const u = await createUser(mail, { full_name: name, phone: ph, preferred_language: body.lang === 'ar' ? 'ar' : 'en', account_type: type, relationship: rel });
       if ('error' in u) return json({ error: u.error }, 409);
-      await db.from('profiles').update({ must_change_password: true }).eq('id', u.id);
+      await db.rpc('remember_temp_password', { p_user: u.id });
       return json({ user_id: u.id, temp_password: u.password });
     }
 
