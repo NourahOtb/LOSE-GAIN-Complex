@@ -15,7 +15,7 @@ export default async function CheckInPage({ searchParams }: PageProps<"/check-in
   const weekday = weekdayOf(new Date(dateIso + "T00:00:00"));
   const canCheckIn = ["super_admin", "manager", "receptionist"].includes(profile.role);
 
-  const door = await loadDoor(supabase, dateIso, weekday);
+  const [door, { data: closed }] = await Promise.all([loadDoor(supabase, dateIso, weekday), supabase.from("closures").select("reason").eq("on_date", dateIso).maybeSingle()]);
   const classes: DoorClass[] = door.classes.map((c) => {
     const [h, m] = c.start_time.slice(0, 5).split(":").map(Number);
     return { id: c.id, label: classLabel(c), time: time12(c.start_time), startMin: h * 60 + m, durationMin: c.duration_min, sport: c.sport, capacity: c.capacity, free: c.is_free };
@@ -40,7 +40,13 @@ export default async function CheckInPage({ searchParams }: PageProps<"/check-in
   };
 
   return (
-    <DoorBoard
+    <>
+      {closed ? (
+        <p className="mb-3 rounded-md bg-danger-bg px-4 py-3 font-semibold text-danger">
+          The complex is closed on this day{closed.reason ? ` (${closed.reason})` : ""}. Members already got the missed classes added to their registration.
+        </p>
+      ) : null}
+      <DoorBoard
       dateIso={dateIso}
       todayIso={today}
       canCheckIn={canCheckIn}
@@ -48,6 +54,7 @@ export default async function CheckInPage({ searchParams }: PageProps<"/check-in
       rosters={Object.fromEntries(Object.entries(door.rosters).map(([k, rows]) => [k, rows.map(toRow)]))}
       present={Object.fromEntries(door.attendance.map((a) => [`${a.kid_id}|${a.class_id}`, a.created_at]))}
       members={door.members.map((m) => ({ id: m.id, name: m.full_name, age: ageOn(m.birth_date) }))}
-    />
+      />
+    </>
   );
 }

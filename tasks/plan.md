@@ -103,7 +103,7 @@ Built one at a time, in this order; Claude asks before each and asks any missing
 | 14b | **Edit members + desk registration** | Staff edit a member's details, photo, health, boy/girl; register a member at the desk through the same `register` price check |
 | 14c | **Desk payment link** | Staff create a UPayments link for a waiting registration; copy / WhatsApp share, and it also appears in the guardian's app |
 | 14d | **Approvals** ✅ | Guardians pause up to 1 week themselves (once per registration); injury pause, change of days and cancelling are requests that reception approves on the Approvals page; reception changes days on the member page; refunds recorded only by owner / accountant (amount + KNET / bank / cash) |
-| 14e | **Closure days** | Close the complex for a day (holidays); every affected registration moves its end date; families notified |
+| 14e | **Closure days** ✅ | Close the complex for a day (holidays); every affected registration moves its end date; families notified |
 | 14f | **Prices + discounts editor** | Prices move from code into the database; owner edits tables and discounts; app, `register` and assistant all read the same saved prices |
 | 14g | **Staff accounts + roles** | Owner adds staff (server function creates the login), sets manager / receptionist / accountant / coach, switches accounts off |
 | 14h | **Reports + Excel export** | Members (active, new, not renewed), attendance per class / member, month-over-month; download as Excel |

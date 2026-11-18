@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/registrations", label: "Registrations" },
   { href: "/kids", label: "Members & families" },
   { href: "/classes", label: "Classes" },
+  { href: "/closures", label: "Closures" },
   { href: "/chats", label: "Chats" },
 ];
 

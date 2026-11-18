@@ -376,6 +376,8 @@ export const strings = {
     'manage.err.class_overlap': 'The new end date runs into another registration. Please message reception.',
     'manage.err.note_required': 'Please write a short note.',
     'home.paused': 'Paused until {date}',
+    'home.closed': 'The complex is closed on {date}. Missed classes are added to the end of the registration.',
+    'home.closedReason': 'The complex is closed on {date} ({reason}). Missed classes are added to the end of the registration.',
   },
   ar: {
     'lang.title': 'اختر لغتك',
@@ -753,6 +755,8 @@ export const strings = {
     'manage.err.class_overlap': 'تاريخ الانتهاء الجديد يتداخل مع اشتراك آخر. يرجى مراسلة الاستقبال.',
     'manage.err.note_required': 'يرجى كتابة ملاحظة قصيرة.',
     'home.paused': 'موقوف حتى {date}',
+    'home.closed': 'المجمع مغلق يوم {date}. تُضاف الحصص الفائتة إلى نهاية الاشتراك.',
+    'home.closedReason': 'المجمع مغلق يوم {date} ({reason}). تُضاف الحصص الفائتة إلى نهاية الاشتراك.',
   },
 } as const;
 

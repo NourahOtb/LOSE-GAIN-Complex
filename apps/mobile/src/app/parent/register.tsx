@@ -42,6 +42,7 @@ export default function RegisterScreen() {
   const [classes, setClasses] = useState<ClassRow[]>([]);
   const [adultTime, setAdultTime] = useState<'18:00' | '19:30'>('18:00');
   const [genderBusy, setGenderBusy] = useState(false);
+  const [closed, setClosed] = useState<string[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -49,6 +50,8 @@ export default function RegisterScreen() {
       (async () => {
         const { data: c } = await supabase.from('classes').select(CLASS_COLS).eq('is_active', true);
         setClasses((c ?? []) as ClassRow[]);
+        const { data: cl } = await supabase.from('closures').select('on_date').gte('on_date', isoDate(new Date()));
+        setClosed(((cl ?? []) as { on_date: string }[]).map((x) => x.on_date));
         const { data: k } = await supabase.from('kids').select('*').eq('parent_id', profile.id).order('created_at');
         const list = (k as Kid[]) ?? [];
         setKids(list);
@@ -112,10 +115,12 @@ export default function RegisterScreen() {
 
   // start dates: the chosen class days over the next 2 weeks (open pool: any day but Friday); default = the first one
   const poolDates = Array.from({ length: 15 }, (_, i) => addDays(new Date(), i)).filter((d) => d.getDay() !== 5).map(isoDate).slice(0, 14);
-  const startDates =
+  // (closed days are left out: the complex is closed)
+  const startDates = (
     mode === 'pool'
       ? poolDates
-      : startOptions([...new Set([...swim, ...bjj])], (day) => (bjj.includes(day as Weekday) && !swim.includes(day as Weekday) ? bjjTimeFor(day) : swimTime), new Date());
+      : startOptions([...new Set([...swim, ...bjj])], (day) => (bjj.includes(day as Weekday) && !swim.includes(day as Weekday) ? bjjTimeFor(day) : swimTime), new Date())
+  ).filter((d) => !closed.includes(d));
   const startIso = pickedStart && startDates.includes(pickedStart) ? pickedStart : (startDates[0] ?? null);
 
   // family size for the discount: kids already registered + this one

@@ -166,7 +166,7 @@ We are building:
 - **Missed class without notice:** the parent can book a **limited number of make-ups** per subscription. The admin sets the number (default: 2 per 4 weeks).
 - **Unused sessions expire** on the subscription end date. They don't carry over.
 - **When the complex cancels a class** (coach sick, maintenance), staff choose for that cancellation: give a **make-up credit**, **extend the end date**, or **nothing**. Parents are notified either way.
-- **Closure days** (National Day, Eid, Ramadan changes): the admin marks them on a calendar. Affected subscriptions **extend automatically**, and parents are notified.
+- **Closure days** (National Day, Eid, Ramadan changes): the owner, a manager or reception closes a date or a range. Affected subscriptions **extend automatically** by the classes they miss, and parents are notified. *(Built 2026-11-18, see 7.5e.)*
 
 ### 6.6 Capacity and waitlist
 - Each class and level has a **maximum number of kids**, set by the admin.
@@ -317,6 +317,15 @@ We are building:
 - **Refunds:** only the **owner or accountant** record the refund amount (0 = no refund, never more than was paid) and how it was returned (KNET / bank transfer / cash). The money itself is returned outside the app. The guardian gets an inbox message.
 - During a pause: no class shows in the app, the door check-in shows **"Paused until …"** and doesn't use a session, and class counts leave the member out.
 - *Not yet:* the AI assistant can explain these options but can't send the requests itself.
+
+### 7.5e Closure days *(built 2026-11-18)*
+- **Dashboard → Closures:** the owner, a manager or reception closes the complex for **one day or a range** (up to 31 days; Fridays are skipped), with a reason families see.
+- **Missed classes are added at the end:** for each member who had a class on a closed day, the end date moves to cover that many more of their own class days (swimming + jiu-jitsu on the same day = 2), skipping other closed days. If the member already has a renewal for the same days, the renewal is extended instead, so the two don't overlap. **Open pool:** 1 extra day per closed day (not twice if the pool was also closed that day).
+- Registrations made **after** a closure was announced are extended the same way.
+- **Open after all:** a closure that hasn't happened yet can be undone; end dates move back and families are told.
+- Families get an inbox message (English + Arabic). In the app, closed days are crossed out on the week lanes, "Next class" skips them, Home shows "The complex is closed on …", and closed days can't be picked as a first day.
+- The dashboard shows the next closure on Today, a red "closed today" note on Today and at the door check-in.
+- *Not yet:* the AI assistant doesn't know about closure days.
 
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.

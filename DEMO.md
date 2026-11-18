@@ -55,6 +55,9 @@ Demo accounts and the shared password are in `docs/demo-accounts.local.md` on yo
 4. Open Sara's member page → **Change days** on the registration → pick the new days → **Save days**.
 5. After rehearsing, ask Claude to "undo the approvals test" so Sara is back to normal.
 
+### 3c. A holiday (30 seconds, optional)
+In the dashboard → **Closures** → pick a date and a reason (e.g. "National Day") → **Close the complex**. It says how many registrations were extended. In the app, that day is crossed out and Home says the complex is closed. Then **Open after all** to undo it.
+
 ### 4. The coach (2 minutes), in the app as Coach Fahad
 1. **Classes → Wed → 5:00 PM · Mat 2**: the new kid is in the class.
 2. Point out the **health marks** and **"2 kids may be ready for a stripe"**.

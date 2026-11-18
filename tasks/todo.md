@@ -93,7 +93,7 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] 14b. Member page: edit details, photo (camera / file), register at the desk + mark paid ✅ 2026-11-18 (new families at the desk: with 14g)
 - [x] 14c. Desk payment link: 24-hour UPayments link, Copy / WhatsApp, guardian inbox message, auto-activates when paid ✅ 2026-11-18
 - [x] 14d. Approvals: 1-week self-pause, injury pause / change days / cancel requests, Approvals page, change days on member page, refunds by owner / accountant ✅ 2026-11-18
-- [ ] 14e. Closure days: close the complex, end dates move, families notified
+- [x] 14e. Closure days: close a day or range, missed classes added at the end, open pool +1 day, undo, families notified, shown in the app ✅ 2026-11-18
 - [ ] 14f. Prices + discounts editor (prices saved in the database)
 - [ ] 14g. Staff accounts + roles
 - [ ] 14h. Reports + Excel export

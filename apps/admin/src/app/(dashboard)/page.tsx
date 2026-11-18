@@ -20,6 +20,8 @@ export default async function TodayPage() {
   const active = d.subs.filter((s) => s.status === "active");
   const pending = d.subs.filter((s) => s.status === "pending_payment");
   const expiring = expiringWithin(d, 7);
+  const closedToday = d.closures.find((c) => c.on_date === todayIso);
+  const nextClosure = d.closures.find((c) => c.on_date > todayIso);
   const todays = d.classes.filter((c) => c.weekday === wd);
   const slots = [...new Set(todays.map((c) => c.start_time))].sort();
   const inClassToday = new Set(todays.flatMap((c) => booked(d, c, todayIso).map((s) => s.kid_id))).size;
@@ -50,6 +52,17 @@ export default async function TodayPage() {
         </Link>
       ) : null}
 
+      {nextClosure ? (
+        <p className="mt-3 text-sm">
+          <span className="rounded bg-danger-bg px-1.5 py-0.5 text-xs font-semibold text-danger">Closed</span>{" "}
+          {shortDate(nextClosure.on_date)}
+          {nextClosure.reason ? ` · ${nextClosure.reason}` : ""} ·{" "}
+          <Link href="/closures" className="underline underline-offset-2">
+            Closure days
+          </Link>
+        </p>
+      ) : null}
+
       <div className="mt-5 grid grid-cols-4 gap-6 border-b-2 border-ink pb-4 max-sm:grid-cols-2">
         {stats.map((s) => (
           <div key={s.l}>
@@ -66,6 +79,11 @@ export default async function TodayPage() {
             Today&apos;s classes
           </h2>
           {wd === "fri" ? <p className="text-ink-soft">Friday: the complex is closed.</p> : null}
+          {closedToday ? (
+            <p className="mb-3 rounded-md bg-danger-bg px-4 py-3 font-semibold text-danger">
+              The complex is closed today{closedToday.reason ? ` (${closedToday.reason})` : ""}. Missed classes were added to the end of each registration.
+            </p>
+          ) : null}
           {slots.map((slot) => (
             <div key={slot} className="mb-3 rounded-md border border-line bg-surface">
               <div className="flex items-center justify-between border-b border-line px-4 py-2.5">

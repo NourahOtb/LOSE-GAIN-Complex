@@ -279,3 +279,38 @@ export async function changeDays(subId: string, swim: string[], bjj: string[], s
   revalidatePath("/", "layout");
   return { ok: "Days updated · guardian notified" };
 }
+
+/** Close the complex for a date or a range: missed classes are added to the end of each registration; families notified. */
+export async function closeDays(from: string, to: string, reason: string) {
+  const { supabase } = await requireStaff();
+  if (!from) return { error: "Pick a date." };
+  const { data, error } = await supabase.rpc("close_days", { p_from: from, p_to: to || from, p_reason: reason.trim() || null });
+  if (error) {
+    const m = error.message;
+    return {
+      error: m.includes("not allowed")
+        ? "Only the owner, a manager or reception can close the complex."
+        : m.includes("too_long")
+          ? "Close at most 31 days at a time."
+          : m.includes("nothing_to_close")
+            ? "Those days are already closed (or Fridays)."
+            : m.includes("bad_dates")
+              ? "Pick today or a later date, and an end date after the start."
+              : "Could not close the days.",
+    };
+  }
+  const r = data as { days: number; extended: number; failed: number; families: number };
+  revalidatePath("/", "layout");
+  return {
+    ok: `Closed ${r.days} day${r.days === 1 ? "" : "s"} · ${r.extended} registration${r.extended === 1 ? "" : "s"} extended · ${r.families} famil${r.families === 1 ? "y" : "ies"} notified${r.failed ? ` · ${r.failed} couldn't be extended (check them)` : ""}`,
+  };
+}
+
+/** Undo a closure that hasn't happened yet: end dates move back, families are told. */
+export async function reopenDay(date: string) {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.rpc("reopen_day", { p_date: date });
+  if (error) return { error: error.message.includes("past") ? "That day has already passed." : "Could not reopen the day." };
+  revalidatePath("/", "layout");
+  return { ok: `Open again · ${data ?? 0} famil${data === 1 ? "y" : "ies"} notified` };
+}

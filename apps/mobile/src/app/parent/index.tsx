@@ -73,9 +73,16 @@ export default function ParentHome() {
 
   // alerts: cancellations this week, renewals within 3 days
   const alerts: { text: string; action?: () => void }[] = [];
+  const todayIso = isoDate(now);
+  const soon = isoDate(addDays(now, 14));
+  const closedSet = new Set(data.closures.map((c) => c.on_date));
+  for (const c of data.closures.filter((x) => x.on_date >= todayIso && x.on_date <= soon)) {
+    const date = new Date(c.on_date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' });
+    alerts.push({ text: c.reason ? t('home.closedReason', { date, reason: c.reason }) : t('home.closed', { date }) });
+  }
   for (const lane of lanes) {
     for (const m of weekMarks(lane.sub, lane.sport, data.cancels, now)) {
-      if (m.mark === 'cancelled') {
+      if (m.mark === 'cancelled' && !closedSet.has(m.date)) {
         alerts.push({ text: t('home.cancelled', { sport: t(`sport.${lane.sport}`), day: t(`day.${m.day}`) }) });
       }
     }
