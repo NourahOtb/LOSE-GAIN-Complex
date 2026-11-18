@@ -15,24 +15,25 @@
   --warn-bg: #fff4e5;
   --warn-ink: #8a5300;
   --rail: #111111;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e0f10;
-    --surface: #17191a;
-    --ink: #f2f2f0;
-    --ink-soft: #a3a3a3;
-    --line: #2c2f31;
-    --tile: #12262e;
-    --swim: #4fb0d9;
-    --bjj: #f0855c;
-    --danger: #ff5a6e;
-    --danger-bg: #3a1418;
-    --warn-bg: #3a2a12;
-    --warn-ink: #f5c77a;
-    --rail: #000000;
-  }
+/* light is the default; dark only when the person picks it (sun/moon switch, saved in a cookie) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e0f10;
+  --surface: #17191a;
+  --ink: #f2f2f0;
+  --ink-soft: #a3a3a3;
+  --line: #2c2f31;
+  --tile: #12262e;
+  --swim: #4fb0d9;
+  --bjj: #f0855c;
+  --danger: #ff5a6e;
+  --danger-bg: #3a1418;
+  --warn-bg: #3a2a12;
+  --warn-ink: #f5c77a;
+  --rail: #000000;
 }
 
 @theme inline {

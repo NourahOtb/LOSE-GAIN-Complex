@@ -1,11 +1,16 @@
+import { cookies } from "next/headers";
+
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { denied } = await searchParams;
+  const theme = (await cookies()).get("lg-theme")?.value === "dark" ? "dark" : "light";
   return (
-    <main className="min-h-screen grid place-items-center px-4">
+    <main className="relative min-h-screen grid place-items-center px-4">
+      <ThemeToggle initial={theme} className="absolute right-4 top-4 text-ink" />
       <div className="w-full max-w-sm">
         <Logo size={26} />
         <h1 className="mt-10 text-2xl font-semibold">Staff dashboard</h1>
