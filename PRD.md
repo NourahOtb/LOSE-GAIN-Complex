@@ -275,7 +275,7 @@ We are building:
 | Desk payments (KNET, payment link) | ✓ | ✓ | ✓ | ✓ |
 | Chat oversight (read chats, unanswered alerts) | ✓ | ✓ | — | — |
 | Payments, refunds, money reports | ✓ | — | — | ✓ |
-| Reports & insights (+ Excel export) | ✓ | ✓ (no money) | — | ✓ (money) |
+| Reports & insights (+ Excel export) | ✓ | ✓ (money too, owner 2026-11-18) | — | ✓ (money) |
 | Coach activity report (classes taught, private sessions per month) | ✓ | ✓ | — | ✓ |
 | Audit log (who changed what, filterable) | ✓ | — | — | — |
 | Prices, discount rules, make-up limits, notice periods | ✓ | — | — | — |
