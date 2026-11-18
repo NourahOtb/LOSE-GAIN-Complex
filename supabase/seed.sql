@@ -47,10 +47,10 @@ begin
   insert into public.classes (sport, age_group, location, weekday, start_time, capacity, coach_id)
   select 'swimming','kids','kids_pool', d, '16:00'::time, 15, v_hamad from unnest(array['sat','sun','mon','tue','wed','thu']) d
   union all select 'swimming','kids','olympic_pool', d, '17:00', 20, v_hamad from unnest(array['sat','sun','mon','tue','wed','thu']) d
-  union all select 'jiujitsu','titans','mat_1', d, '16:00', 12, v_fahad from unnest(array['sat','sun','mon','tue','wed','thu']) d
-  union all select 'jiujitsu','kids','mat_2', d, '17:00', 10, v_fahad from unnest(array['sat','sun','mon','tue','wed','thu']) d
   union all select 'swimming','adults','olympic_pool', d, '16:00', 15, v_hamad from unnest(array['sun','tue','thu']) d
   on conflict do nothing;
+  -- jiu-jitsu timetable comes from migration 0009; give it the demo coach
+  update public.classes set coach_id = v_fahad where sport = 'jiujitsu' and is_active and coach_id is null and audience = 'all';
 
   if not exists (select 1 from public.kids where parent_id = v_noura) then
     insert into public.kids (parent_id, full_name, birth_date, health_conditions, health_confirmed, emergency_phone, swim_level, swim_level_since)
@@ -94,3 +94,19 @@ from (values ('Sara','female'), ('Yousef','male'), ('Faisal','male'), ('Noor','f
      auth.users u
 where k.full_name = v.n and k.parent_id = u.id
   and u.email in ('noura@lgcomplex.test','dalal@lgcomplex.test') and k.gender is null;
+
+-- jiu-jitsu time per day for the demo subscriptions (Task 17), from the timetable by age
+update public.subscriptions s
+set bjj_times = t.times
+from (
+  select s2.id, jsonb_object_agg(d, to_char(c.start_time, 'HH24:MI')) as times
+  from public.subscriptions s2
+  join public.kids k on k.id = s2.kid_id
+  cross join lateral unnest(s2.bjj_days) d
+  join public.classes c on c.sport = 'jiujitsu' and c.is_active and not c.is_free and c.audience = 'all' and c.weekday = d
+   and extract(year from age(k.birth_date))::int >= coalesce(c.min_age, 0)
+   and extract(year from age(k.birth_date))::int <= coalesce(c.max_age, 200)
+  where s2.bjj_times is null
+  group by s2.id
+) t
+where s.id = t.id;

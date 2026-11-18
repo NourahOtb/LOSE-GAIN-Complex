@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_PRICING, familyDiscountPct, priceSubscription } from './pricing';
+import { DEFAULT_PRICING, familyDiscountPct, priceOpenPool, priceSubscription } from './pricing';
 
 const kid = (over: Partial<Parameters<typeof priceSubscription>[0]> = {}) =>
   priceSubscription({ member: 'kid', swimDays: [], bjjDays: [], duration: '4w', familyKidCount: 1, ...over });
@@ -94,7 +94,8 @@ describe('adult men swimming', () => {
   it('1 month: 2 days 75, 3 days 90; swimming only; no family discount', () => {
     expect(priceSubscription({ member: 'adult', swimDays: ['sun', 'tue'], bjjDays: [], duration: '4w', familyKidCount: 3 })).toMatchObject({ ok: true, total: 75, familyPct: 0 });
     expect(priceSubscription({ member: 'adult', swimDays: ['sun', 'tue', 'thu'], bjjDays: [], duration: '4w', familyKidCount: 1 })).toMatchObject({ ok: true, total: 90 });
-    expect(priceSubscription({ member: 'adult', swimDays: [], bjjDays: ['sun', 'tue'], duration: '4w', familyKidCount: 1 })).toMatchObject({ ok: false, error: 'not_offered' });
+    // adult jiu-jitsu is offered since 2026-11-18 (men's prices when no gender is given)
+    expect(priceSubscription({ member: 'adult', swimDays: [], bjjDays: ['sun', 'tue'], duration: '4w', familyKidCount: 1 })).toMatchObject({ ok: true, total: 75 });
     expect(priceSubscription({ member: 'adult', swimDays: ['sun', 'tue'], bjjDays: [], duration: '1w', familyKidCount: 1 })).toMatchObject({ ok: false, error: 'not_offered' });
   });
 });
@@ -108,5 +109,61 @@ describe('adult members: no family or multi-month discounts (owner, 2026-11-18)'
   it('3, 6 and 12 month packages are not offered to adults', () => {
     expect(adult({ duration: '3m' })).toMatchObject({ ok: false, error: 'not_offered' });
     expect(adult({ duration: '12m' })).toMatchObject({ ok: false, error: 'not_offered' });
+  });
+});
+
+describe('adult jiu-jitsu (owner sheet 2026-11-18)', () => {
+  const bjj = (gender: 'male' | 'female', days: string[], duration: '1w' | '2w' | '4w' = '4w') =>
+    priceSubscription({ member: 'adult', gender, swimDays: [], bjjDays: days as never, duration, familyKidCount: 1 });
+  it('men 4 weeks', () => {
+    expect(bjj('male', ['sun', 'mon'])).toMatchObject({ ok: true, total: 75 });
+    expect(bjj('male', ['sun', 'mon', 'tue'])).toMatchObject({ ok: true, total: 100 });
+    expect(bjj('male', ['sun', 'mon', 'tue', 'wed'])).toMatchObject({ ok: true, total: 110 });
+    expect(bjj('male', ['sun', 'mon', 'tue', 'wed', 'thu'])).toMatchObject({ ok: true, total: 125, sessions: 20 });
+  });
+  it('women 4 weeks', () => {
+    expect(bjj('female', ['sun', 'tue'])).toMatchObject({ ok: true, total: 75 });
+    expect(bjj('female', ['sun', 'tue', 'thu'])).toMatchObject({ ok: true, total: 90 });
+    expect(bjj('female', ['sun', 'mon', 'tue', 'wed'])).toMatchObject({ ok: true, total: 105 });
+    expect(bjj('female', ['sun', 'mon', 'tue', 'wed', 'thu'])).toMatchObject({ ok: true, total: 120 });
+  });
+  it('2 weeks and 1 week (men and women), 3 to 5 days', () => {
+    expect(bjj('male', ['sun', 'mon', 'tue'], '2w')).toMatchObject({ ok: true, total: 70 });
+    expect(bjj('female', ['sun', 'mon', 'tue', 'wed', 'thu'], '2w')).toMatchObject({ ok: true, total: 90 });
+    expect(bjj('male', ['sun', 'mon', 'tue', 'wed'], '1w')).toMatchObject({ ok: true, total: 40 });
+    expect(bjj('female', ['sun', 'mon'], '1w')).toMatchObject({ ok: false, error: 'not_offered' });
+  });
+  it('Saturday is the free open mat, not a paid day; no swimming + jiu-jitsu mix; no month packages', () => {
+    expect(bjj('male', ['sat', 'sun'])).toMatchObject({ ok: false, error: 'not_offered' });
+    expect(priceSubscription({ member: 'adult', gender: 'male', swimDays: ['sun', 'tue'], bjjDays: ['mon', 'wed'], duration: '4w', familyKidCount: 1 })).toMatchObject({ ok: false, error: 'separate_sports' });
+    expect(priceSubscription({ member: 'adult', gender: 'male', swimDays: [], bjjDays: ['sun', 'mon'], duration: '3m', familyKidCount: 1 })).toMatchObject({ ok: false, error: 'not_offered' });
+  });
+  it('adult swimming is for men only', () => {
+    expect(priceSubscription({ member: 'adult', gender: 'female', swimDays: ['sun', 'tue'], bjjDays: [], duration: '4w', familyKidCount: 1 })).toMatchObject({ ok: false, error: 'not_offered' });
+  });
+});
+
+describe('Titans (11–15) jiu-jitsu: men prices, 4 weeks only', () => {
+  const titan = (over: Partial<Parameters<typeof priceSubscription>[0]> = {}) =>
+    priceSubscription({ member: 'titan', swimDays: [], bjjDays: ['sun', 'mon', 'tue'], duration: '4w', familyKidCount: 1, ...over });
+  it('uses the men table', () => {
+    expect(titan()).toMatchObject({ ok: true, total: 100 });
+  });
+  it('4 weeks only, Sunday to Thursday, jiu-jitsu only', () => {
+    expect(titan({ duration: '2w' })).toMatchObject({ ok: false, error: 'not_offered' });
+    expect(titan({ duration: '3m' })).toMatchObject({ ok: false, error: 'not_offered' });
+    expect(titan({ bjjDays: ['sat', 'sun'] })).toMatchObject({ ok: false, error: 'not_offered' });
+    expect(titan({ swimDays: ['sat'] })).toMatchObject({ ok: false, error: 'separate_sports' });
+  });
+  it('still a kid in the family: family discount applies', () => {
+    expect(titan({ familyKidCount: 2 })).toMatchObject({ ok: true, familyPct: 7, total: 93 });
+  });
+});
+
+describe('open pool membership', () => {
+  it('40 KD for 4 weeks, adults only, no discounts', () => {
+    expect(priceOpenPool('adult', '4w')).toMatchObject({ ok: true, total: 40, weeks: 4 });
+    expect(priceOpenPool('kid', '4w')).toMatchObject({ ok: false, error: 'not_offered' });
+    expect(priceOpenPool('adult', '3m')).toMatchObject({ ok: false, error: 'not_offered' });
   });
 });

@@ -84,7 +84,6 @@ We are building:
 
 ### Out of scope for version 1
 - **Online store** (goggles, caps, towels, apparel) → version 2
-- **Women's adult classes** → later (the system must allow adding them without new code)
 - **Automatic renewal** (auto-charging cards) → not planned; renewal is always manual
 - **Coach payroll** → reports only, no salary calculation
 - LOSE | GAIN **Center** (the separate fitness center with monthly programs) → not part of this product
@@ -94,8 +93,17 @@ We are building:
 ### 6.1 Sports, ages and schedule
 - **Swimming** and **jiu-jitsu**, open **Saturday to Thursday** (Friday closed).
 - Kids classes: **ages 5–11**. Under 5 only by coach exception after a trial.
-- Jiu-jitsu **Titans**: **ages 11–15**.
+- **Jiu-jitsu timetable** (updated 2026-11-18, owner's sheets in `docs/pricing/`):
+  - **Warriors 1 (5–7):** 4 PM Sat/Mon/Wed · 5 PM Sun/Tue/Thu
+  - **Warriors 2 (8–10):** 4 PM Sun/Tue/Thu · 5 PM Sat/Mon/Wed (from 11 a kid moves to Titans)
+  - **Titans (11–15) and adults:** one class, **6–7:30 PM, Sunday to Thursday**. Gi Thursday → Monday, No-Gi Tuesday and Wednesday.
+  - **Women:** 7:30–8:30 PM Sun/Tue/Thu. Women may also join the 6 PM adult class on any day.
+  - **Saturday open mat:** 6 PM, **free** (not a paid class day).
+  - Because kids' times change by day, each subscription keeps **a time per jiu-jitsu day**.
 - **Adult men's swimming:** 4pm, Sun/Tue/Thu.
+- **Open pool membership** (adults, men and women together): 10:30 AM–3 PM and 7:30–9 PM, Saturday to Thursday, unlimited visits, **40 KD for 4 weeks**. **Freeze once for 1 week** (member asks in the app, reception approves; end date +7 days). Staff can **close the pool** for a day or one session: members are notified and get **1 extra day per closed date**.
+- The complex is open **10:30 AM–9 PM**.
+- Staff (owner, manager) **edit class times, length, coach and place** in the admin dashboard; jiu-jitsu members move with their class.
 - Classes are **mixed boys and girls**.
 - Class times: **4pm and 5pm**. Jiu-jitsu time depends on age group. Times change by season (for example, about 3 classes a day in summer), so staff must be able to edit them.
 - Swimming: **two pools** (Olympic pool upstairs, kids' pool downstairs). Kids use either, based on level.
@@ -114,6 +122,19 @@ We are building:
 | **4 weeks** | 65 KD | 90 KD | 105 KD | 120 KD *(jiu-jitsu only)* | 130 KD *(jiu-jitsu only)* |
 
 **Adults (men's swimming), 1 month:** 2 days/week = 75 KD · 3 days/week = 90 KD.
+
+**Adult jiu-jitsu** (Sunday to Thursday; family and multi-month discounts are **kids only**):
+
+| | 2 days | 3 days | 4 days | 5 days | 6 days* |
+|---|---|---|---|---|---|
+| **Men, 4 weeks** | 75 | 100 | 110 | 125 | 140 |
+| **Women, 4 weeks** | 75 | 90 | 105 | 120 | 130 |
+| **Men / women, 2 weeks** | — | 70 | 80 | 90 | — |
+| **Men / women, 1 week** | — | 35 | 40 | 45 | — |
+
+\*6 days stays on the price list for when a Saturday class returns; it can't be chosen now. **Titans (11–15)** pay the **men's 4-week** prices (4 weeks only), and still count for the family discount. Swimming and jiu-jitsu are registered separately for adults and Titans.
+
+**Open pool:** 40 KD per 4 weeks, no discounts.
 
 - **Mixed sports:** price is based on **total class days per week** across both sports. Example: 2 days swimming + 2 days jiu-jitsu = 4 days = **105 KD** for 4 weeks.
 - **Swimming and jiu-jitsu on the same day count as 2 days** (each class counts).

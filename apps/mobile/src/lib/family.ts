@@ -4,6 +4,9 @@ import type { Kid } from './data';
 import { supabase } from './supabase';
 
 export type Sub = SubLike & {
+  kind: 'classes' | 'open_pool';
+  freeze_status: 'requested' | 'approved' | 'rejected' | null;
+  freeze_start: string | null;
   payment_link_at: string | null;
   sessions_total: number;
   sessions_used: number;
@@ -19,7 +22,15 @@ export type ClassRow = {
   weekday: string;
   start_time: string;
   coach_id: string | null;
+  label: string | null;
+  duration_min: number;
+  audience: 'all' | 'women';
+  is_free: boolean;
+  min_age: number | null;
+  max_age: number | null;
 };
+
+export const CLASS_COLS = 'id, sport, age_group, location, weekday, start_time, coach_id, label, duration_min, audience, is_free, min_age, max_age';
 
 export type FamilyData = {
   kids: (Kid & { stripes: { count: number }[] })[];
@@ -33,7 +44,7 @@ export type FamilyData = {
 export async function loadFamily(parentId: string): Promise<FamilyData> {
   const [kidsRes, classesRes, coachesRes] = await Promise.all([
     supabase.from('kids').select('*, stripes(count)').eq('parent_id', parentId).order('created_at'),
-    supabase.from('classes').select('id, sport, age_group, location, weekday, start_time, coach_id').eq('is_active', true),
+    supabase.from('classes').select(CLASS_COLS).eq('is_active', true),
     supabase.rpc('coach_directory'),
   ]);
   const kids = (kidsRes.data ?? []) as FamilyData['kids'];
@@ -42,7 +53,7 @@ export async function loadFamily(parentId: string): Promise<FamilyData> {
   const [subsRes, cancelsRes] = await Promise.all([
     supabase
       .from('subscriptions')
-      .select('id, kid_id, swim_days, bjj_days, start_time, start_date, end_date, status, sessions_total, sessions_used, total, weeks, payment_link_at')
+      .select('id, kid_id, kind, swim_days, bjj_days, start_time, bjj_times, start_date, end_date, status, sessions_total, sessions_used, total, weeks, payment_link_at, freeze_status, freeze_start')
       .in('kid_id', kids.map((k) => k.id))
       .in('status', ['active', 'pending_payment'])
       .order('end_date'),

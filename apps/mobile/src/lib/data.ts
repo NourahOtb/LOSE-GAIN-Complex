@@ -25,11 +25,28 @@ export type Kid = {
   gender: 'male' | 'female' | null;
 };
 
+/** Price group in jiu-jitsu: kid (Warriors), titan (11–15), adult (16+ or the account holder). */
+export function memberType(kid: Pick<Kid, 'birth_date' | 'is_self'>): 'kid' | 'titan' | 'adult' {
+  const age = ageOn(kid.birth_date);
+  if (kid.is_self || age >= 16) return 'adult';
+  return age >= 11 ? 'titan' : 'kid';
+}
+
+/** "4 PM", "7:30 PM" / "٤ م", "٧:٣٠ م" */
+export function clockTime(time: string, lang: 'ar' | 'en'): string {
+  const [h, m] = time.slice(0, 5).split(':').map(Number);
+  const h12 = h % 12 || 12;
+  const s = m ? `${h12}:${String(m).padStart(2, '0')}` : `${h12}`;
+  if (lang === 'ar') return `${s.replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)])} ${h < 12 ? 'ص' : 'م'}`;
+  return `${s} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
 /** Which timetable group a member trains in: adults (16+ or the account holder), Titans (jiu-jitsu 11–15), or kids. */
 export function ageGroupOf(sport: 'swimming' | 'jiujitsu', kid: Pick<Kid, 'birth_date' | 'is_self'>): 'kids' | 'titans' | 'adults' {
   const age = ageOn(kid.birth_date);
   if (kid.is_self || age >= 16) return 'adults';
-  if (sport === 'jiujitsu' && age >= 11) return 'titans';
+  // Titans (11–15) train with the adults in jiu-jitsu (6 PM class)
+  if (sport === 'jiujitsu' && age >= 11) return 'adults';
   return 'kids';
 }
 

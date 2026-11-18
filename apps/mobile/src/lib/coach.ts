@@ -1,7 +1,7 @@
-import { ageOn, isoDate, type Sport } from '@lg/shared';
+import { isoDate, timeOf, type Sport } from '@lg/shared';
 
 import { ageGroupOf, type Belt, type Kid, type Stripe } from './data';
-import type { ClassRow, Sub } from './family';
+import { CLASS_COLS, type ClassRow, type Sub } from './family';
 import { supabase } from './supabase';
 
 export const BELT_ORDER: Belt[] = [
@@ -27,10 +27,10 @@ export async function loadCoachData(sport: Sport): Promise<CoachData> {
     supabase.from('kids').select('*').order('full_name'),
     supabase
       .from('subscriptions')
-      .select('id, kid_id, swim_days, bjj_days, start_time, start_date, end_date, status, sessions_total, sessions_used, total, weeks')
+      .select('id, kid_id, kind, swim_days, bjj_days, start_time, bjj_times, start_date, end_date, status, sessions_total, sessions_used, total, weeks')
       .in('status', ['active', 'pending_payment']),
     supabase.from('stripes').select('*').order('awarded_on'),
-    supabase.from('classes').select('id, sport, age_group, location, weekday, start_time, coach_id').eq('sport', sport).eq('is_active', true).order('start_time'),
+    supabase.from('classes').select(CLASS_COLS).eq('sport', sport).eq('is_active', true).order('start_time'),
     supabase.from('class_cancellations').select('class_id, on_date').gte('on_date', since),
   ]);
   return {
@@ -48,7 +48,7 @@ export const daysOf = (s: Sub, sport: Sport) => (sport === 'swimming' ? s.swim_d
 export function kidsInClass(data: CoachData, cls: ClassRow, dateIso: string) {
   const sport = cls.sport;
   return data.subs
-    .filter((s) => daysOf(s, sport).includes(cls.weekday) && s.start_time.slice(0, 5) === cls.start_time.slice(0, 5))
+    .filter((s) => daysOf(s, sport).includes(cls.weekday) && timeOf(s, sport, cls.weekday).slice(0, 5) === cls.start_time.slice(0, 5))
     .filter((s) => dateIso >= s.start_date && dateIso <= s.end_date)
     .map((s) => ({ sub: s, kid: data.kids.find((k) => k.id === s.kid_id)! }))
     .filter(({ kid }) => {

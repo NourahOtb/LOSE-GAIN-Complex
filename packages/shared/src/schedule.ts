@@ -7,6 +7,8 @@ export type SubLike = {
   swim_days: string[];
   bjj_days: string[];
   start_time: string;
+  /** jiu-jitsu time per day when it differs by day ({"sat":"16:00","sun":"17:00"}); otherwise start_time */
+  bjj_times?: Record<string, string> | null;
   start_date: string;
   end_date: string;
   status: string;
@@ -43,6 +45,11 @@ const atTime = (day: Date, time: string) => {
 const isCancelled = (cancels: CancelLike[], date: string, sport: Sport, time: string) =>
   cancels.some((c) => c.on_date === date && c.sport === sport && hhmm(c.start_time) === hhmm(time));
 
+/** The class time of one day of a subscription. */
+export function timeOf(sub: SubLike, sport: Sport, day: string): string {
+  return (sport === 'jiujitsu' && sub.bjj_times?.[day]) || sub.start_time;
+}
+
 export function daysFor(sub: SubLike, sport: Sport): string[] {
   return sport === 'swimming' ? sub.swim_days : sub.bjj_days;
 }
@@ -60,8 +67,9 @@ export function nextClass(subs: SubLike[], cancels: CancelLike[], now: Date): Ne
       if (sub.status !== 'active' || iso < sub.start_date || iso > sub.end_date) continue;
       for (const sport of ['swimming', 'jiujitsu'] as const) {
         if (!daysFor(sub, sport).includes(wd)) continue;
-        const at = atTime(day, sub.start_time);
-        if (at <= now || isCancelled(cancels, iso, sport, sub.start_time)) continue;
+        const time = timeOf(sub, sport, wd);
+        const at = atTime(day, time);
+        if (at <= now || isCancelled(cancels, iso, sport, time)) continue;
         if (!best || at < best.at) best = { sub, sport, at };
       }
     }
@@ -81,8 +89,9 @@ export function weekMarks(sub: SubLike, sport: Sport, cancels: CancelLike[], now
     const d = addDays(start, i);
     const iso = isoDate(d);
     if (!daysFor(sub, sport).includes(day) || iso < sub.start_date || iso > sub.end_date) return { day, date: iso, mark: 'none' };
-    if (isCancelled(cancels, iso, sport, sub.start_time)) return { day, date: iso, mark: 'cancelled' };
-    if (atTime(d, sub.start_time) <= now) return { day, date: iso, mark: 'done' };
+    const time = timeOf(sub, sport, day);
+    if (isCancelled(cancels, iso, sport, time)) return { day, date: iso, mark: 'cancelled' };
+    if (atTime(d, time) <= now) return { day, date: iso, mark: 'done' };
     if (!nextGiven) {
       nextGiven = true;
       return { day, date: iso, mark: 'next' };
@@ -103,12 +112,14 @@ export function daysUntil(endIso: string, now: Date): number {
  * Start-date choices: every date in the next `horizonDays` that falls on one of the
  * chosen class days. Today only counts if the class time hasn't passed yet.
  */
-export function startOptions(classDays: string[], startTime: string, now: Date, horizonDays = 14): string[] {
+export function startOptions(classDays: string[], startTime: string | ((day: string) => string), now: Date, horizonDays = 14): string[] {
   const out: string[] = [];
   for (let i = 0; i < horizonDays; i++) {
     const day = addDays(now, i);
-    if (!classDays.includes(weekdayOf(day))) continue;
-    if (i === 0 && atTime(day, startTime) <= now) continue;
+    const wd = weekdayOf(day);
+    if (!classDays.includes(wd)) continue;
+    const time = typeof startTime === 'function' ? startTime(wd) : startTime;
+    if (i === 0 && atTime(day, time) <= now) continue;
     out.push(isoDate(day));
   }
   return out;

@@ -48,15 +48,16 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Links from log-in and Settings; tested EN + AR, light + dark
 - [ ] Waiting for more information from the owner (edit `apps/mobile/src/lib/about.ts`)
 
-### 17. Full timetable + open pool (all questions answered)
-- [ ] Classes in the database: Warriors 1 and 2, Adults + Titans 6–7:30 PM (Gi / No-Gi), Women 7:30 PM, men's swimming 4 PM; old 4 PM Titans removed
-- [ ] Prices in the calculator (kids, men + Titans, women, 1 / 2 / 4 weeks), with tests; discounts kids only
-- [ ] Registration: women can mix 6 PM and 7:30 PM days; Saturday open mat shown as free
-- [ ] Open pool membership (40 KD / 4 weeks) + 1-week freeze (member asks, reception approves)
-- [ ] Admin: cancel open pool (a day or a time window) → notification + 1 day extension per cancelled day
-- [ ] Admin: edit class times, length and coach
-- [ ] Coach view, admin and About page show the new classes; PRD updated
-- [ ] Test, commit + push
+### 17. Full timetable + open pool ✅ done 2026-11-18
+- [x] Classes in the database: Warriors 1 and 2, Adults + Titans 6–7:30 PM (Gi / No-Gi), Women 7:30 PM, Saturday open mat (free), men's swimming 4 PM; old 4 PM Titans removed (migration 0009)
+- [x] A time per jiu-jitsu day on every subscription; existing members moved to their new class times
+- [x] Prices in the calculator (kids, men + Titans, women, 1 / 2 / 4 weeks, open pool), with tests (56 passing); discounts kids only
+- [x] Registration adapts to who's joining: kids, Titans, men, women (6 PM or 7:30 PM), open pool; asks male/female if missing
+- [x] Open pool membership (40 KD / 4 weeks) + 1-week freeze (member asks, reception approves)
+- [x] Admin: close the open pool (day or session) → notification + 1 extra day; freeze requests with Approve / Reject
+- [x] Admin: new Classes page to edit time, length, coach, place (owner and manager)
+- [x] Coach view, admin Today and About page use the new classes; PRD updated
+- [x] Tested on the website: Warriors times, men's prices, open pool, freeze, closure, class edit
 
 ### 12. Guardian ↔ coach chat
 - [ ] Database: conversations + messages + security rules (migration 0008)

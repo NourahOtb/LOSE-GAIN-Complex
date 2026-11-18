@@ -1,9 +1,10 @@
-import { ageOn, daysUntil, formatKD, nextClass, weekMarks, type Mark, type Sport } from '@lg/shared';
+import { addDays, daysUntil, formatKD, isoDate, nextClass, timeOf, weekMarks, type Mark, type Sport } from '@lg/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { BeltBar } from '@/components/belt';
+import { DateStrip } from '@/components/date-strip';
 import { HomeHeader } from '@/components/home-header';
 import { PaceClock } from '@/components/pace-clock';
 import { Button, Label, Screen, T } from '@/components/ui';
@@ -13,6 +14,7 @@ import { ageGroupOf } from '@/lib/data';
 import { findClass, loadFamily, type FamilyData } from '@/lib/family';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
+import { supabase } from '@/lib/supabase';
 import { sportColor, usePalette } from '@/lib/theme';
 
 const DAYS = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu'] as const;
@@ -92,7 +94,7 @@ export default function ParentHome() {
     if (!next) return null;
     const kid = kidById.get(next.sub.kid_id);
     const wd = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][next.at.getDay()];
-    const cls = kid ? findClass(data.classes, next.sport, wd, next.sub.start_time, ageGroupOf(next.sport, kid)) : undefined;
+    const cls = kid ? findClass(data.classes, next.sport, wd, timeOf(next.sub, next.sport, wd), ageGroupOf(next.sport, kid)) : undefined;
     const isToday = next.at.toDateString() === now.toDateString();
     const isTomorrow = next.at.toDateString() === new Date(now.getTime() + 86400000).toDateString();
     const when = isToday ? t('home.today') : isTomorrow ? t('home.tomorrow') : next.at.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' });
@@ -122,6 +124,11 @@ export default function ParentHome() {
                 {nextInfo.time}
               </T>
               <T size={13}>{nextInfo.coach ? t('home.with', { when: nextInfo.when, coach: nextInfo.coach }) : nextInfo.when}</T>
+            </View>
+          ) : active.some((s) => s.kind === 'open_pool') ? (
+            <View style={{ flex: 1, gap: 4 }}>
+              <Label color={p.swim}>{t('pool.title')}</Label>
+              <T w="semibold">{t('pool.hours')}</T>
             </View>
           ) : (
             <View style={{ flex: 1, gap: 8 }}>
@@ -154,6 +161,7 @@ export default function ParentHome() {
             {[...active, ...pending].map((s) => {
               const kid = kidById.get(s.kid_id);
               if (!kid) return null;
+              if (s.kind === 'open_pool') return <PoolRow key={s.id} sub={s} name={kid.full_name} lastAttempt={attempts[s.id]} onChanged={load} />;
               const sport: Sport = s.swim_days.length >= s.bjj_days.length ? 'swimming' : 'jiujitsu';
               const left = s.sessions_total - s.sessions_used;
               const end = new Date(s.end_date + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' });
@@ -283,6 +291,84 @@ function PayOnline({ subscriptionId, lastAttempt }: { subscriptionId: string; la
           {error}
         </T>
       ) : null}
+    </View>
+  );
+}
+
+/** An open pool membership on the home screen: until when, and the 1-week freeze. */
+function PoolRow({ sub, name, lastAttempt, onChanged }: { sub: FamilyData['subs'][number]; name: string; lastAttempt?: PayStatus; onChanged: () => void }) {
+  const { t, lang } = useI18n();
+  const p = usePalette();
+  const [open, setOpen] = useState(false);
+  const [start, setStart] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const locale = lang === 'ar' ? 'ar-KW' : 'en-GB';
+  const fmt = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  const isPending = sub.status === 'pending_payment';
+
+  // freeze can start any day from today (or the start date) up to the end, except Fridays
+  const today = new Date();
+  const first = sub.start_date > isoDate(today) ? new Date(sub.start_date + 'T00:00:00') : today;
+  const dates: string[] = [];
+  for (let i = 0; i < 28 && dates.length < 14; i++) {
+    const d = addDays(first, i);
+    const iso = isoDate(d);
+    if (iso > sub.end_date) break;
+    if (d.getDay() !== 5) dates.push(iso);
+  }
+
+  const send = async () => {
+    if (!start) return;
+    setBusy(true);
+    setError('');
+    const { error: err } = await supabase.rpc('request_pool_freeze', { p_sub: sub.id, p_start: start });
+    setBusy(false);
+    if (err) return setError(t('err.generic'));
+    setOpen(false);
+    onChanged();
+  };
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: p.line }}>
+      <View style={{ width: 52, height: 52, borderRadius: 4, backgroundColor: p.tile, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: 30, height: 4, backgroundColor: p.swim, marginBottom: 5 }} />
+        <View style={{ width: 30, height: 4, backgroundColor: p.swim }} />
+      </View>
+      <View style={{ flex: 1, gap: 4 }}>
+        <T w="semibold" size={16}>
+          {name}
+        </T>
+        <T size={12} color={isPending ? p.bjj : p.inkSoft}>
+          {isPending ? `${t('pool.title')} · ${t('home.pending', { amount: formatKD(sub.total, lang ?? 'en') })}` : t('pool.until', { date: fmt(sub.end_date) })}
+        </T>
+        {isPending ? <PayOnline subscriptionId={sub.id} lastAttempt={lastAttempt} /> : null}
+        {sub.status === 'active' && sub.freeze_status === 'requested' && sub.freeze_start ? (
+          <T size={12} color={p.inkSoft}>{t('pool.freezeRequested', { date: fmt(sub.freeze_start) })}</T>
+        ) : null}
+        {sub.status === 'active' && sub.freeze_status === 'approved' && sub.freeze_start ? (
+          <T size={12} color={p.swim}>{t('pool.freezeApproved', { date: fmt(sub.freeze_start) })}</T>
+        ) : null}
+        {sub.status === 'active' && sub.freeze_status === 'rejected' ? (
+          <T size={12} color={p.danger}>{t('pool.freezeRejected')}</T>
+        ) : null}
+        {sub.status === 'active' && (!sub.freeze_status || sub.freeze_status === 'rejected') && dates.length > 0 ? (
+          open ? (
+            <View style={{ gap: 8, marginTop: 4 }}>
+              <T w="semibold" size={14}>{t('pool.freezeTitle')}</T>
+              <T size={12} color={p.inkSoft}>{t('pool.freezeHint')}</T>
+              <DateStrip dates={dates} value={start} onChange={setStart} />
+              {error ? <T size={12} color={p.danger}>{error}</T> : null}
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Button title={t('pool.freezeSend')} onPress={send} loading={busy} disabled={!start} style={{ minHeight: 40, paddingHorizontal: 14 }} />
+                <Button variant="ghost" title={t('common.cancel')} onPress={() => setOpen(false)} style={{ minHeight: 40, paddingHorizontal: 14 }} />
+              </View>
+            </View>
+          ) : (
+            <Button variant="link" title={t('pool.freeze')} onPress={() => setOpen(true)} style={{ alignSelf: 'flex-start' }} />
+          )
+        ) : null}
+      </View>
     </View>
   );
 }

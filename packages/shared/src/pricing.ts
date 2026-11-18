@@ -18,6 +18,12 @@ export type PricingConfig = {
   /** adult men's swimming, 4 weeks, by days per week, and which days it runs */
   adults: Partial<Record<number, number>>;
   adultDays: Weekday[];
+  /** adult jiu-jitsu by package length (weeks) → days per week → KD. Titans (11–15) pay the men's 4-week prices. */
+  adultBjj: { male: Record<1 | 2 | 4, Partial<Record<number, number>>>; female: Record<1 | 2 | 4, Partial<Record<number, number>>> };
+  /** paid adult jiu-jitsu days (Saturday is the free open mat for now) */
+  adultBjjDays: Weekday[];
+  /** open pool membership (adults, men and women) per 4 weeks */
+  openPool: number;
   /** family discount % by number of kids in the family (5 = "5 or more") */
   family: Record<number, number>;
   /** multi-month discount % by months */
@@ -35,13 +41,23 @@ export const DEFAULT_PRICING: PricingConfig = {
   bjjOnlyDays: [5, 6],
   adults: { 2: 75, 3: 90 },
   adultDays: ['sun', 'tue', 'thu'],
+  // 6 days (men 140, women 130) stays on the price sheet for when a Saturday class returns; not offered now
+  adultBjj: {
+    male: { 4: { 2: 75, 3: 100, 4: 110, 5: 125 }, 2: { 3: 70, 4: 80, 5: 90 }, 1: { 3: 35, 4: 40, 5: 45 } },
+    female: { 4: { 2: 75, 3: 90, 4: 105, 5: 120 }, 2: { 3: 70, 4: 80, 5: 90 }, 1: { 3: 35, 4: 40, 5: 45 } },
+  },
+  adultBjjDays: ['sun', 'mon', 'tue', 'wed', 'thu'],
+  openPool: 40,
   family: { 2: 7, 3: 10, 4: 12, 5: 15 },
   months: { 3: 15, 6: 25, 12: 30 },
   combineDiscounts: 'add',
 };
 
 export type PriceInput = {
-  member: 'kid' | 'adult';
+  /** kid (5–10, or swimming up to 15), titan (11–15 in jiu-jitsu), adult (16+ or the account holder) */
+  member: 'kid' | 'titan' | 'adult';
+  /** adults: men's or women's prices (adult swimming is men only) */
+  gender?: 'male' | 'female';
   swimDays: Weekday[];
   bjjDays: Weekday[];
   duration: Duration;
@@ -49,7 +65,7 @@ export type PriceInput = {
   familyKidCount: number;
 };
 
-export type PriceError = 'invalid_day' | 'duplicate_day' | 'too_few_days' | 'too_many_days' | 'five_plus_bjj_only' | 'not_offered';
+export type PriceError = 'invalid_day' | 'duplicate_day' | 'too_few_days' | 'too_many_days' | 'five_plus_bjj_only' | 'not_offered' | 'separate_sports';
 
 export type PriceResult =
   | {
@@ -94,9 +110,19 @@ export function priceSubscription(input: PriceInput, cfg: PricingConfig = DEFAUL
 
   // price for one block (1, 2 or 4 weeks)
   let blockPrice: number | undefined;
-  if (member === 'adult') {
-    if (bjjDays.length > 0 || swimDays.some((d) => !cfg.adultDays.includes(d))) return { ok: false, error: 'not_offered' };
-    // adults: 4-week packages only, and no multi-month discount (kids only)
+  if (member === 'titan') {
+    // Titans train with the adults: jiu-jitsu only in this registration, men's prices, 4 weeks
+    if (swimDays.length > 0) return { ok: false, error: 'separate_sports' };
+    if (duration !== '4w' || bjjDays.some((d) => !cfg.adultBjjDays.includes(d))) return { ok: false, error: 'not_offered' };
+    blockPrice = cfg.adultBjj.male[4][daysPerWeek];
+  } else if (member === 'adult' && bjjDays.length > 0) {
+    if (swimDays.length > 0) return { ok: false, error: 'separate_sports' };
+    if (bjjDays.some((d) => !cfg.adultBjjDays.includes(d)) || months) return { ok: false, error: 'not_offered' };
+    const block = weeks as 1 | 2 | 4;
+    blockPrice = cfg.adultBjj[input.gender === 'female' ? 'female' : 'male'][block]?.[daysPerWeek];
+  } else if (member === 'adult') {
+    // adult swimming: men only, set days, 4-week packages only, no multi-month discount (kids only)
+    if (input.gender === 'female' || swimDays.some((d) => !cfg.adultDays.includes(d))) return { ok: false, error: 'not_offered' };
     if (duration !== '4w') return { ok: false, error: 'not_offered' };
     blockPrice = cfg.adults[daysPerWeek];
   } else {
@@ -109,7 +135,7 @@ export function priceSubscription(input: PriceInput, cfg: PricingConfig = DEFAUL
   if (blockPrice === undefined) return { ok: false, error: 'not_offered' };
 
   const base = fils(blockPrice * (months || 1));
-  const familyPct = member === 'kid' ? familyDiscountPct(input.familyKidCount, cfg) : 0;
+  const familyPct = member !== 'adult' ? familyDiscountPct(input.familyKidCount, cfg) : 0;
   const monthsPct = months ? cfg.months[months as 3 | 6 | 12] : 0;
   const totalPct = cfg.combineDiscounts === 'add' ? familyPct + monthsPct : Math.max(familyPct, monthsPct);
   const discount = fils((base * totalPct) / 100);
@@ -126,6 +152,13 @@ export function priceSubscription(input: PriceInput, cfg: PricingConfig = DEFAUL
     discount,
     total: fils(base - discount),
   };
+}
+
+/** Open pool membership: adults only, 4 weeks, no discounts. */
+export function priceOpenPool(member: 'kid' | 'titan' | 'adult', duration: Duration, cfg: PricingConfig = DEFAULT_PRICING): PriceResult {
+  if (member !== 'adult' || duration !== '4w') return { ok: false, error: 'not_offered' };
+  const base = fils(cfg.openPool);
+  return { ok: true, daysPerWeek: 0, weeks: 4, sessions: 0, base, familyPct: 0, monthsPct: 0, totalPct: 0, discount: 0, total: base };
 }
 
 /** "58.500 KD" / "٥٨٫٥٠٠ د.ك" style display. */

@@ -28,7 +28,7 @@ import {
   loadCoachData,
   type CoachData,
 } from "@/lib/coach";
-import { genderKey, type Kid } from "@/lib/data";
+import { clockTime, genderKey, type Kid } from "@/lib/data";
 import type { ClassRow } from "@/lib/family";
 import { useI18n } from "@/lib/i18n";
 import type { StringKey } from "@/lib/strings";
@@ -91,8 +91,7 @@ export default function CoachClasses() {
   const isCancelled = cls
     ? data.cancelled.some((c) => c.class_id === cls.id && c.on_date === dateIso)
     : false;
-  const timeLabel = (c: ClassRow) =>
-    c.start_time.startsWith("16") ? t("reg.4pm") : t("reg.5pm");
+  const timeLabel = (c: ClassRow) => clockTime(c.start_time, lang ?? "en");
   const placeLabel = (c: ClassRow) => t(`place.${c.location}` as StringKey);
   const fmt = (iso: string) =>
     new Date(iso + "T00:00:00").toLocaleDateString(locale, {
@@ -239,8 +238,8 @@ export default function CoachClasses() {
                   }}
                 >
                   <T w="cond" size={15} color={on ? p.onInk : p.ink}>
-                    {timeLabel(c)} · {placeLabel(c)}
-                    {c.age_group === "titans" ? " · Titans" : ""}
+                    {timeLabel(c)} · {c.label ? t(`class.${c.label}` as StringKey) : placeLabel(c)}
+                    {c.is_free ? ` · ${t("class.free")}` : ""}
                   </T>
                 </Pressable>
               );

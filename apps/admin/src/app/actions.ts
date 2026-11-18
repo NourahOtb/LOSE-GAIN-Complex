@@ -54,3 +54,43 @@ export async function cancelClass(classId: string, dateIso: string, compensation
   revalidatePath("/", "layout");
   return { ok: `Cancelled. ${data ?? 0} parent${data === 1 ? "" : "s"} notified.` };
 }
+
+/** Close the open pool for a day or one session; members get a notification and one extra day per closed date. */
+export async function cancelOpenPool(dateIso: string, session: "morning" | "evening" | "day", reason: string) {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.rpc("cancel_open_pool", { p_date: dateIso, p_session: session, p_reason: reason || null });
+  if (error) {
+    if (error.message.includes("duplicate")) return { error: "That session is already closed on this date." };
+    if (error.message.includes("Friday")) return { error: "The complex is closed on Fridays." };
+    return { error: "Could not close the open pool." };
+  }
+  revalidatePath("/", "layout");
+  return { ok: `Closed. ${data ?? 0} member${data === 1 ? "" : "s"} notified.` };
+}
+
+/** Approve or reject an open pool freeze request (approval adds 1 week to the end date). */
+export async function decideFreeze(subscriptionId: string, approve: boolean) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("decide_pool_freeze", { p_sub: subscriptionId, p_approve: approve });
+  if (error) return { error: "Could not save. The request may already be decided." };
+  revalidatePath("/", "layout");
+  return { ok: approve ? "Approved" : "Rejected" };
+}
+
+/** Change a class's time, length, coach, place, or switch it off (super admin and manager). */
+export async function updateClass(classId: string, form: { start: string; duration: number; coach: string; location: string; active: boolean }) {
+  const { supabase, profile } = await requireStaff();
+  if (profile.role !== "super_admin" && profile.role !== "manager") return { error: "Only the owner or a manager can change classes." };
+  if (!/^\d{2}:\d{2}$/.test(form.start)) return { error: "Enter a time like 18:00." };
+  const { error } = await supabase.rpc("update_class", {
+    p_class: classId,
+    p_start: form.start,
+    p_duration: form.duration,
+    p_coach: form.coach || null,
+    p_location: form.location,
+    p_active: form.active,
+  });
+  if (error) return { error: error.message.includes("unique") || error.message.includes("duplicate") ? "Another class already uses that place at that time." : "Could not save the class." };
+  revalidatePath("/", "layout");
+  return { ok: "Saved" };
+}

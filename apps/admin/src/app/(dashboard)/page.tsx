@@ -3,7 +3,8 @@ import { daysUntil } from "@lg/shared";
 import { CancelClass } from "@/components/cancel-class";
 import { MarkPaid } from "@/components/mark-paid";
 import { requireStaff } from "@/lib/auth";
-import { booked, expiringWithin, isoDate, kd, loadDashboard, packageLabel, PLACE, shortDate, time12, weekdayOf } from "@/lib/data";
+import { OpenPool } from "@/components/open-pool";
+import { booked, classLabel, expiringWithin, isoDate, kd, loadDashboard, packageLabel, shortDate, time12, weekdayOf } from "@/lib/data";
 
 export default async function TodayPage() {
   const { supabase, profile } = await requireStaff();
@@ -63,7 +64,7 @@ export default async function TodayPage() {
                   const n = booked(d, c, todayIso).length;
                   const cancelled = d.cancels.some((x) => x.class_id === c.id && x.on_date === todayIso);
                   const color = c.sport === "swimming" ? "var(--swim)" : "var(--bjj)";
-                  const label = `${c.sport === "swimming" ? "Swim" : "Jiu-jitsu"} · ${PLACE[c.location]}${c.age_group === "titans" ? " · Titans" : ""}`;
+                  const label = `${classLabel(c)}${c.is_free ? " · free" : ""}`;
                   return (
                     <div key={c.id} className="flex flex-wrap items-center gap-3 border-b border-line/60 px-4 py-2.5 last:border-0">
                       <span className="w-48 text-[15px]">
@@ -91,6 +92,15 @@ export default async function TodayPage() {
         </section>
 
         <div className="flex flex-col gap-7">
+          <OpenPool
+            todayIso={todayIso}
+            members={active.filter((s) => s.kind === "open_pool").length}
+            freezes={d.subs
+              .filter((s) => s.kind === "open_pool" && s.freeze_status === "requested")
+              .map((s) => ({ id: s.id, name: kidById.get(s.kid_id)?.full_name ?? "", start: s.freeze_start ?? "", end: s.end_date }))}
+            closures={d.poolClosures}
+          />
+
           {/* waiting for payment */}
           <section aria-labelledby="pending">
             <h2 id="pending" className="label mb-2">
@@ -156,7 +166,7 @@ export default async function TodayPage() {
                       <tr key={s.id} className="border-b border-line">
                         <td className="py-2.5">
                           <span className="font-semibold">{kid?.full_name}</span>
-                          <span className="text-ink-soft"> · {s.swim_days.length ? "Swim" : "BJJ"}</span>
+                          <span className="text-ink-soft"> · {s.kind === "open_pool" ? "Open pool" : s.swim_days.length ? "Swim" : "BJJ"}</span>
                         </td>
                         <td className="py-2.5">
                           {shortDate(s.end_date)}
@@ -164,7 +174,7 @@ export default async function TodayPage() {
                             {left === 0 ? "today" : `in ${left} day${left === 1 ? "" : "s"}`}
                           </span>
                         </td>
-                        <td className="py-2.5 text-right">{s.sessions_total - s.sessions_used} classes</td>
+                        <td className="py-2.5 text-right">{s.kind === "open_pool" ? "—" : `${s.sessions_total - s.sessions_used} classes`}</td>
                       </tr>
                     );
                   })}

@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/", label: "Today" },
   { href: "/registrations", label: "Registrations" },
   { href: "/kids", label: "Members & families" },
+  { href: "/classes", label: "Classes" },
 ];
 
 export function NavLinks({ compact }: { compact?: boolean }) {
