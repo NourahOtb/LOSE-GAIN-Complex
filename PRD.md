@@ -361,6 +361,14 @@ We are building:
 - **Download Excel:** one file per month with sheets Summary (this month vs last), Attendance by class, Attendance by member, Not renewed, New members.
 - The current month counts only up to today.
 
+### 7.6b Money reports *(built 2026-11-18)*
+- **Dashboard → Money** (owner, accountant and **manager**; *owner's choice 2026-11-18, the roles table said owner + accountant*), one month at a time, compared with the month before.
+- Money counts on the **day it was paid** (Kuwait time). A registration with swimming and jiu-jitsu is **split by number of days**.
+- **Net income** (payments − refunds), payments (count and average), **discounts given**, refunds, and what's **waiting for payment** right now.
+- A bar for **each day**, and totals **by sport** (swimming / jiu-jitsu / open pool), **online vs desk** (app, KNET machine, payment link) and **by member** (kids / Titans / adults).
+- Lists of every payment (member, package, how it was paid, discount) and every refund.
+- **Download Excel:** Summary (this month vs last), Each day, Payments, Refunds (KD with 3 decimals).
+
 ### 7.7 Notifications
 Sent whenever something important changes or needs attention:
 - Class cancelled (by a coach or staff), and what the parent gets (make-up, extension)

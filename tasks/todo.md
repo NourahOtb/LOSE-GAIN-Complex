@@ -97,6 +97,6 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] 14f. Prices + discounts editor: owner edits all prices and discount %s, live at once for new registrations (app, server, desk, assistant), change history ✅ 2026-11-18
 - [x] 14g. Staff accounts + roles (owner all, managers coaches/reception), temporary passwords, switch off, change password, new family at the desk + WhatsApp ✅ 2026-11-18
 - [x] 14h. Reports + Excel export: members (active, new, not renewed in 30 days), attendance by class / member, missed 2+ with Check on them (inbox + WhatsApp), month vs last month, Excel download ✅ 2026-11-18
-- [ ] 14i. Money reports
+- [x] 14i. Money reports: net income, payments, discounts, refunds, each day, by sport (split by days), online vs desk, by member, waiting for payment, Excel ✅ 2026-11-18
 - [ ] 14j. Waitlist with class capacity
 

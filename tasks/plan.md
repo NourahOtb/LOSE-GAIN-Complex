@@ -107,7 +107,7 @@ Built one at a time, in this order; Claude asks before each and asks any missing
 | 14f | **Prices + discounts editor** ✅ | Prices move from code into the database; owner edits tables and discounts; app, `register` and assistant all read the same saved prices |
 | 14g | **Staff accounts + roles** ✅ | Owner manages all staff, managers coaches and reception; temporary password shown once, then the person chooses their own; switch off keeps history; reception creates new families at the desk with a WhatsApp login message |
 | 14h | **Reports + Excel export** ✅ | Members (active, new, not renewed), attendance per class / member, month-over-month; download as Excel |
-| 14i | **Money reports** | Revenue by day / month, sport, online vs desk, discounts given (owner + accountant) |
+| 14i | **Money reports** ✅ | Revenue by day / month, sport, online vs desk, discounts given (owner + accountant) |
 | 14j | **Waitlist** | Class capacity enforced; full class → join waitlist; staff approve when a place opens; family notified |
 
 ## Task 15: Light / dark mode choice + Settings screen (mockup approved 2026-11-18)
