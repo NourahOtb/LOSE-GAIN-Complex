@@ -58,12 +58,24 @@
 
 Four requests from the owner. We do **one task at a time**, and Claude **asks before starting the next one**. Every task ends with: test it in the app, update PRD.md / CAPABILITY-MAP.md / DEMO.md / PRODUCT.md where needed, tick it in [todo.md](todo.md), commit and push (the websites update by themselves).
 
-## Task 11: "Guardian" wording + relationship to the kid
-- Every parent-facing word "parent" becomes **guardian** (EN: "Guardian", AR: "ولي الأمر"), starting with sign-up: "Create a guardian account".
-- Sign-up gets a required **dropdown: "Your relationship to the kid(s)"**: Father, Mother, Grandfather, Grandmother, Brother, Sister, Uncle, Aunt, Other (legal guardian).
-- Database: new `relationship` column on `profiles` (migration `0007`). Existing demo guardians get one filled in.
-- Shown to coaches on the kid page ("Guardian: Noura · Mother") and on the admin Kids & families page.
-- Code: `signup.tsx`, `strings.ts`, `auth.tsx` (sends it at sign-up), the new-user database trigger, `kid/[id].tsx`, admin `kids` page.
+## Task 11: Member sign-up (family or just me) + kid photo and boy/girl
+
+### 11a. Sign-up
+- Title: **"Create a member account" / "إنشاء حساب عضوية"**.
+- First question: **"Who is this account for?" / "لمن هذا الحساب؟"**
+  - **My family**: I'm registering my kids / **عائلتي**: أسجّل أبنائي
+  - **Just me**: I'm joining myself / **أنا فقط**: أسجّل نفسي
+- **My family** → required dropdown **"Your relationship to the kids"**: Father, Mother, Grandfather, Grandmother, Brother, Sister, Uncle, Aunt, Other (legal guardian). In the app this person is the **guardian / ولي الأمر**. They can later tap **"Add myself as a member"**.
+- **Just me** → no relationship, no "Add a kid". Right after sign-up they fill in their **own** health checklist, emergency contact and boy/girl → register themselves for **adult classes only**. Home shows their own next class and sessions left. In the app they're the **member / العضو**.
+- Database (migration `0007`): `account_type` (family / single) and `relationship` on `profiles`; members are stored like kids with an `is_self` flag so classes, pricing, coach view and admin all keep working.
+- Coaches and admin see "Guardian: Noura · Mother" (or "Adult member").
+
+### 11b. Add a kid: photo + boy/girl
+- **Photo** (optional but recommended, as in the PRD): **Take a photo** or **Choose from library** (on phones the camera opens; on the website the phone's camera/file picker). Round preview, can change or remove later.
+- Photos are stored in a **private** Supabase Storage folder: only that family, coaches and staff can see them (same rule as health information).
+- **Boy / Girl** (required): two big buttons **Boy / ولد** and **Girl / بنت**.
+- The photo shows on the kid's card, the coach's class list and kid page, and the admin Kids page; boy/girl shows next to the name.
+- Demo kids get boy/girl filled in.
 
 ## Task 12: Guardian ↔ coach chat (Supabase)
 - Database (migration `0008`): `conversations` (one per guardian + coach + kid) and `messages` (sender, text, time, read). Security rules: only the guardian and that coach can read and write; manager and super admin can **read** (oversight, as the PRD says).

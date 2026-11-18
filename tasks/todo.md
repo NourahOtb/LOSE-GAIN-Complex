@@ -18,12 +18,22 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 
 ## Phase 2
 
-### 11. "Guardian" wording + relationship dropdown ⏳ waiting for your go-ahead
-- [ ] Database: `relationship` on profiles (migration 0007), demo guardians filled in
-- [ ] Sign-up: "Create a guardian account" + required relationship dropdown (EN + AR)
-- [ ] "Parent" → "Guardian" across the app (EN + AR)
-- [ ] Coach kid page + admin Kids page show "Guardian: name · relationship"
-- [ ] Test in English and Arabic, update docs, commit + push
+### 11. Member sign-up + kid photo and boy/girl ⏳ waiting for your go-ahead
+**11a. Sign-up**
+- [ ] Database: account type + relationship on profiles, "self" members (migration 0007)
+- [ ] Sign-up: "Create a member account" + "Who is this account for?" (My family / Just me)
+- [ ] My family → relationship dropdown; "Guardian" wording (EN + AR)
+- [ ] Just me → own health checklist, emergency contact, adult classes only, own home screen
+- [ ] "Add myself as a member" for family accounts
+- [ ] Coaches + admin see "Guardian: name · relationship" / "Adult member"
+
+**11b. Add a kid: photo + boy/girl**
+- [ ] Database: `gender` on kids + private photo storage with security rules
+- [ ] Add kid: Boy / Girl (required) + Take a photo / Choose from library (optional)
+- [ ] Photo + boy/girl shown on kid cards, coach class list and kid page, admin Kids page
+- [ ] Demo kids filled in
+
+- [ ] Test in English and Arabic (phone + website), update docs, commit + push
 
 ### 12. Guardian ↔ coach chat
 - [ ] Database: conversations + messages + security rules (migration 0008)
