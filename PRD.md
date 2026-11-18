@@ -173,7 +173,8 @@ We are building:
 - **Health checklist (required for every kid and adult member):** asthma, allergies, epilepsy, heart condition, recent injury or surgery, medications, other (text), or "none". Anything ticked shows a **red health badge** to coaches and reception.
 - **Required agreements:** terms & rules (including the pause and refund policy) and a liability waiver.
 - **Required emergency contact:** a second phone number.
-- **Kid photo:** optional but recommended. Parents upload it, or the receptionist uploads one or takes it on the spot.
+- **Kid photo:** optional but recommended. Guardians **take a photo or choose one from the library** when adding a kid, and can change or remove it later from the Family tab. The receptionist can upload one or take it on the spot (admin upload: later). Photos are stored **privately**: only that family, coaches and staff can open them. *(Built 2026-11-18.)*
+- **Boy or girl (required):** asked for every new kid (**Boy / Girl**) and adult member (**Male / Female**), and shown next to the name, because names can be confusing.
 
 ### 6.11 Renewal reminders (automatic)
 - **7 days**, **3 days** and **1 day** before expiry, **on the expiry day**, and **2 days after**.

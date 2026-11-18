@@ -35,6 +35,11 @@ const REL: Record<string, string> = {
   guardian: "Legal guardian",
 };
 
+function genderLabel(g: string, adult: boolean) {
+  if (g === "male") return adult ? "Male" : "Boy";
+  return adult ? "Female" : "Girl";
+}
+
 export default async function KidsPage() {
   const { supabase } = await requireStaff();
   const [kidsRes, parentsRes, stripesRes, subsRes] = await Promise.all([
@@ -43,7 +48,14 @@ export default async function KidsPage() {
     supabase.from("stripes").select("kid_id, belt"),
     supabase.from("subscriptions").select("kid_id, status, end_date").in("status", ["active", "pending_payment"]),
   ]);
-  const kids = (kidsRes.data ?? []) as (Kid & { belt_since: string | null; is_self: boolean })[];
+  const kids = (kidsRes.data ?? []) as (Kid & { belt_since: string | null; is_self: boolean; gender: string | null; photo_url: string | null })[];
+  // private photos: short-lived links, only for staff (database rules)
+  const photoPaths = kids.map((k) => k.photo_url).filter((x): x is string => !!x);
+  const photos = new Map<string, string>();
+  if (photoPaths.length) {
+    const { data } = await supabase.storage.from("kid-photos").createSignedUrls(photoPaths, 3600);
+    for (const d of data ?? []) if (d.path && d.signedUrl) photos.set(d.path, d.signedUrl);
+  }
   const parents = new Map(
     (parentsRes.data ?? []).map((p: { id: string; full_name: string; phone: string | null; relationship: string | null }) => [p.id, p]),
   );
@@ -76,9 +88,27 @@ export default async function KidsPage() {
               return (
                 <tr key={k.id} className="border-b border-line align-top last:border-0">
                   <td className="px-3 py-2.5">
-                    <div className="font-semibold">{k.full_name}</div>
-                    <div className="text-xs text-ink-soft">
-                      {ageOn(k.birth_date)} yrs · Member {k.member_no}
+                    <div className="flex items-center gap-3">
+                      {k.photo_url && photos.get(k.photo_url) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={photos.get(k.photo_url)} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tile text-xs font-semibold text-swim">
+                          {k.full_name
+                            .split(/\s+/)
+                            .slice(0, 2)
+                            .map((w) => w[0])
+                            .join("")
+                            .toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-semibold">{k.full_name}</div>
+                        <div className="text-xs text-ink-soft">
+                          {ageOn(k.birth_date)} yrs
+                          {k.gender ? ` · ${genderLabel(k.gender, k.is_self || ageOn(k.birth_date) >= 16)}` : ""} · Member {k.member_no}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td className="px-3 py-2.5">

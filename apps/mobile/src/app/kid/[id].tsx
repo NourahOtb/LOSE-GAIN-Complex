@@ -3,13 +3,14 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from 'react-native';
 
+import { MemberAvatar } from '@/components/avatar';
 import { BeltBar } from '@/components/belt';
 import { DateStrip } from '@/components/date-strip';
 import { AlertIcon } from '@/components/tab-icons';
 import { Button, ErrorText, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { nextBelt } from '@/lib/coach';
-import { beltName, type Kid, type Stripe } from '@/lib/data';
+import { beltName, genderKey, type Kid, type Stripe } from '@/lib/data';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
 import { supabase } from '@/lib/supabase';
@@ -102,11 +103,16 @@ export default function KidProfile() {
           </T>
         </View>
 
-        <View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <MemberAvatar kid={kid} size={72} />
+        <View style={{ flex: 1 }}>
           <T w="semibold" size={28}>
             {kid.full_name}
           </T>
-          <T color={p.inkSoft}>{t('kids.years', { n: ageOn(kid.birth_date) })}</T>
+          <T color={p.inkSoft}>
+            {t('kids.years', { n: ageOn(kid.birth_date) })}
+            {genderKey(kid) ? ` · ${t(genderKey(kid)!)}` : ''}
+          </T>
           {canEdit && kid.is_self ? <T color={p.inkSoft}>{t('guardian.adult')}</T> : null}
           {canEdit && !kid.is_self && guardian ? (
             <T color={p.inkSoft}>
@@ -115,6 +121,7 @@ export default function KidProfile() {
                 : guardian.full_name}
             </T>
           ) : null}
+        </View>
         </View>
 
         {/* health first */}

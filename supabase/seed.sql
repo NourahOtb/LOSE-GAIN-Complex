@@ -87,3 +87,10 @@ begin
       (v_noor, '{sat,mon,wed}', '17:00', 4, '2026-11-18', '2026-12-16', 12, 90, 7, 83.7, 'pending_payment');
   end if;
 end $$;
+
+-- boy / girl for the demo kids (Task 11b)
+update public.kids k set gender = v.g
+from (values ('Sara','female'), ('Yousef','male'), ('Faisal','male'), ('Noor','female')) as v(n, g),
+     auth.users u
+where k.full_name = v.n and k.parent_id = u.id
+  and u.email in ('noura@lgcomplex.test','dalal@lgcomplex.test') and k.gender is null;

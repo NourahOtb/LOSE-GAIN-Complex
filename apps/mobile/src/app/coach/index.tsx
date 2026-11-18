@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 
+import { MemberAvatar } from "@/components/avatar";
 import { BeltBar } from "@/components/belt";
 import { HomeHeader } from "@/components/home-header";
 import { AlertIcon } from "@/components/tab-icons";
@@ -27,7 +28,7 @@ import {
   loadCoachData,
   type CoachData,
 } from "@/lib/coach";
-import type { Kid } from "@/lib/data";
+import { genderKey, type Kid } from "@/lib/data";
 import type { ClassRow } from "@/lib/family";
 import { useI18n } from "@/lib/i18n";
 import type { StringKey } from "@/lib/strings";
@@ -477,12 +478,7 @@ function KidRow({
 }) {
   const p = usePalette();
   const { t } = useI18n();
-  const initials = kid.full_name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const g = genderKey(kid);
   return (
     <View
       style={{
@@ -507,26 +503,14 @@ function KidRow({
           opacity: pressed ? 0.7 : 1,
         })}
       >
-        <View
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 17,
-            backgroundColor: p.line,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <T w="semibold" size={13} style={{ textAlign: "center" }}>
-            {initials}
-          </T>
-        </View>
+        <MemberAvatar kid={kid} size={40} />
         <View style={{ flex: 1 }}>
           <T w="semibold" size={15}>
             {kid.full_name}
           </T>
           <T size={12} color={subColor ?? p.inkSoft}>
             {t("kids.years", { n: ageOn(kid.birth_date) })}
+            {g ? ` · ${t(g)}` : ""}
             {sub ? ` · ${sub}` : ""}
           </T>
         </View>

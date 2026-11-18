@@ -3,10 +3,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
+import { PhotoField } from '@/components/avatar';
+import { Segmented } from '@/components/pickers';
 import { Button, ErrorText, Field, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { HEALTH_KEYS, type HealthKey } from '@/lib/data';
 import { useI18n } from '@/lib/i18n';
+import { savePhoto } from '@/lib/photos';
 import { supabase } from '@/lib/supabase';
 import { usePalette } from '@/lib/theme';
 
@@ -20,21 +23,32 @@ export default function AddKidScreen() {
   const isFirst = params.first === '1';
   const [name, setName] = useState(isSelf ? (profile?.full_name ?? '') : '');
   const [dob, setDob] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   const [emergency, setEmergency] = useState('');
   const [health, setHealth] = useState<HealthKey[]>([]);
   const [none, setNone] = useState(false);
   const [other, setOther] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const toggle = (h: HealthKey) => {
     setNone(false);
     setHealth((cur) => (cur.includes(h) ? cur.filter((x) => x !== h) : [...cur, h]));
   };
 
+  // after saving: first-time members go to Register; otherwise back (or to the Family tab when opened directly)
+  const leave = () => {
+    if (isFirst) router.replace('/parent/register');
+    else if (router.canGoBack()) router.back();
+    else router.replace('/parent/kids');
+  };
+
   const save = async () => {
     setError('');
     if (!name.trim() || !dob.trim() || !emergency.trim()) return setError(t('err.required'));
+    if (!gender) return setError(isSelf ? t('err.genderMe') : t('err.gender'));
     const birth = parseDob(dob);
     if (!birth) return setError(t('err.birth'));
     const age = ageOn(birth);
@@ -46,7 +60,7 @@ export default function AddKidScreen() {
     if (!profile) return;
 
     setBusy(true);
-    const { error: err } = await supabase.from('kids').insert({
+    const { data: created, error: err } = await supabase.from('kids').insert({
       parent_id: profile.id,
       full_name: name.trim(),
       birth_date: birth,
@@ -55,11 +69,20 @@ export default function AddKidScreen() {
       health_other: other.trim() || null,
       health_confirmed: true,
       is_self: isSelf,
-    });
+      gender,
+    }).select('id').single();
+    if (err || !created) {
+      setBusy(false);
+      return setError(err?.code === '23505' ? t('err.selfExists') : t('err.generic'));
+    }
+    // the member is saved; the photo is a bonus. If it fails, say so but don't lose the member.
+    if (photo && !(await savePhoto(profile.id, created.id, photo))) {
+      setBusy(false);
+      setSaved(true);
+      return setError(t('photo.savedNoPhoto'));
+    }
     setBusy(false);
-    if (err) return setError(err.code === '23505' ? t('err.selfExists') : t('err.generic'));
-    if (isFirst) router.replace('/parent/register');
-    else router.back();
+    leave();
   };
 
   return (
@@ -74,7 +97,22 @@ export default function AddKidScreen() {
           </View>
           {isSelf ? <T color={p.inkSoft}>{t('me.intro')}</T> : null}
 
+          <PhotoField name={name} uri={photo} onChange={setPhoto} />
+
           <Field label={isSelf ? t('me.name') : t('kid.name')} value={name} onChangeText={setName} autoComplete="name" />
+          <View style={{ gap: 6 }}>
+            <T w="semibold" size={14}>
+              {isSelf ? t('me.gender') : t('kid.gender')}
+            </T>
+            <Segmented
+              options={[
+                { value: 'male', label: isSelf ? t('g.male') : t('g.boy') },
+                { value: 'female', label: isSelf ? t('g.female') : t('g.girl') },
+              ]}
+              value={gender}
+              onChange={setGender}
+            />
+          </View>
           <Field label={t('kid.birth')} hint={t('kid.birthHint')} value={dob} onChangeText={setDob} placeholder={isSelf ? '15/06/1990' : '10/03/2019'} keyboardType="numbers-and-punctuation" />
           <Field
             label={t('kid.emergency')}
@@ -110,7 +148,11 @@ export default function AddKidScreen() {
           </View>
 
           <ErrorText>{error}</ErrorText>
-          <Button title={isSelf ? t('me.save') : t('kid.save')} onPress={save} loading={busy} />
+          {saved ? (
+            <Button title={t('common.back')} onPress={leave} />
+          ) : (
+            <Button title={isSelf ? t('me.save') : t('kid.save')} onPress={save} loading={busy} />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

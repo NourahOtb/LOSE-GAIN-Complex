@@ -18,7 +18,7 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 
 ## Phase 2
 
-### 11. Member sign-up + kid photo and boy/girl (11a done, 11b next)
+### 11. Member sign-up + kid photo and boy/girl ✅
 **11a. Sign-up** ✅ done 2026-11-18
 - [x] Database: account type + relationship on profiles, "self" members (migration 0007), adult swimming 4 PM classes
 - [x] Sign-up: "Create a member account" + "Who is this account for?" (My family / Just me)
@@ -28,13 +28,13 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Coaches + admin see "Guardian: name · relationship" / "Adult member"
 - [x] Tested in English and Arabic (website); price rule: adults get no family / multi-month discounts (tests added)
 
-**11b. Add a kid: photo + boy/girl**
-- [ ] Database: `gender` on kids + private photo storage with security rules
-- [ ] Add kid: Boy / Girl (required) + Take a photo / Choose from library (optional)
-- [ ] Photo + boy/girl shown on kid cards, coach class list and kid page, admin Kids page
-- [ ] Demo kids filled in
-
-- [ ] Test in English and Arabic (phone + website), update docs, commit + push
+**11b. Add a kid: photo + boy/girl** ✅ done 2026-11-18
+- [x] Database: `gender` on members + private photo storage with security rules (migration 0008)
+- [x] Add kid: Boy / Girl (required; Male / Female for adults) + Take a photo / Choose from library (optional)
+- [x] Photo + boy/girl shown on the Family tab, coach class list and kid lists, kid page, admin Members page
+- [x] Change or remove a photo later from the Family tab
+- [x] Demo kids filled in (Sara and Noor: girl; Yousef and Faisal: boy)
+- [x] Tested EN + AR on the website; privacy checked (other families and logged-out visitors can't see photos, coaches can)
 
 ### 15. Light / dark choice + Settings screen (mockup approved)
 - [ ] Saved theme choice (Light / Dark / Same as my phone) used by every screen

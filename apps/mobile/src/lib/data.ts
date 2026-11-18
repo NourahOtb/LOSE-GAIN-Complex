@@ -22,6 +22,7 @@ export type Kid = {
   belt: Belt | null;
   belt_since: string | null;
   is_self: boolean;
+  gender: 'male' | 'female' | null;
 };
 
 /** Which timetable group a member trains in: adults (16+ or the account holder), Titans (jiu-jitsu 11–15), or kids. */
@@ -30,6 +31,14 @@ export function ageGroupOf(sport: 'swimming' | 'jiujitsu', kid: Pick<Kid, 'birth
   if (kid.is_self || age >= 16) return 'adults';
   if (sport === 'jiujitsu' && age >= 11) return 'titans';
   return 'kids';
+}
+
+/** "Boy" / "Girl" for kids, "Male" / "Female" for adults (a string key). */
+export function genderKey(kid: Pick<Kid, 'gender' | 'birth_date' | 'is_self'>): 'g.boy' | 'g.girl' | 'g.male' | 'g.female' | null {
+  if (!kid.gender) return null;
+  const adult = kid.is_self || ageOn(kid.birth_date) >= 16;
+  if (kid.gender === 'male') return adult ? 'g.male' : 'g.boy';
+  return adult ? 'g.female' : 'g.girl';
 }
 
 export type Stripe = { id: string; kid_id: string; belt: string; awarded_on: string; coach_id: string | null };

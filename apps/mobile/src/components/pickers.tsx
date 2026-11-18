@@ -19,7 +19,9 @@ export function Segmented<V extends string>({
     <View style={{ flexDirection: 'row', borderWidth: 1.5, borderColor: p.ink, borderRadius: 6, overflow: 'hidden' }}>
       {options.map((o, i) => {
         const on = o.value === value;
-        return (
+        return [
+          // a divider between buttons (works the same left-to-right and right-to-left)
+          i > 0 ? <View key={`d-${o.value}`} style={{ width: 1.5, backgroundColor: p.ink }} /> : null,
           <Pressable
             key={o.value}
             disabled={o.disabled}
@@ -33,15 +35,13 @@ export function Segmented<V extends string>({
               justifyContent: 'center',
               paddingHorizontal: 4,
               backgroundColor: on ? p.ink : pressed ? p.tile : p.surface,
-              borderStartWidth: i === 0 ? 0 : 1.5,
-              borderColor: p.ink,
               opacity: o.disabled ? 0.4 : 1,
             })}>
             <T w="semibold" size={14} color={on ? p.onInk : p.ink} style={{ textAlign: 'center' }}>
               {o.label}
             </T>
-          </Pressable>
-        );
+          </Pressable>,
+        ];
       })}
     </View>
   );

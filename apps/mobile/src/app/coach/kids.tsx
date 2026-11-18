@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 
+import { MemberAvatar } from '@/components/avatar';
 import { BeltBar } from '@/components/belt';
 import { HomeHeader } from '@/components/home-header';
 import { Segmented } from '@/components/pickers';
@@ -10,7 +11,7 @@ import { AlertIcon } from '@/components/tab-icons';
 import { Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { currentStripes, daysOf, loadCoachData, type CoachData } from '@/lib/coach';
-import type { Kid } from '@/lib/data';
+import { genderKey, type Kid } from '@/lib/data';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
 import { sportColor, usePalette } from '@/lib/theme';
@@ -112,12 +113,14 @@ function Row({ kid, sport, data, days, dim }: { kid: Kid; sport: Sport; data: Co
       onPress={() => router.push({ pathname: '/kid/[id]', params: { id: kid.id } })}
       accessibilityRole="button"
       style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: p.line, opacity: pressed ? 0.7 : dim ? 0.6 : 1 })}>
+      <MemberAvatar kid={kid} size={40} />
       <View style={{ flex: 1 }}>
         <T w="semibold" size={15}>
           {kid.full_name}
         </T>
         <T size={12} color={p.inkSoft}>
           {t('kids.years', { n: ageOn(kid.birth_date) })}
+          {genderKey(kid) ? ` · ${t(genderKey(kid)!)}` : ''}
           {days ? ` · ${days}` : ''}
         </T>
       </View>

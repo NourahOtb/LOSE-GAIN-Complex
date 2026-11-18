@@ -32,6 +32,13 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a photo of your child or yourself for the member card.",
+          "cameraPermission": "Take a photo of your child or yourself for the member card."
+        }
       ]
     ],
     "experiments": {
