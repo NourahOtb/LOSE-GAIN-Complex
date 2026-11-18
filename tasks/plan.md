@@ -94,8 +94,21 @@ Four requests from the owner. We do **one task at a time**, and Claude **asks be
 - Model: Claude Opus 5.5 (`claude-opus-5-5`).
 - **Needs from the owner:** an Anthropic account with a little credit and an API key (see todo.md, Task 13).
 
-## Task 14: More admin dashboard areas
-The owner picks from the list in todo.md (Task 14). Each chosen area becomes its own small task (14a, 14b, ...).
+## Task 14: More admin dashboard areas (owner picked 10 on 2026-11-18)
+Built one at a time, in this order; Claude asks before each and asks any missing details first.
+
+| # | Area | How |
+|---|---|---|
+| 14a | **Door check-in** (tablet) | Today's class lists with big tap targets; tap = present (attendance table), sessions left go down; red warning for expired / unpaid, staff can still let them in |
+| 14b | **Edit members + desk registration** | Staff edit a member's details, photo, health, boy/girl; register a member at the desk through the same `register` price check |
+| 14c | **Desk payment link** | Staff create a UPayments link for a waiting registration; copy / WhatsApp share, and it also appears in the guardian's app |
+| 14d | **Approvals** | Guardians (or the assistant) request a pause, switch or refund; staff approve or reject; refunds only by owner / accountant |
+| 14e | **Closure days** | Close the complex for a day (holidays); every affected registration moves its end date; families notified |
+| 14f | **Prices + discounts editor** | Prices move from code into the database; owner edits tables and discounts; app, `register` and assistant all read the same saved prices |
+| 14g | **Staff accounts + roles** | Owner adds staff (server function creates the login), sets manager / receptionist / accountant / coach, switches accounts off |
+| 14h | **Reports + Excel export** | Members (active, new, not renewed), attendance per class / member, month-over-month; download as Excel |
+| 14i | **Money reports** | Revenue by day / month, sport, online vs desk, discounts given (owner + accountant) |
+| 14j | **Waitlist** | Class capacity enforced; full class → join waitlist; staff approve when a place opens; family notified |
 
 ## Task 15: Light / dark mode choice + Settings screen (mockup approved 2026-11-18)
 - Log-in and sign-up: a sun / moon switch at the top, next to the language button.

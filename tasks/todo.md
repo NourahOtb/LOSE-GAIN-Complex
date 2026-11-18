@@ -88,6 +88,15 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] App: "Ask the assistant" on Home and in Chat (EN + AR), daily limit 40 messages
 - [x] Tested for real in English and Arabic: questions (it knows the current time), renewal card + Confirm, hand-off + reply; plain-text answers; Arabic cards
 
-### 14. More admin dashboard areas (you choose which)
-- [ ] Owner picks areas from the list Claude gave
-- [ ] Each picked area gets its own line here (14a, 14b, ...)
+### 14. More admin dashboard areas (owner picked 10) ⏳ one at a time
+- [ ] 14a. Door check-in (tablet): tap to mark present, sessions go down, red warnings
+- [ ] 14b. Edit members + register at the desk
+- [ ] 14c. Desk payment link (copy / WhatsApp, also in the app)
+- [ ] 14d. Approvals: pause, switch, refund requests
+- [ ] 14e. Closure days: close the complex, end dates move, families notified
+- [ ] 14f. Prices + discounts editor (prices saved in the database)
+- [ ] 14g. Staff accounts + roles
+- [ ] 14h. Reports + Excel export
+- [ ] 14i. Money reports
+- [ ] 14j. Waitlist with class capacity
+
