@@ -1,6 +1,8 @@
-# Tasks: Wednesday demo (2026-11-18)
+# Tasks
 
-See [plan.md](plan.md) for the demo story. The earlier 12-task `identity` plan is replaced by this demo plan; its ideas return after the demo.
+See [plan.md](plan.md). One task at a time; Claude asks before starting the next one.
+
+## Phase 1: Wednesday demo (2026-11-18) ✅
 
 - [x] 1. Projects: Expo app, Next.js admin, shared package
 - [x] 2. Supabase project + tables + security rules + demo data
@@ -12,3 +14,33 @@ See [plan.md](plan.md) for the demo story. The earlier 12-task `identity` plan i
 - [x] 8. Admin: login, registrations, mark paid, expiring soon, kids
 - [x] 9. Admin: cancel class → parent notification inbox
 - [x] 10. Full demo run-through, fixes, website online
+- [x] 10b. Online payment with UPayments (sandbox) + friendly result screens
+
+## Phase 2
+
+### 11. "Guardian" wording + relationship dropdown ⏳ waiting for your go-ahead
+- [ ] Database: `relationship` on profiles (migration 0007), demo guardians filled in
+- [ ] Sign-up: "Create a guardian account" + required relationship dropdown (EN + AR)
+- [ ] "Parent" → "Guardian" across the app (EN + AR)
+- [ ] Coach kid page + admin Kids page show "Guardian: name · relationship"
+- [ ] Test in English and Arabic, update docs, commit + push
+
+### 12. Guardian ↔ coach chat
+- [ ] Database: conversations + messages + security rules (migration 0008)
+- [ ] Guardian app: Chat tab → kid → coach → chat screen (live with Realtime)
+- [ ] Coach app: Chat tab, unread badge, reply
+- [ ] New message → inbox notification
+- [ ] Admin: read-only Chats page, "no reply after 12 h" in red
+- [ ] Test with two accounts side by side, update docs, commit + push
+
+### 13. AI assistant for guardians
+- [ ] **You:** Anthropic account, credit, API key, saved as a Supabase secret (Claude can't type keys for you)
+- [ ] Edge Function `assistant` with read tools (family, subscriptions, schedule, prices)
+- [ ] "Prepare a change" → Confirm card in the app → existing safe server functions
+- [ ] Hand-off to reception → shown in admin
+- [ ] Guardian app: Assistant tab (EN + AR), daily message limit
+- [ ] Test in both languages, update docs, commit + push
+
+### 14. More admin dashboard areas (you choose which)
+- [ ] Owner picks areas from the list Claude gave
+- [ ] Each picked area gets its own line here (14a, 14b, ...)

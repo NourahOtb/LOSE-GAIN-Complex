@@ -24,14 +24,14 @@ This is the "table of contents" for the whole system. Each row is one **module**
 | `payments` | Pay online through your payment gateway **or** at reception (staff mark it paid). Payment history and money reports for the accountant. | enrollment |
 | `notifications` | Push notifications to phones plus an in-app inbox: class cancelled, level changed, renewal due, request approved, new chat reply, anything that needs attention. | identity, enrollment |
 | `messaging` | Parent ↔ coach chat. | identity, notifications |
-| `ai-assistant` *(version 2, not now)* | Parents-only chat assistant (Claude). Answers questions and makes changes (register, pause, cancel, reschedule, renew) **only after the parent taps Confirm**. Passes anything it can't handle to the receptionist. | enrollment, payments, messaging |
+| `ai-assistant` *(moved into version 1, 2026-11-18)* | Parents-only chat assistant (Claude). Answers questions and makes changes (register, pause, cancel, reschedule, renew) **only after the parent taps Confirm**. Passes anything it can't handle to the receptionist. | enrollment, payments, messaging |
 | `store` *(version 2, not now)* | Goggles, caps, towels, apparel. | payments |
 
 ## Build order
 
 ```
 identity → catalog → pricing → enrollment → payments, notifications → messaging
-                                                     (version 2 later: ai-assistant, store)
+                                                     → ai-assistant      (version 2 later: store)
 ```
 
 Each step adds screens in **all three surfaces** at once. For example, "catalog" means the coach sees classes in the app, staff edit them in the dashboard, and parents see the timetable.
@@ -42,7 +42,7 @@ Each step adds screens in **all three surfaces** at once. For example, "catalog"
 2. **Sample JSON data first.** Screens are built on fake data so you can try them on your phone with Expo Go, then switched to Supabase.
 3. **Google Play too**, not only the App Store, since many parents in Kuwait use Android. This costs nothing extra to build.
 4. **App Store needs an Apple Developer account** (US$99 a year) and **Google Play needs a developer account** (US$25 once), both in the company's name. Apple's review takes a few days.
-5. **The AI assistant (version 2) will run on the server**, never on the phone, so the secret AI key stays safe. It will only be able to do what the parent could do with buttons. Version 1 keeps all actions (pause, renew, ...) as reusable server functions so it can plug in later.
+5. **The AI assistant will run on the server**, never on the phone, so the secret AI key stays safe. It will only be able to do what the parent could do with buttons. Version 1 keeps all actions (pause, renew, ...) as reusable server functions so it can plug in later.
 6. **Kids' health information is private.** Only that kid's parents, coaches and staff can see it, never other parents.
 7. **Time zone is Kuwait** (UTC+3). **Currency is KD with 3 decimals** (for example 96.750 KD), which matters when discounts are applied.
 
@@ -53,7 +53,7 @@ Each step adds screens in **all three surfaces** at once. For example, "catalog"
 | 1 | `identity`, `catalog`, `pricing`: login, both languages, classes and prices working in the app and dashboard |
 | 2 | `enrollment`, `payments`, `notifications`: parents can register, pay and get notified, and staff manage everything |
 | 3 | `messaging`, testing, then App Store / Google Play submission |
-| After launch | Version 2: `ai-assistant`, `store` |
+| After launch | Version 2: `store` (`ai-assistant` moved into version 1) |
 
 ## Answered (2026-11-16)
 

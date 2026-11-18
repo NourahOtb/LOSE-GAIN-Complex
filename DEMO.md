@@ -64,7 +64,8 @@ Demo accounts and the shared password are in `docs/demo-accounts.local.md` on yo
 
 ### 6. Parent home and what's next (1 minute)
 - As Noura: the **pace clock** shows the next class, **this week as pool lanes**, classes left, and the renewal alert.
-- **After launch** (from the PRD): online payment with UPayments, push notifications to the phone's lock screen, chat with coaches, the App Store and Google Play, SMS login, the AI assistant and the store.
+- **Already working:** online payment with UPayments (sandbox), shown in step 2b.
+- **After launch** (from the PRD): push notifications to the phone's lock screen, chat with coaches, the App Store and Google Play, SMS login, the AI assistant and the store.
 
 ---
 

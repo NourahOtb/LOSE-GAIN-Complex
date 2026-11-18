@@ -16,7 +16,8 @@
 ## In / out
 
 **In:** everything in the story above. Email login only. Notifications = in-app inbox. Real Supabase database so all screens share live data.
-**Out (roadmap):** SMS login, UPayments, lock-screen push, chat, waitlist, make-ups, check-in, reports, audit log, Excel import, WhatsApp, teen logins, private classes, App Store.
+**Added after the plan:** online payment with UPayments (sandbox), with friendly result screens.
+**Out (roadmap):** SMS login, live UPayments keys, lock-screen push, chat, waitlist, make-ups, check-in, reports, audit log, Excel import, WhatsApp, teen logins, private classes, App Store.
 
 ## Architecture (kept small)
 
@@ -50,3 +51,43 @@
 | Not enough time | Strict order: the demo story first, polish last. Anything late is cut, not rushed. |
 | Wi-Fi at the presentation | Keep the website version online (Vercel) and the phone app on Expo Go; test both on mobile data. |
 | Arabic layout bugs | Check each screen in Arabic as we go. |
+
+---
+
+# Phase 2 plan (started 2026-11-18)
+
+Four requests from the owner. We do **one task at a time**, and Claude **asks before starting the next one**. Every task ends with: test it in the app, update PRD.md / CAPABILITY-MAP.md / DEMO.md / PRODUCT.md where needed, tick it in [todo.md](todo.md), commit and push (the websites update by themselves).
+
+## Task 11: "Guardian" wording + relationship to the kid
+- Every parent-facing word "parent" becomes **guardian** (EN: "Guardian", AR: "ولي الأمر"), starting with sign-up: "Create a guardian account".
+- Sign-up gets a required **dropdown: "Your relationship to the kid(s)"**: Father, Mother, Grandfather, Grandmother, Brother, Sister, Uncle, Aunt, Other (legal guardian).
+- Database: new `relationship` column on `profiles` (migration `0007`). Existing demo guardians get one filled in.
+- Shown to coaches on the kid page ("Guardian: Noura · Mother") and on the admin Kids & families page.
+- Code: `signup.tsx`, `strings.ts`, `auth.tsx` (sends it at sign-up), the new-user database trigger, `kid/[id].tsx`, admin `kids` page.
+
+## Task 12: Guardian ↔ coach chat (Supabase)
+- Database (migration `0008`): `conversations` (one per guardian + coach + kid) and `messages` (sender, text, time, read). Security rules: only the guardian and that coach can read and write; manager and super admin can **read** (oversight, as the PRD says).
+- **Supabase Realtime** so new messages appear instantly without reloading.
+- Guardian app: a **Chat** tab → pick the kid → their coach(es) from the kid's classes → chat screen.
+- Coach app: a **Chat** tab with all guardians who wrote, unread count badge, reply.
+- A new message also creates an inbox notification, and the tab shows a red number.
+- Admin: **Chats** page (read-only) with "no reply after 12 hours" in red.
+
+## Task 13: AI assistant for guardians (Claude)
+- A new Supabase Edge Function `assistant` runs on the server and calls **Claude** (Anthropic) with the official SDK. The AI key stays on the server, never in the app.
+- Guardian app: an **Assistant** tab, chat style, Arabic or English (answers in the guardian's language).
+- **What it can read (tools):** the guardian's own kids, subscriptions, sessions left, next classes, cancellations, price sheet and discounts, class timetable. It only ever sees this guardian's family (checked on the server).
+- **What it can do:** prepare a change (register, renew, pay online) as a **summary card with the price**. Nothing happens until the guardian taps **Confirm**; then the app runs the same safe server functions the buttons use.
+- **Hand-off:** anything it can't handle (complaints, refunds, unusual cases) becomes a message to reception, shown in the admin dashboard.
+- Model: Claude Opus 5.5 (`claude-opus-5-5`).
+- **Needs from the owner:** an Anthropic account with a little credit and an API key (see todo.md, Task 13).
+
+## Task 14: More admin dashboard areas
+The owner picks from the list in todo.md (Task 14). Each chosen area becomes its own small task (14a, 14b, ...).
+
+## Risks
+| Risk | Mitigation |
+|---|---|
+| AI makes a wrong change | It can't change anything itself; every change needs the guardian's **Confirm** and goes through the existing server rules. |
+| AI cost | Short conversations, a daily message limit per guardian, and a spend limit set in the Anthropic console. |
+| Chat privacy | Rules enforced in the database, not only on screens; oversight is disclosed in the terms. |

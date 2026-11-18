@@ -5,8 +5,8 @@
 | **Product** | LOSE \| GAIN Complex digital platform |
 | **Owner** | LOSE \| GAIN Complex management |
 | **Location** | Mansouriya, Kuwait |
-| **Version** | 1.1 (draft) |
-| **Date** | 2026-11-16 |
+| **Version** | 1.2 (draft) |
+| **Date** | 2026-11-18 |
 | **Status** | Draft for owner review. Updated after the detailed interview. |
 | **Related** | [CAPABILITY-MAP.md](CAPABILITY-MAP.md) (approved) · [docs/specs/](docs/specs/) (technical specs per module) · [docs/pricing/](docs/pricing/) (price sheets) |
 
@@ -19,7 +19,7 @@ LOSE | GAIN Complex offers **swimming** and **Brazilian jiu-jitsu** classes for 
 We are building:
 
 1. **A mobile app** (App Store + Google Play) that also runs as a **website**, with three experiences:
-   - **Parents:** register kids (and themselves), manage subscriptions, pay, chat with coaches. *(An AI assistant for parents comes in version 2.)*
+   - **Parents:** register kids (and themselves), manage subscriptions, pay, chat with coaches. Plus an **AI assistant** for parents (moved into version 1 on 2026-11-18, see 7.9).
    - **Coaches:** manage classes, see and assess kids, write notes, chat with parents, run private classes.
    - **Teens (Titans):** a view-only login to see their own schedule, level and notes.
 2. **An admin dashboard** (website, desktop + tablet) for management and staff to control everything, including door check-in.
@@ -84,7 +84,6 @@ We are building:
 
 ### Out of scope for version 1
 - **Online store** (goggles, caps, towels, apparel) → version 2
-- **AI assistant for parents** → version 2 (see 7.9). Version 1 is built so it can be added later without redoing anything.
 - **Women's adult classes** → later (the system must allow adding them without new code)
 - **Automatic renewal** (auto-charging cards) → not planned; renewal is always manual
 - **Coach payroll** → reports only, no salary calculation
@@ -165,7 +164,8 @@ We are building:
 
 ### 6.9 Payments and receipts
 - **Online** through **UPayments**. **At reception:** **KNET machine** or a **UPayments payment link** sent to the parent. Staff record the method.
-- A subscription becomes active once it's paid.
+- A subscription becomes active once it's paid. Online, it only becomes active after our server asks UPayments itself and sees the payment captured **for the right amount**.
+- **Every online outcome ends back in the app with a friendly screen:** paid, cancelled ("no money was taken" + Try again / Pay at reception), failed, still waiting (checks again by itself), or payment service down (Check again). If the parent leaves the payment page any other way, the home screen checks by itself. Payment links expire after 15 minutes. *(Built 2026-11-18 on the UPayments sandbox.)*
 - **Expired or unpaid kid at the door:** the check-in screen shows a **red warning**, but the receptionist can still let them in and collect payment on the spot.
 - Every payment produces a **receipt**: PDF in the app, plus an email.
 
@@ -280,7 +280,7 @@ Sent whenever something important changes or needs attention:
 - Parents then **claim their family** by logging in with the same mobile number, and complete the health checklist and agreements.
 - A dry run happens first, and staff check the result before going live.
 
-### 7.9 Version 2: AI assistant for parents *(not in version 1)*
+### 7.9 AI assistant for parents *(moved into version 1 on 2026-11-18)*
 A parents-only chat section where parents can ask anything or request changes (register, pause, cancel, reschedule, renew, check remaining sessions) in plain Arabic or English.
 - **Changes happen only after the parent taps Confirm** on a summary showing what will happen and any cost.
 - It can only do what the parent could do with the app's buttons, under the same limits.
@@ -312,7 +312,7 @@ A parents-only chat section where parents can ask anything or request changes (r
 | WhatsApp messages | WhatsApp Business API (through a provider such as Twilio or Meta directly) |
 | SMS login codes | SMS provider connected to Supabase (Twilio to start; paid per SMS) |
 | Receipts | PDF generated on the server, sent by email |
-| AI assistant *(version 2)* | Claude (Anthropic), called from the server |
+| AI assistant | Claude (Anthropic), called from the server |
 | Early development | JSON sample data, then switched to Supabase |
 
 ## 10. Timeline
@@ -326,7 +326,7 @@ The detailed interview added a lot to version 1: attendance, make-ups, waitlists
 | **3** | Door check-in and attendance, make-ups, pause/switch/cancel and approvals, notifications and reminders |
 | **4** | Coach app (assess, private classes, substitutes), chat with oversight, reports and Excel export, audit log |
 | **5** | Excel import dry run, WhatsApp messages, testing, App Store and Google Play submission |
-| **After launch** | Version 2: AI assistant for parents, online store |
+| **After launch** | Version 2: online store |
 
 **To keep 3 weeks instead,** these could move to version 1.1, right after launch: reports beyond the basics, the audit log viewer, private classes, teen logins and WhatsApp. *(Owner to decide; see open question 8.)*
 

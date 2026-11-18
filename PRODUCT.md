@@ -33,7 +33,8 @@ A single complex with two sports under one roof, rolling enrollment (start any d
 
 ## Capabilities and Constraints
 
-- Full scope in [PRD.md](PRD.md). **Wednesday 2026-11-18 demo scope** in [tasks/plan.md](tasks/plan.md): parent sign-up, add kid with health checklist, registration with real price calculation, parent home, coach view (kids, health badges, level + note), admin (registrations, mark paid, expiring soon, cancel class → parent inbox).
+- Full scope in [PRD.md](PRD.md). **Built for the Wednesday 2026-11-18 demo** ([tasks/plan.md](tasks/plan.md)): parent sign-up, add kid with health checklist, registration with real price calculation, parent home, coach view (kids, health badges, level + note, belts and stripes), admin (registrations, mark paid, expiring soon, cancel class → parent inbox), and **online payment with UPayments (sandbox)** with a friendly result screen for every outcome (paid, cancelled, failed, still waiting, service down) and a way back to the app from each.
+- **Next (phase 2, in progress):** guardian wording + relationship to the kid, parent ↔ coach chat, the AI assistant for parents, and more admin dashboard areas. Progress in [tasks/todo.md](tasks/todo.md).
 - App in Arabic and English with full right-to-left layout; admin dashboard English only.
 - Light and dark mode follow the phone setting.
 
