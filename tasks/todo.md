@@ -88,7 +88,7 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] App: "Ask the assistant" on Home and in Chat (EN + AR), daily limit 40 messages
 - [x] Tested for real in English and Arabic: questions (it knows the current time), renewal card + Confirm, hand-off + reply; plain-text answers; Arabic cards
 
-### 14. More admin dashboard areas (owner picked 10) ⏳ one at a time
+### 14. More admin dashboard areas (owner picked 10) ✅ all 10 done 2026-11-19
 - [x] 14a. Door check-in (tablet): tap to mark present, sessions go down, undo, red warnings, walk-ins ✅ 2026-11-18
 - [x] 14b. Member page: edit details, photo (camera / file), register at the desk + mark paid ✅ 2026-11-18 (new families at the desk: with 14g)
 - [x] 14c. Desk payment link: 24-hour UPayments link, Copy / WhatsApp, guardian inbox message, auto-activates when paid ✅ 2026-11-18
