@@ -103,6 +103,9 @@ export default function RegisterScreen() {
   const bjjTimes = Object.fromEntries(bjj.map((d) => [d, bjjTimeFor(d)]));
   const time = swim.length ? swimTime : (bjj[0] ? bjjTimeFor(bjj[0]) : swimTime);
 
+  // swimming and jiu-jitsu on the same day at the same time can't both be attended
+  const selfClash = swim.find((d) => bjj.includes(d) && bjjTimeFor(d) === swimTime) ?? null;
+
   const durationChoices: Duration[] =
     mode === 'kid' ? DURATIONS : mode === 'adultBjj' ? ['1w', '2w', '4w'] : ['4w'];
   const duration: Duration = durationChoices.includes(kidDuration) ? kidDuration : '4w';
@@ -179,11 +182,20 @@ export default function RegisterScreen() {
     if (fnErr || !created?.id) {
       setBusy(false);
       let code = '';
+      let slot = '';
       try {
         const ctx = (fnErr as { context?: Response } | null)?.context;
-        if (ctx && typeof ctx.json === 'function') code = ((await ctx.json()) as { error?: string }).error ?? '';
+        if (ctx && typeof ctx.json === 'function') {
+          const b = (await ctx.json()) as { error?: string; slot?: string };
+          code = b.error ?? '';
+          slot = b.slot ?? '';
+        }
       } catch {
         // keep generic
+      }
+      if (code === 'overlap') {
+        const [d, tm] = slot.split(' ');
+        return setError(t('reg.err.overlap', { kid: member?.full_name ?? '', day: t(`day.${d}` as StringKey), time: clockTime(tm ?? '16:00', lang ?? 'en') }));
       }
       if (code === 'gender_required') return setError(t('reg.genderFirst'));
       if (code && ['too_few_days', 'too_many_days', 'five_plus_bjj_only', 'not_offered', 'duplicate_day', 'invalid_day', 'separate_sports'].includes(code)) {
@@ -405,8 +417,11 @@ export default function RegisterScreen() {
           />
         </Section>
 
+        {selfClash ? (
+          <ErrorText>{t('reg.err.overlap', { kid: member?.full_name ?? '', day: t(`day.${selfClash}` as StringKey), time: clockTime(swimTime, lang ?? 'en') })}</ErrorText>
+        ) : null}
         <ErrorText>{error}</ErrorText>
-        <Button title={t('reg.submit')} onPress={submit} loading={busy} disabled={!price.ok || !kidId || !startIso} />
+        <Button title={t('reg.submit')} onPress={submit} loading={busy} disabled={!price.ok || !kidId || !startIso || !!selfClash} />
       </ScrollView>
     </Screen>
   );

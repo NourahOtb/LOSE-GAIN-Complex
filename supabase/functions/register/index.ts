@@ -127,6 +127,32 @@ Deno.serve(async (req) => {
     if (kind === 'open_pool' ? wd === 'fri' : ![...swim, ...bjj].includes(wd as Weekday)) return json({ error: 'bad_start' }, 400);
 
     const weeks = DURATION_WEEKS[duration];
+    const end = addDays(start, weeks * 7);
+
+    // no two classes for the same member at the same day and time (the database enforces this too)
+    if (kind === 'classes') {
+      const mine = [...swim.map((d) => `${d} ${swimTime}`), ...bjj.map((d) => `${d} ${bjjTimes[d]}`)];
+      const self = mine.find((x, i) => mine.indexOf(x) !== i);
+      if (self) return json({ error: 'overlap', slot: self }, 409);
+      const { data: others } = await db
+        .from('subscriptions')
+        .select('swim_days, bjj_days, start_time, bjj_times')
+        .eq('kid_id', kid.id)
+        .eq('kind', 'classes')
+        .in('status', ['active', 'pending_payment'])
+        .lte('start_date', end)
+        .gte('end_date', start);
+      for (const o of others ?? []) {
+        const t = String(o.start_time).slice(0, 5);
+        const theirs = [
+          ...(o.swim_days as string[]).map((d) => `${d} ${t}`),
+          ...(o.bjj_days as string[]).map((d) => `${d} ${((o.bjj_times ?? {}) as Record<string, string>)[d] ?? t}`),
+        ];
+        const clash = mine.find((x) => theirs.includes(x));
+        if (clash) return json({ error: 'overlap', slot: clash }, 409);
+      }
+    }
+
     // dry run: check and price only (used by the AI assistant to prepare a Confirm card)
     if (body.dry_run === true) {
       return json({
@@ -137,7 +163,7 @@ Deno.serve(async (req) => {
         months_pct: price.monthsPct,
         sessions: price.sessions,
         start_date: start,
-        end_date: addDays(start, weeks * 7),
+        end_date: end,
         bjj_times: bjj.length ? bjjTimes : null,
         swim_time: swim.length ? swimTime : null,
       });
@@ -162,6 +188,7 @@ Deno.serve(async (req) => {
       })
       .select('id, total')
       .single();
+    if (error?.message?.includes('class_overlap')) return json({ error: 'overlap', slot: error.message.replace('class_overlap ', '') }, 409);
     if (error || !created) {
       console.error('insert failed', error);
       return json({ error: 'server_error' }, 500);

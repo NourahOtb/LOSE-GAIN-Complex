@@ -64,6 +64,13 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Members can no longer save a registration or price directly (migration 0010)
 - [x] Tested: fake 1 KD price refused, real price charged, other families' members refused, wrong start day refused
 
+### 17c. No clashing classes ✅ done 2026-11-18
+- [x] Deleted Sara's clashing registration (swimming Sat/Mon/Wed 4 PM, registered after her jiu-jitsu at the same time)
+- [x] Database rule refuses two classes for the same member on the same day and time with overlapping dates (migration 0013)
+- [x] `register` explains the clash ("Sara already has a class on Sat at 4 PM"); the assistant gets the same answer
+- [x] Register screen warns straight away when swimming and jiu-jitsu clash inside one registration
+- [x] Tested: clash refused, 5 PM allowed, after the end date allowed
+
 ### 12. Guardian ↔ coach chat ✅ done 2026-11-18
 - [x] Database: conversations + messages + security rules (migration 0011); live updates on
 - [x] Guardian app: Chat tab → member → coach → chat screen (live)
