@@ -35,6 +35,25 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 
 - [ ] Test in English and Arabic (phone + website), update docs, commit + push
 
+### 15. Light / dark choice + Settings screen (mockup approved)
+- [ ] Saved theme choice (Light / Dark / Same as my phone) used by every screen
+- [ ] Sun / moon switch on log-in and sign-up
+- [ ] Settings screen: Appearance, Language, About, Log out; gear icon on the top bar
+- [ ] Test light + dark in English and Arabic, commit + push
+
+### 16. New log-in line + About the complex page
+- [ ] "A family sports center for swimming and jiu-jitsu" + Mansouriya, Kuwait (EN + AR)
+- [ ] About page: sports, ages, hours, open pool, location + Directions (Google Maps link)
+- [ ] Links from log-in and Settings; test EN + AR, commit + push
+
+### 17. Adult jiu-jitsu, Titans at 6 PM, open pool ⏳ waiting for your answers
+- [ ] Classes in the database: men + Titans 6 PM (Gi / No-Gi), Saturday open mat, women 7:30 PM
+- [ ] Adult prices (men, women, 1 / 2 / 4 weeks) in the calculator, with tests
+- [ ] Open pool membership (40 KD / month) in registration
+- [ ] Admin: cancel open pool (a day or a time window) → members notified
+- [ ] Coach view, admin and About page show the new classes; PRD updated
+- [ ] Test, commit + push
+
 ### 12. Guardian ↔ coach chat
 - [ ] Database: conversations + messages + security rules (migration 0008)
 - [ ] Guardian app: Chat tab → kid → coach → chat screen (live with Realtime)

@@ -97,6 +97,25 @@ Four requests from the owner. We do **one task at a time**, and Claude **asks be
 ## Task 14: More admin dashboard areas
 The owner picks from the list in todo.md (Task 14). Each chosen area becomes its own small task (14a, 14b, ...).
 
+## Task 15: Light / dark mode choice + Settings screen (mockup approved 2026-11-18)
+- Log-in and sign-up: a sun / moon switch at the top, next to the language button.
+- New **Settings** screen (gear icon on the home top bar): **Appearance** (Light, Dark, Same as my phone), **Language**, **About the complex**, **Log out**. The language and Log out links leave the top bar.
+- The choice is remembered on that phone or browser (also after logging out). New users start on "Same as my phone".
+- Code: `theme.ts` reads the saved choice instead of the phone setting; a small theme provider like the language one.
+
+## Task 16: New log-in line + "About the complex" page
+- Under the name: **"A family sports center for swimming and jiu-jitsu"** / **"مركز رياضي عائلي للسباحة والجوجيتسو"**, plus a pin with **Mansouriya, Kuwait / المنصورية، الكويت**.
+- **About the complex** page (link on log-in + in Settings): swimming card, jiu-jitsu card, ages, opening hours (complex 10:30 AM–9 PM, Saturday to Thursday, Friday closed), class times, open pool times, location with a **Directions** button → https://maps.app.goo.gl/N2awgJRRfiVL3mWy6. No Call button for now.
+- Written so more information from the owner can be added later. Only facts the owner gave; no invented claims or photos.
+
+## Task 17: Adult jiu-jitsu (men, women), Titans at 6 PM, open pool membership
+Source: `docs/pricing/adult-jiujitsu-schedule-and-prices.jpg`, `docs/pricing/titan-male-adult-jiujitsu.jpg`, owner's message 2026-11-18. **Waiting for answers to Claude's questions before building.**
+- **Classes:** Men (and Titans 11–15) 6 PM Sun–Thu + Saturday open mat 6 PM; Gi Thu → Mon, No-Gi Tue and Wed. Women 7:30 PM Sun, Tue, Thu.
+- **Prices (KD):** Men 4 weeks 2→75, 3→100, 4→110, 5→125, 6→140. Women 4 weeks 2→75, 3→90, 4→105, 5→120, 6→130. Men/Women 2 weeks 3→70, 4→80, 5→90. Men/Women 1 week 3→35, 4→40, 5→45.
+- **Open pool membership:** adults (men and women), 40 KD a month, 10:30 AM–3 PM and 7:30–9 PM, every day except Friday.
+- **Admin:** cancel an open pool session (a day or a time window) → members are notified, like class cancellations.
+- The pricing calculator (with tests), registration, coach view, admin and the About page all learn the new classes. PRD: women's classes move into scope.
+
 ## Risks
 | Risk | Mitigation |
 |---|---|
