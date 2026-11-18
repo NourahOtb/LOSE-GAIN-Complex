@@ -4,6 +4,7 @@ import { Linking, ScrollView, View } from 'react-native';
 import { PinIcon } from '@/components/tab-icons';
 import { Button, Label, Screen, T } from '@/components/ui';
 import { ABOUT, MAPS_URL } from '@/lib/about';
+import { shortKD, usePricing } from '@/lib/pricing';
 import { useI18n } from '@/lib/i18n';
 import { usePalette } from '@/lib/theme';
 
@@ -11,7 +12,9 @@ import { usePalette } from '@/lib/theme';
 export default function AboutScreen() {
   const { t, lang } = useI18n();
   const p = usePalette();
-  const c = ABOUT[lang ?? 'en'];
+  const pricing = usePricing();
+  // the open pool price comes from the owner's saved prices
+  const c = JSON.parse(JSON.stringify(ABOUT[lang ?? 'en']).replaceAll('{pool}', shortKD(pricing.openPool, lang))) as (typeof ABOUT)['en'];
   const back = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   return (

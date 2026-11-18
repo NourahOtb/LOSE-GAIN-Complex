@@ -153,7 +153,7 @@ We are building:
 - Discounts **add up** (for example, 2 kids for 3 months = 7% + 15% = 22% off).
 - The family discount counts **kids only**, not adult members.
 - **Kids joining at different times:** the first kid pays full price. When a second kid joins, the discount applies to the new kid right away, and to everyone in the family from their **next renewal**.
-- **Super admin can change all of this** in the dashboard: prices, percentages, whether discounts add up, who counts as family.
+- **Super admin can change the prices and discount percentages** in the dashboard (**Prices**, built 2026-11-18, see 7.5f). Whether discounts add up and who counts as family stay as set in code for now.
 - Amounts are shown in **KD with 3 decimals** (for example, 96.750 KD).
 
 ### 6.4 Trials
@@ -326,6 +326,13 @@ We are building:
 - Families get an inbox message (English + Arabic). In the app, closed days are crossed out on the week lanes, "Next class" skips them, Home shows "The complex is closed on …", and closed days can't be picked as a first day.
 - The dashboard shows the next closure on Today, a red "closed today" note on Today and at the door check-in.
 - *Not yet:* the AI assistant doesn't know about closure days.
+
+### 7.5f Prices & discounts *(built 2026-11-18)*
+- **Dashboard → Prices:** every price and discount in tables: kids (1 / 2 / 4 weeks × days a week), family discount (2, 3, 4, 5+ kids), multi-month discount (3 / 6 / 12 months), men's swimming, open pool, men's and women's jiu-jitsu (1 / 2 / 4 weeks; Titans pay the men's 4-week prices).
+- **Only the owner** (super admin) can change them; other staff see them read-only. The database checks the role and every number (prices 0–9999.999 KD, discounts 0–100 %).
+- **Live at once** for new registrations and renewals: the app's price preview, the `register` server function (which saves the real price), desk registration and the AI assistant all read the same saved prices. **Registrations already made keep their price.**
+- **Change history:** who changed what, from → to, and when.
+- The structure (which days and packages exist) stays in code; only the numbers are edited. If the saved list were ever broken, the built-in prices are used.
 
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.

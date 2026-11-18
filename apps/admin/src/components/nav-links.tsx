@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/kids", label: "Members & families" },
   { href: "/classes", label: "Classes" },
   { href: "/closures", label: "Closures" },
+  { href: "/prices", label: "Prices" },
   { href: "/chats", label: "Chats" },
 ];
 

@@ -16,7 +16,7 @@ import Anthropic from 'npm:@anthropic-ai/sdk';
 import { betaTool } from 'npm:@anthropic-ai/sdk/helpers/beta/json-schema';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-import { DEFAULT_PRICING, WEEKDAYS } from './pricing.ts';
+import { pricingFrom, WEEKDAYS } from './pricing.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const db = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
@@ -38,14 +38,16 @@ Facts about the complex:
 - Open Saturday to Thursday, 10:30 AM–9 PM. Friday closed. Location: Mansouriya, Kuwait.
 - Swimming: kids' pool and Olympic pool. Kids' swimming classes at 4 PM and 5 PM, any days Saturday–Thursday (recommended groups Sun/Tue/Thu or Sat/Mon/Wed keep the same coaches). Men's swimming: 4 PM Sun/Tue/Thu, 4-week packages.
 - Jiu-jitsu: two mats with a viewing area for parents. Warriors 1 (ages 5–7): 4 PM Sat/Mon/Wed, 5 PM Sun/Tue/Thu. Warriors 2 (8–10): 4 PM Sun/Tue/Thu, 5 PM Sat/Mon/Wed. Titans (11–15) and adults: 6–7:30 PM Sunday–Thursday (Gi Thursday→Monday, No-Gi Tuesday and Wednesday). Women: 7:30–8:30 PM Sun/Tue/Thu; women may also join the 6 PM adult class. Saturday open mat 6 PM is free.
-- Open pool membership (adults, men and women): 10:30 AM–3 PM and 7:30–9 PM, Saturday–Thursday, unlimited, 40 KD per 4 weeks; one 1-week freeze per membership (reception approves). If the complex closes the pool, members get an extra day.
+- Open pool membership (adults, men and women): 10:30 AM–3 PM and 7:30–9 PM, Saturday–Thursday, unlimited, price per 4 weeks in get_price_list; one 1-week freeze per membership (reception approves). If the complex closes the pool, members get an extra day.
 - Kids can start any day. Family discount (kids only) from the 2nd kid; 3/6/12-month packages get a discount (kids only). Payment at reception (KNET) or online (KNET/card).
 
 How you work:
 - Use your tools to look things up. Never guess a member's schedule, sessions left or a price: call get_my_family, get_timetable, get_price_list or check_price.
 - You can't change anything yourself. To register, renew or pay, call prepare_registration or prepare_payment: the app then shows a card with the price, and only the guardian's tap makes it happen. Tell them to tap the button below: "Confirm" in English, "تأكيد" in Arabic ("Pay online" / "ادفع أونلاين" for payments). Never say it is done.
 - Renewing = preparing a new registration with the same days and times, starting on a class day after the current end date (or the nearest allowed date within the next 2 weeks).
-- Pausing, cancelling, refunds, complaints, injuries, switching mid-subscription, make-up classes, private classes or anything unusual: call handoff_to_reception with a short, clear summary, then tell the guardian reception will reply in the app inbox.
+- Pausing and requests: in the app, Home → "Pause or change" under a registration (Arabic: "إيقاف أو تغيير"). There the guardian can pause up to 1 week by themselves (once per registration; the end date moves, no sessions are lost), or ask reception for a longer injury pause, a change of days or time, or to cancel. Point them there first.
+- Closed days (holidays): get_timetable lists them. Classes missed on a closed day are added to the end of the registration automatically.
+- Refunds, complaints, make-up classes, private classes or anything unusual: call handoff_to_reception with a short, clear summary, then tell the guardian reception will reply in the app inbox.
 - Keep answers short and warm: a few sentences or a short list. Use the member's name. Prices in KD with 3 decimals (for example 90.000 KD).
 - Write plain text only: no Markdown, no ** or #, no tables. For a list, start lines with "- ". No emojis.
 - Classes that already started or ended today are not "next": compare with the current Kuwait time given at the end.
@@ -193,18 +195,24 @@ Deno.serve(async (req) => {
       }),
       betaTool({
         name: 'get_timetable',
-        description: 'The weekly timetable: sport, class name, day, start time, length, who it is for.',
+        description: 'The weekly timetable (sport, class name, day, start time, length, who it is for) and the upcoming days the whole complex is closed (holidays).',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
         run: async () => {
-          const { data } = await db.from('classes').select('sport, label, weekday, start_time, duration_min, audience, is_free, min_age, max_age').eq('is_active', true);
-          return JSON.stringify(data ?? []);
+          const [{ data }, { data: closed }] = await Promise.all([
+            db.from('classes').select('sport, label, weekday, start_time, duration_min, audience, is_free, min_age, max_age').eq('is_active', true),
+            db.from('closures').select('on_date, reason').gte('on_date', new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10)).order('on_date').limit(30),
+          ]);
+          return JSON.stringify({ classes: data ?? [], closed_days: closed ?? [] });
         },
       }),
       betaTool({
         name: 'get_price_list',
         description: 'The price tables (KD) for kids, Titans, adult jiu-jitsu (men/women), men\'s swimming and the open pool, plus discounts. For an exact price for a member, use check_price.',
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-        run: async () => JSON.stringify(DEFAULT_PRICING),
+        run: async () => {
+          const { data } = await db.from('pricing').select('config').eq('id', 1).maybeSingle();
+          return JSON.stringify(pricingFrom(data?.config));
+        },
       }),
       betaTool({
         name: 'check_price',
@@ -262,7 +270,7 @@ Deno.serve(async (req) => {
       }),
       betaTool({
         name: 'handoff_to_reception',
-        description: 'Send a request the assistant cannot handle (pause, cancel, refund, complaint, injury, switch, make-up, private class, anything unusual) to reception. They reply in the app inbox.',
+        description: 'Send a request the assistant cannot handle (refund, complaint, make-up, private class, anything unusual; pauses, changes and cancelling are done in the app under "Pause or change") to reception. They reply in the app inbox.',
         inputSchema: { type: 'object', properties: { summary: { type: 'string', description: 'Short summary in English with member names and what is needed' } }, required: ['summary'], additionalProperties: false },
         run: async (input: Record<string, unknown>) => {
           const summary = String(input.summary ?? '').trim().slice(0, 1000);

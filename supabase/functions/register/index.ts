@@ -8,10 +8,11 @@
 // The server checks the member belongs to this account, works out the class times from the timetable,
 // counts the family discount itself, and calculates the price with the same rules as the app
 // (pricing.ts is an exact copy of packages/shared/src/pricing.ts; a test keeps them identical).
+// The numbers come from the owner's saved price list (table pricing).
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-import { DURATION_WEEKS, priceOpenPool, priceSubscription, WEEKDAYS, type Duration, type Weekday } from './pricing.ts';
+import { DURATION_WEEKS, priceOpenPool, pricingFrom, priceSubscription, WEEKDAYS, type Duration, type Weekday } from './pricing.ts';
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
 
@@ -109,9 +110,13 @@ Deno.serve(async (req) => {
       familyKidCount = new Set([...(subs ?? []).map((s) => s.kid_id), kid.id]).size;
     }
 
+    // the owner's saved prices (Dashboard → Prices); anything missing falls back to the built-in ones
+    const { data: saved } = await db.from('pricing').select('config').eq('id', 1).maybeSingle();
+    const cfg = pricingFrom(saved?.config);
+
     const price =
       kind === 'open_pool'
-        ? priceOpenPool(member, duration)
+        ? priceOpenPool(member, duration, cfg)
         : priceSubscription({
             member: member === 'titan' && bjj.length ? 'titan' : member,
             gender: kid.gender ?? undefined,
@@ -119,7 +124,7 @@ Deno.serve(async (req) => {
             bjjDays: bjj,
             duration,
             familyKidCount,
-          });
+          }, cfg);
     if (!price.ok) return json({ error: price.error }, 400);
 
     // first day: within the next 2 weeks, on a chosen class day (open pool: any day but Friday)

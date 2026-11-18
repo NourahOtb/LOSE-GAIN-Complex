@@ -47,7 +47,7 @@ export const ABOUT: Record<'en' | 'ar', AboutContent> = {
       },
       {
         title: 'Open pool',
-        lines: ['10:30 AM to 3 PM and 7:30 to 9 PM, Saturday to Thursday', 'Adults, men and women · 40 KD for 4 weeks'],
+        lines: ['10:30 AM to 3 PM and 7:30 to 9 PM, Saturday to Thursday', 'Adults, men and women · {pool} KD for 4 weeks'],
         note: 'Sometimes cancelled; members are told in the app and get an extra day.',
       },
     ],
@@ -85,7 +85,7 @@ export const ABOUT: Record<'en' | 'ar', AboutContent> = {
       },
       {
         title: 'المسبح المفتوح',
-        lines: ['من ١٠:٣٠ صباحاً إلى ٣ عصراً ومن ٧:٣٠ إلى ٩ مساءً، من السبت إلى الخميس', 'للكبار، رجال ونساء · ٤٠ د.ك لمدة ٤ أسابيع'],
+        lines: ['من ١٠:٣٠ صباحاً إلى ٣ عصراً ومن ٧:٣٠ إلى ٩ مساءً، من السبت إلى الخميس', 'للكبار، رجال ونساء · {pool} د.ك لمدة ٤ أسابيع'],
         note: 'قد يُلغى أحياناً؛ يُبلَّغ الأعضاء في التطبيق ويحصلون على يوم إضافي.',
       },
     ],

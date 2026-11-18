@@ -180,3 +180,21 @@ describe('the server uses the same price rules', () => {
     }
   });
 });
+
+describe('saved prices', () => {
+  it('uses saved numbers and keeps the rest', async () => {
+    const { pricingFrom } = await import('./pricing');
+    const cfg = pricingFrom({ openPool: 45, kids: { 4: { 3: 95 } }, family: { 2: 150 } });
+    expect(cfg.openPool).toBe(45);
+    expect(cfg.kids[4][3]).toBe(95);
+    expect(cfg.kids[4][2]).toBe(65);
+    expect(cfg.family[2]).toBe(100); // percent capped
+    expect(priceSubscription({ member: 'kid', swimDays: ['sun', 'tue', 'thu'], bjjDays: [], duration: '4w', familyKidCount: 1 }, cfg)).toMatchObject({ total: 95 });
+  });
+  it('ignores broken values', async () => {
+    const { pricingFrom } = await import('./pricing');
+    const cfg = pricingFrom({ openPool: 'x', adults: { 2: -5 }, adultDays: ['fri'] });
+    expect(cfg).toEqual(DEFAULT_PRICING);
+    expect(pricingFrom(null)).toEqual(DEFAULT_PRICING);
+  });
+});

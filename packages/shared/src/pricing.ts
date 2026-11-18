@@ -161,6 +161,24 @@ export function priceOpenPool(member: 'kid' | 'titan' | 'adult', duration: Durat
   return { ok: true, daysPerWeek: 0, weeks: 4, sessions: 0, base, familyPct: 0, monthsPct: 0, totalPct: 0, discount: 0, total: base };
 }
 
+/**
+ * Prices saved by the owner (database, JSON). Any missing or broken number falls back to the
+ * default, so a bad save can never break registration. Only numbers are taken from the saved
+ * copy; the structure (days, which packages exist) stays as in DEFAULT_PRICING.
+ */
+export function pricingFrom(raw: unknown): PricingConfig {
+  const merge = (def: unknown, val: unknown): unknown => {
+    if (typeof def === 'number') return typeof val === 'number' && Number.isFinite(val) && val >= 0 && val < 100000 ? val : def;
+    if (Array.isArray(def) || typeof def !== 'object' || def === null) return def;
+    const src = typeof val === 'object' && val !== null && !Array.isArray(val) ? (val as Record<string, unknown>) : {};
+    return Object.fromEntries(Object.entries(def).map(([k, v]) => [k, merge(v, src[k])]));
+  };
+  const cfg = merge(DEFAULT_PRICING, raw) as PricingConfig;
+  for (const k of Object.keys(cfg.family)) cfg.family[Number(k)] = Math.min(100, cfg.family[Number(k)]);
+  for (const k of [3, 6, 12] as const) cfg.months[k] = Math.min(100, cfg.months[k]);
+  return cfg;
+}
+
 /** "58.500 KD" / "٥٨٫٥٠٠ د.ك" style display. */
 export function formatKD(n: number, lang: 'ar' | 'en' = 'en'): string {
   const s = n.toFixed(3);

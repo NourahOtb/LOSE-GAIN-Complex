@@ -1,4 +1,4 @@
-import { addDays, ageOn, DEFAULT_PRICING, DURATION_WEEKS, formatKD, isoDate, priceOpenPool, priceSubscription, startOptions, WEEKDAYS, weekdayOf, type Duration, type Weekday } from '@lg/shared';
+import { addDays, ageOn, DURATION_WEEKS, formatKD, isoDate, priceOpenPool, priceSubscription, startOptions, WEEKDAYS, weekdayOf, type Duration, type Weekday } from '@lg/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -13,6 +13,7 @@ import { clockTime, memberType, type Kid } from '@/lib/data';
 import { CLASS_COLS, type ClassRow } from '@/lib/family';
 import { useI18n } from '@/lib/i18n';
 import type { StringKey } from '@/lib/strings';
+import { shortKD, usePricing } from '@/lib/pricing';
 import { supabase } from '@/lib/supabase';
 import { usePalette } from '@/lib/theme';
 
@@ -43,6 +44,7 @@ export default function RegisterScreen() {
   const [adultTime, setAdultTime] = useState<'18:00' | '19:30'>('18:00');
   const [genderBusy, setGenderBusy] = useState(false);
   const [closed, setClosed] = useState<string[]>([]);
+  const pricing = usePricing();
 
   useFocusEffect(
     useCallback(() => {
@@ -84,8 +86,8 @@ export default function RegisterScreen() {
     : mt === 'adult' ? (sportNow === 'swimming' ? 'adultSwim' : 'adultBjj')
     : mt === 'titan' && sportNow === 'jiujitsu' ? 'titanBjj'
     : 'kid';
-  const adultDays = DEFAULT_PRICING.adultDays;
-  const bjjAdultDays = DEFAULT_PRICING.adultBjjDays;
+  const adultDays = pricing.adultDays;
+  const bjjAdultDays = pricing.adultBjjDays;
   const womenDays: Weekday[] = ['sun', 'tue', 'thu'];
   const bjjChoiceDays: readonly Weekday[] =
     mode === 'kid' ? WEEKDAYS : mode === 'adultBjj' && gender === 'female' && adultTime === '19:30' ? womenDays : bjjAdultDays;
@@ -132,7 +134,7 @@ export default function RegisterScreen() {
   }, [registeredKidIds, kidId, kids]);
   const price =
     mode === 'pool'
-      ? priceOpenPool('adult', duration)
+      ? priceOpenPool('adult', duration, pricing)
       : priceSubscription({
           member: mode === 'titanBjj' ? 'titan' : mt === 'adult' ? 'adult' : 'kid',
           gender: gender ?? undefined,
@@ -140,7 +142,7 @@ export default function RegisterScreen() {
           bjjDays: bjj,
           duration,
           familyKidCount,
-        });
+        }, pricing);
   const picked = swim.length + bjj.length;
 
   const recommended = swimDays.some((d) => GROUP_B.includes(d)) && !swimDays.some((d) => GROUP_A.includes(d)) ? GROUP_B : GROUP_A;
@@ -299,7 +301,7 @@ export default function RegisterScreen() {
 
         {/* what this registration is, in one line */}
         {needGender ? null : mode === 'pool' ? (
-          <Info text={t('reg.poolInfo')} />
+          <Info text={t('reg.poolInfo', { price: shortKD(pricing.openPool, lang) })} />
         ) : mode === 'adultSwim' ? (
           <Info text={t('reg.adultInfo')} />
         ) : mode === 'titanBjj' ? (

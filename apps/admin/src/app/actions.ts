@@ -314,3 +314,15 @@ export async function reopenDay(date: string) {
   revalidatePath("/", "layout");
   return { ok: `Open again · ${data ?? 0} famil${data === 1 ? "y" : "ies"} notified` };
 }
+
+/** Owner saves new prices and discounts (the database checks the role and every number). New registrations use them at once. */
+export async function savePricing(config: unknown) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("save_pricing", { p_config: config });
+  if (error) {
+    const m = error.message;
+    return { error: m.includes("not allowed") ? "Only the owner can change prices." : m.includes("bad_percent") ? "Discounts must be between 0 and 100 %." : m.includes("bad_price") ? "Prices must be numbers from 0 to 9999.999 KD." : "Could not save the prices." };
+  }
+  revalidatePath("/prices");
+  return { ok: "Saved · new registrations use these prices now" };
+}

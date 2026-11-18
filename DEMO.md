@@ -96,4 +96,6 @@ Both websites are connected to the GitHub repository: **every push to `main` reb
 `./scripts/deploy.sh` is a manual fallback that builds on your Mac and uploads directly.
 
 ## Changing prices
-Prices live in `packages/shared/src/pricing.ts`. The server keeps an exact copy for safety: after changing prices, run `./scripts/sync-pricing.sh` and redeploy the `register` server function (ask Claude). A test fails if the two copies differ.
+Sign in to the dashboard as the owner → **Prices** → change the numbers → **Save prices**. New registrations (app, desk, assistant) use them at once; registrations already made keep their price. The history at the bottom shows every change.
+
+The built-in fallback prices live in `packages/shared/src/pricing.ts`. If you change that file, run `./scripts/sync-pricing.sh` and redeploy the `register` and `assistant` server functions (ask Claude). A test fails if the copies differ.
