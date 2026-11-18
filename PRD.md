@@ -353,6 +353,14 @@ We are building:
 - **Month-over-month comparisons** for all of the above (for example, "new swimmers this month vs. last month").
 - **Export to Excel** for any list or report.
 
+### 7.6a Reports built *(2026-11-18, members and attendance; money reports come in 14i)*
+- **Dashboard → Reports** (owner and managers), one month at a time with **← previous month**, every number compared with the month before.
+- **Members:** active (by swimming / jiu-jitsu / open pool and kids / Titans / adults), new members, registrations that ended → renewed / **not renewed** (no new registration within **30 days**) / not renewed yet (still within the 30 days).
+- **Attendance** (from door check-in): booked classes attended per class (with %), walk-ins, and members who **missed 2 or more** booked classes. Paused days, closed days and cancelled classes don't count as missed; days before door check-in started aren't counted.
+- **Check on them:** for a member who missed 2+, the owner or a manager sends a caring "we missed you" message to the family's app inbox (English + Arabic), or opens a ready **WhatsApp** message.
+- **Download Excel:** one file per month with sheets Summary (this month vs last), Attendance by class, Attendance by member, Not renewed, New members.
+- The current month counts only up to today.
+
 ### 7.7 Notifications
 Sent whenever something important changes or needs attention:
 - Class cancelled (by a coach or staff), and what the parent gets (make-up, extension)

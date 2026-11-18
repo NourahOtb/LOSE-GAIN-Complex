@@ -12,6 +12,7 @@ const LINKS: { href: string; label: string; roles?: string[] }[] = [
   { href: "/classes", label: "Classes" },
   { href: "/closures", label: "Closures" },
   { href: "/prices", label: "Prices" },
+  { href: "/reports", label: "Reports", roles: ["super_admin", "manager"] },
   { href: "/staff", label: "Staff", roles: ["super_admin", "manager"] },
   { href: "/chats", label: "Chats" },
 ];

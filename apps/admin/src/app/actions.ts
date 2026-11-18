@@ -426,3 +426,11 @@ export async function changeMyPassword(password: string, again: string) {
   await supabase.rpc("password_changed");
   return { ok: "Password changed" };
 }
+
+/** Reports: send a caring "we missed you" message to a family whose member missed classes (owner, manager). */
+export async function sendCheckOn(kidId: string, missed: number) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("send_check_on", { p_kid: kidId, p_missed: missed });
+  if (error) return { error: error.message.includes("not allowed") ? "Only the owner or a manager can send this." : "Could not send the message." };
+  return { ok: "Sent to the app inbox" };
+}

@@ -96,7 +96,7 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] 14e. Closure days: close a day or range, missed classes added at the end, open pool +1 day, undo, families notified, shown in the app ✅ 2026-11-18
 - [x] 14f. Prices + discounts editor: owner edits all prices and discount %s, live at once for new registrations (app, server, desk, assistant), change history ✅ 2026-11-18
 - [x] 14g. Staff accounts + roles (owner all, managers coaches/reception), temporary passwords, switch off, change password, new family at the desk + WhatsApp ✅ 2026-11-18
-- [ ] 14h. Reports + Excel export
+- [x] 14h. Reports + Excel export: members (active, new, not renewed in 30 days), attendance by class / member, missed 2+ with Check on them (inbox + WhatsApp), month vs last month, Excel download ✅ 2026-11-18
 - [ ] 14i. Money reports
 - [ ] 14j. Waitlist with class capacity
 
