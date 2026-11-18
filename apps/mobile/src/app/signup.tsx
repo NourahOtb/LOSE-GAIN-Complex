@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { Logo } from '@/components/logo';
+import { ThemeSwitch } from '@/components/theme-switch';
 import { ChoiceCards, Select } from '@/components/pickers';
 import { Button, ErrorText, Field, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
@@ -14,7 +15,7 @@ import { usePalette } from '@/lib/theme';
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SignupScreen() {
-  const { t, lang } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const { refreshProfile } = useAuth();
   const p = usePalette();
   const [accountType, setAccountType] = useState<'family' | 'single' | null>(null);
@@ -68,7 +69,13 @@ export default function SignupScreen() {
     <Screen>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }} keyboardShouldPersistTaps="handled">
-          <Logo size={20} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Logo size={20} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Button variant="link" title={t('auth.changeLanguage')} onPress={() => setLang(lang === 'ar' ? 'en' : 'ar')} />
+              <ThemeSwitch />
+            </View>
+          </View>
           <T w="semibold" size={26} style={{ marginTop: 20 }}>
             {t('auth.createAccount')}
           </T>

@@ -36,11 +36,11 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Demo kids filled in (Sara and Noor: girl; Yousef and Faisal: boy)
 - [x] Tested EN + AR on the website; privacy checked (other families and logged-out visitors can't see photos, coaches can)
 
-### 15. Light / dark choice + Settings screen (mockup approved)
-- [ ] Saved theme choice (Light / Dark / Same as my phone) used by every screen
-- [ ] Sun / moon switch on log-in and sign-up
-- [ ] Settings screen: Appearance, Language, About, Log out; gear icon on the top bar
-- [ ] Test light + dark in English and Arabic, commit + push
+### 15. Light / dark choice + Settings screen ✅ done 2026-11-18
+- [x] Saved theme choice (Light / Dark / Same as my phone) used by every screen
+- [x] Sun / moon switch on log-in and sign-up
+- [x] Settings screen: Appearance, Language, Log out; gear icon on the top bar (About comes with Task 16)
+- [x] Tested light + dark in English and Arabic; remembered after reload and after logging out
 
 ### 16. New log-in line + About the complex page
 - [ ] "A family sports center for swimming and jiu-jitsu" + Mansouriya, Kuwait (EN + AR)

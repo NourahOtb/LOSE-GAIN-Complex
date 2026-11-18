@@ -6,8 +6,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 
+import { AppearanceProvider, useAppearance } from '@/lib/appearance';
 import { AuthProvider } from '@/lib/auth';
 import { LanguageProvider } from '@/lib/i18n';
 import { NotificationsProvider } from '@/lib/notifications';
@@ -29,9 +29,6 @@ export default function RootLayout() {
     ReadexPro_600SemiBold,
     ReadexPro_700Bold,
   });
-  const p = usePalette();
-  const scheme = useColorScheme();
-
   useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
@@ -39,13 +36,25 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <NotificationsProvider>
-          <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: p.bg } }} />
-        </NotificationsProvider>
-      </AuthProvider>
-    </LanguageProvider>
+    <AppearanceProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <NotificationsProvider>
+            <Shell />
+          </NotificationsProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </AppearanceProvider>
+  );
+}
+
+function Shell() {
+  const p = usePalette();
+  const { scheme } = useAppearance();
+  return (
+    <>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: p.bg } }} />
+    </>
   );
 }

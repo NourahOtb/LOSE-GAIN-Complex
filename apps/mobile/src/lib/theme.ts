@@ -1,4 +1,4 @@
-import { useColorScheme } from 'react-native';
+import { useAppearance } from './appearance';
 
 // Lane Lines world: white tile, black lane-line ink, one accent per sport.
 const light = {
@@ -36,7 +36,7 @@ const dark: typeof light = {
 export type Palette = typeof light;
 
 export function usePalette(): Palette {
-  return useColorScheme() === 'dark' ? dark : light;
+  return useAppearance().scheme === 'dark' ? dark : light;
 }
 
 export const font = {

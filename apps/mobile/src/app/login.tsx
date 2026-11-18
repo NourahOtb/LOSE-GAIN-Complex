@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { Logo } from '@/components/logo';
+import { ThemeSwitch } from '@/components/theme-switch';
 import { Button, ErrorText, Field, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
@@ -44,7 +45,10 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={{ padding: 24, gap: 18, flexGrow: 1 }} keyboardShouldPersistTaps="handled">
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Logo size={20} />
-            <Button variant="link" title={t('auth.changeLanguage')} onPress={() => setLang(lang === 'ar' ? 'en' : 'ar')} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Button variant="link" title={t('auth.changeLanguage')} onPress={() => setLang(lang === 'ar' ? 'en' : 'ar')} />
+              <ThemeSwitch />
+            </View>
           </View>
 
           <View style={{ marginTop: 28, gap: 6 }}>

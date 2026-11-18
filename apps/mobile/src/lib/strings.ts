@@ -259,6 +259,13 @@ export const strings = {
     'photo.failed': "The photo couldn't be saved. Please try again.",
     'photo.savedNoPhoto': "Saved, but the photo couldn't be uploaded. You can add it from the Family tab.",
     'photo.denied': 'Camera access is off. Allow it in your phone settings, or choose a photo from your library.',
+    'settings.title': 'Settings',
+    'settings.open': 'Settings',
+    'settings.appearance': 'Appearance',
+    'settings.language': 'Language',
+    'appearance.light': 'Light',
+    'appearance.dark': 'Dark',
+    'appearance.system': 'Same as my phone',
   },
   ar: {
     'lang.title': 'اختر لغتك',
@@ -519,6 +526,13 @@ export const strings = {
     'photo.failed': 'تعذّر حفظ الصورة. حاول مرة أخرى.',
     'photo.savedNoPhoto': 'تم الحفظ، لكن تعذّر رفع الصورة. يمكنك إضافتها من تبويب العائلة.',
     'photo.denied': 'الكاميرا غير مسموحة. اسمح بها من إعدادات الهاتف، أو اختر صورة من الصور.',
+    'settings.title': 'الإعدادات',
+    'settings.open': 'الإعدادات',
+    'settings.appearance': 'المظهر',
+    'settings.language': 'اللغة',
+    'appearance.light': 'فاتح',
+    'appearance.dark': 'داكن',
+    'appearance.system': 'مثل إعداد هاتفي',
   },
 } as const;
 
