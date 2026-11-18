@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 
+import { AssistantEntry } from '@/components/assistant-entry';
 import { ChatList } from '@/components/chat-list';
 import { HomeHeader } from '@/components/home-header';
 import { Segmented } from '@/components/pickers';
@@ -92,6 +93,7 @@ export default function ParentChat() {
         <T w="semibold" size={24}>
           {t('chat.title')}
         </T>
+        <AssistantEntry />
 
         {composing ? (
           <View style={{ gap: 14, borderWidth: 1.5, borderColor: p.ink, borderRadius: 8, padding: 14 }}>

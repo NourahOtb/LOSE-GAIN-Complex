@@ -94,3 +94,13 @@ export async function updateClass(classId: string, form: { start: string; durati
   revalidatePath("/", "layout");
   return { ok: "Saved" };
 }
+
+/** Reception replies to a request the AI assistant passed on; the guardian gets it in the app inbox. */
+export async function answerHandoff(id: string, reply: string) {
+  const { supabase } = await requireStaff();
+  if (!reply.trim()) return { error: "Write a reply first." };
+  const { error } = await supabase.rpc("answer_handoff", { p_id: id, p_reply: reply.trim() });
+  if (error) return { error: "Could not send the reply." };
+  revalidatePath("/", "layout");
+  return { ok: "Sent to the guardian's inbox" };
+}

@@ -174,7 +174,9 @@ describe('the server uses the same price rules', () => {
     const { resolve } = await import('node:path');
     const here = resolve(__dirname);
     const app = readFileSync(resolve(here, 'pricing.ts'), 'utf8');
-    const server = readFileSync(resolve(here, '../../../supabase/functions/register/pricing.ts'), 'utf8');
-    expect(server.split('\n').slice(1).join('\n')).toBe(app);
+    for (const fn of ['register', 'assistant']) {
+      const server = readFileSync(resolve(here, `../../../supabase/functions/${fn}/pricing.ts`), 'utf8');
+      expect(server.split('\n').slice(1).join('\n')).toBe(app);
+    }
   });
 });

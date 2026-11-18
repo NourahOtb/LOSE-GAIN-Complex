@@ -318,6 +318,7 @@ A parents-only chat section where parents can ask anything or request changes (r
 - It can only do what the parent could do with the app's buttons, under the same limits.
 - Anything it can't handle (complaints, refunds, unusual cases) goes to the receptionist's inbox in the admin dashboard, and the parent is notified when staff reply.
 - Runs on the server using Claude (Anthropic), so the AI key is never in the app.
+- **Built (2026-11-18):** opened from an **Ask the assistant** card on Home and at the top of the Chat tab. Server function `assistant` (Claude Opus 5.5, low effort, automatic fallback model if a request is declined) with tools that read only the member's own family, the timetable and the price list; prices come from the same `register` server check as the app. It can **prepare** a registration/renewal or an online payment as a **Confirm card**; the guardian's tap does the real action. Requests it can't handle (pause, cancel, refund, complaint…) go to **Assistant requests** on the admin Today page, and reception's reply arrives in the guardian's inbox. Limit: 40 messages per member per day. Conversation is kept on the device only.
 
 ## 8. Non-functional requirements
 

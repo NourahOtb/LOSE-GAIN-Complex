@@ -3,6 +3,7 @@
 //   POST /register  (member, signed in)
 //   { kid_id, kind: 'classes'|'open_pool', swim_days, bjj_days, swim_time?, adult_time?, duration, start_date }
 //   -> { id, total }  or  { error }
+//   dry_run: true → only check and price it (nothing is saved)
 //
 // The server checks the member belongs to this account, works out the class times from the timetable,
 // counts the family discount itself, and calculates the price with the same rules as the app
@@ -126,6 +127,21 @@ Deno.serve(async (req) => {
     if (kind === 'open_pool' ? wd === 'fri' : ![...swim, ...bjj].includes(wd as Weekday)) return json({ error: 'bad_start' }, 400);
 
     const weeks = DURATION_WEEKS[duration];
+    // dry run: check and price only (used by the AI assistant to prepare a Confirm card)
+    if (body.dry_run === true) {
+      return json({
+        ok: true,
+        total: price.total,
+        base: price.base,
+        family_pct: price.familyPct,
+        months_pct: price.monthsPct,
+        sessions: price.sessions,
+        start_date: start,
+        end_date: addDays(start, weeks * 7),
+        bjj_times: bjj.length ? bjjTimes : null,
+        swim_time: swim.length ? swimTime : null,
+      });
+    }
     const { data: created, error } = await db
       .from('subscriptions')
       .insert({

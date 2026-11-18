@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
+import { AssistantEntry } from '@/components/assistant-entry';
 import { BeltBar } from '@/components/belt';
 import { DateStrip } from '@/components/date-strip';
 import { HomeHeader } from '@/components/home-header';
@@ -136,6 +137,10 @@ export default function ParentHome() {
               <Button variant="link" title={t('home.registerCta')} onPress={() => router.push('/parent/register')} />
             </View>
           )}
+        </View>
+
+        <View style={{ marginHorizontal: 20 }}>
+          <AssistantEntry />
         </View>
 
         {/* this week as pool lanes */}

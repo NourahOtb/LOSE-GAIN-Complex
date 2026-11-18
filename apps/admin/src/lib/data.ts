@@ -89,7 +89,7 @@ export function packageLabel(s: Sub) {
 
 export async function loadDashboard(supabase: SupabaseClient) {
   const today = new Date();
-  const [subs, kids, parents, classes, cancels, coaches, closures] = await Promise.all([
+  const [subs, kids, parents, classes, cancels, coaches, closures, handoffs] = await Promise.all([
     supabase.from("subscriptions").select("*").in("status", ["active", "pending_payment"]).order("created_at", { ascending: false }),
     supabase.from("kids").select("id, parent_id, member_no, full_name, birth_date, health_conditions, health_other, emergency_phone, swim_level, belt, is_self").order("full_name"),
     supabase.from("profiles").select("id, full_name, phone").eq("role", "parent"),
@@ -97,6 +97,7 @@ export async function loadDashboard(supabase: SupabaseClient) {
     supabase.from("class_cancellations").select("class_id, on_date, compensation").gte("on_date", isoDate(addDays(today, -1))),
     supabase.from("profiles").select("id, full_name").eq("role", "coach"),
     supabase.from("open_pool_closures").select("on_date, session, reason").gte("on_date", isoDate(today)).order("on_date"),
+    supabase.from("assistant_handoffs").select("id, parent_id, summary, created_at").eq("status", "open").order("created_at"),
   ]);
   return {
     today,
@@ -105,6 +106,7 @@ export async function loadDashboard(supabase: SupabaseClient) {
     parents: (parents.data ?? []) as Parent[],
     classes: (classes.data ?? []) as ClassRow[],
     cancels: (cancels.data ?? []) as { class_id: string; on_date: string; compensation: string }[],
+    handoffs: (handoffs.data ?? []) as { id: string; parent_id: string; summary: string; created_at: string }[],
     poolClosures: (closures.data ?? []) as { on_date: string; session: "morning" | "evening" | "day"; reason: string | null }[],
     coaches: Object.fromEntries(((coaches.data ?? []) as { id: string; full_name: string }[]).map((c) => [c.id, c.full_name])),
   };

@@ -3,6 +3,7 @@ import { daysUntil } from "@lg/shared";
 import { CancelClass } from "@/components/cancel-class";
 import { MarkPaid } from "@/components/mark-paid";
 import { requireStaff } from "@/lib/auth";
+import { Handoffs } from "@/components/handoffs";
 import { OpenPool } from "@/components/open-pool";
 import { booked, classLabel, expiringWithin, isoDate, kd, loadDashboard, packageLabel, shortDate, time12, weekdayOf } from "@/lib/data";
 
@@ -92,6 +93,16 @@ export default async function TodayPage() {
         </section>
 
         <div className="flex flex-col gap-7">
+          <Handoffs
+            items={d.handoffs.map((h) => ({
+              id: h.id,
+              parent: parentById.get(h.parent_id)?.full_name ?? "Guardian",
+              phone: parentById.get(h.parent_id)?.phone ?? null,
+              summary: h.summary,
+              created_at: h.created_at,
+            }))}
+          />
+
           <OpenPool
             todayIso={todayIso}
             members={active.filter((s) => s.kind === "open_pool").length}
