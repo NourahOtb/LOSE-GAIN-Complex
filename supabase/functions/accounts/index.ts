@@ -31,11 +31,15 @@ const STAFF_ROLES: Role[] = ['coach', 'super_admin', 'manager', 'receptionist', 
 const MANAGER_CAN: Role[] = ['coach', 'receptionist'];
 const RELATIONSHIPS = ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle', 'aunt', 'guardian'];
 
-/** easy to read out or type: no 0/O, 1/l/I */
+/** easy to read out or type: no 0/O, 1/l/I. Always has a lowercase letter, an uppercase letter and a digit
+ *  (Supabase's password rule), so it is never refused. */
 function tempPassword() {
   const abc = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = crypto.getRandomValues(new Uint8Array(10));
-  return 'LG-' + Array.from(bytes, (b) => abc[b % abc.length]).join('');
+  for (;;) {
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    const p = 'LG-' + Array.from(bytes, (b) => abc[b % abc.length]).join('');
+    if (/[a-z]/.test(p) && /[0-9]/.test(p)) return p;
+  }
 }
 const email = (v: unknown) => {
   const s = String(v ?? '').trim().toLowerCase();

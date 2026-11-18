@@ -77,9 +77,9 @@ export default async function FamilyPage({ params }: PageProps<"/families/[id]">
       {showAdd ? (
         <section aria-labelledby="add" className="mt-6">
           <h2 id="add" className="label mb-2">
-            {single ? "Member details" : "Add a kid"}
+            {single ? "Member details" : "Add a member"}
           </h2>
-          <AddMemberForm parentId={g.id} single={single} selfName={g.full_name} />
+          <AddMemberForm parentId={g.id} single={single} selfName={g.full_name} canAddSelf={!members.some((k) => k.is_self)} />
         </section>
       ) : null}
     </div>

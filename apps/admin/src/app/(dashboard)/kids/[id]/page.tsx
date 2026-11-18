@@ -74,7 +74,8 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
           <MemberEditor
             kid={{
               id: kid.id,
-              full_name: kid.full_name,
+              first_name: kid.first_name ?? kid.full_name,
+              last_name: kid.last_name ?? "",
               birth_date: kid.birth_date,
               gender: kid.gender ?? "",
               emergency_phone: kid.emergency_phone ?? "",

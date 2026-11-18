@@ -20,7 +20,7 @@ export function MemberEditor({
   kid,
   adult,
 }: {
-  kid: { id: string; full_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string };
+  kid: { id: string; first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string };
   adult: boolean;
 }) {
   const [f, setF] = useState(kid);
@@ -38,10 +38,16 @@ export function MemberEditor({
         start(async () => setMsg(await updateMember(kid.id, f)));
       }}
       className="grid gap-3 rounded-md border border-line bg-surface p-4 text-[14px]">
-      <label>
-        <span className="label">Full name</span>
-        <input value={f.full_name} onChange={(e) => set("full_name", e.target.value)} className={field} />
-      </label>
+      <div className="grid grid-cols-2 gap-3">
+        <label>
+          <span className="label">First name</span>
+          <input value={f.first_name} onChange={(e) => set("first_name", e.target.value)} className={field} />
+        </label>
+        <label>
+          <span className="label">Last name</span>
+          <input value={f.last_name} onChange={(e) => set("last_name", e.target.value)} className={field} />
+        </label>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <label>
           <span className="label">Date of birth</span>

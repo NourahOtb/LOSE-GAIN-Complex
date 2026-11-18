@@ -53,7 +53,7 @@ export default function SignupScreen() {
       },
     });
     setBusy(false);
-    if (err) return setError(err.message || t('err.generic'));
+    if (err) return setError(/should contain|weak|at least/i.test(err.message) ? t('pw.weak') : err.message || t('err.generic'));
     if (!data.session) {
       // email confirmation is switched on in Supabase
       setInfo(lang === 'ar' ? 'تم إنشاء الحساب. افتح بريدك الإلكتروني لتأكيده ثم سجّل الدخول.' : 'Account created. Open your email to confirm it, then log in.');

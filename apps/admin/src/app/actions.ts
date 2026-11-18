@@ -133,10 +133,10 @@ const HEALTH_KEYS = ["asthma", "allergies", "epilepsy", "heart", "injury", "medi
 /** Staff edit a member's details (the database allows staff and the member's own family). */
 export async function updateMember(
   kidId: string,
-  f: { full_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string },
+  f: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string },
 ) {
   const { supabase } = await requireStaff();
-  if (!f.full_name.trim()) return { error: "Name is required." };
+  if (!f.first_name.trim() || !f.last_name.trim()) return { error: "Enter the first and last name." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(f.birth_date)) return { error: "Enter the date of birth." };
   if (!["male", "female"].includes(f.gender)) return { error: "Choose boy/male or girl/female." };
   const phone = f.emergency_phone.trim() ? normalizeKuwaitPhone(f.emergency_phone) : null;
@@ -144,7 +144,8 @@ export async function updateMember(
   const { error } = await supabase
     .from("kids")
     .update({
-      full_name: f.full_name.trim(),
+      first_name: f.first_name.trim(),
+      last_name: f.last_name.trim(),
       birth_date: f.birth_date,
       gender: f.gender,
       emergency_phone: phone,
@@ -344,6 +345,7 @@ const ACCOUNT_ERRORS: Record<string, string> = {
   bad_phone: "Enter a Kuwait mobile number (8 digits).",
   bad_request: "Check the name and email.",
   sport_required: "Pick the coach's sport.",
+  create_failed: "Could not create the account. Check the email and try again.",
 };
 
 type AccountsData = { user_id?: string; temp_password?: string; ok?: boolean };
@@ -394,13 +396,21 @@ export async function createFamily(form: { full_name: string; email: string; pho
 const HEALTH_OK = ["asthma", "allergies", "epilepsy", "heart", "injury", "medication", "other"];
 
 /** Reception adds a kid (or, for a "Just me" account, the member themself) to a family. */
-export async function addMember(parentId: string, form: { full_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string }) {
+export async function addMember(
+  parentId: string,
+  form: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string; is_self?: boolean },
+) {
   const { supabase } = await requireStaff();
   const { data: parent } = await supabase.from("profiles").select("account_type, full_name").eq("id", parentId).eq("role", "parent").maybeSingle();
   if (!parent) return { error: "Family not found." };
   const single = parent.account_type === "single";
-  const name = (single ? parent.full_name : form.full_name).trim();
-  if (!name || !/^\d{4}-\d{2}-\d{2}$/.test(form.birth_date)) return { error: "Enter the name and date of birth." };
+  // the account holder as a member ("just me", or a guardian who also trains): the account name unless given
+  const isSelf = single || !!form.is_self;
+  const [pf, ...pl] = parent.full_name.trim().split(/\s+/);
+  const first = (form.first_name.trim() || (isSelf ? pf : "")).trim();
+  const last = (form.last_name.trim() || (isSelf ? pl.join(" ") : "")).trim();
+  if (!first || !last) return { error: "Enter the first and last name." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(form.birth_date)) return { error: "Enter the date of birth." };
   if (!["male", "female"].includes(form.gender)) return { error: "Pick boy/male or girl/female." };
   const emergency = form.emergency_phone.trim() ? normalizeKuwaitPhone(form.emergency_phone) : null;
   if (form.emergency_phone.trim() && !emergency) return { error: "The emergency number must be a Kuwait mobile (8 digits)." };
@@ -408,10 +418,12 @@ export async function addMember(parentId: string, form: { full_name: string; bir
     .from("kids")
     .insert({
       parent_id: parentId,
-      full_name: name,
+      first_name: first,
+      last_name: last,
+      full_name: `${first} ${last}`,
       birth_date: form.birth_date,
       gender: form.gender,
-      is_self: single,
+      is_self: isSelf,
       emergency_phone: emergency,
       health_conditions: form.health.filter((h) => HEALTH_OK.includes(h)),
       health_other: form.health_other.trim() || null,
@@ -431,7 +443,11 @@ export async function changeMyPassword(password: string, again: string) {
   if (password.length < 8) return { error: "Use at least 8 characters." };
   if (password !== again) return { error: "The two passwords don't match." };
   const { error } = await supabase.auth.updateUser({ password });
-  if (error) return { error: error.message.includes("different") ? "Choose a password different from the old one." : "Could not change the password." };
+  if (error) {
+    if (error.message.includes("different")) return { error: "Choose a password different from the old one." };
+    if (/should contain|weak|at least/i.test(error.message)) return { error: "Use at least 8 characters with a lowercase letter, an uppercase letter and a number." };
+    return { error: "Could not change the password." };
+  }
   const { data: changed } = await supabase.rpc("password_changed");
   if (changed === false) return { error: "Choose a password different from the temporary one." };
   return { ok: "Password changed" };

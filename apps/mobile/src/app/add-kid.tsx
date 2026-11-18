@@ -21,7 +21,11 @@ export default function AddKidScreen() {
   const params = useLocalSearchParams<{ self?: string; first?: string }>();
   const isSelf = params.self === '1';
   const isFirst = params.first === '1';
-  const [name, setName] = useState(isSelf ? (profile?.full_name ?? '') : '');
+  // first and last name (for "me": taken from the account name, can be corrected)
+  const ownName = (profile?.full_name ?? '').trim();
+  const [first, setFirst] = useState(isSelf ? ownName.split(' ')[0] : '');
+  const [last, setLast] = useState(isSelf ? ownName.split(' ').slice(1).join(' ') : '');
+  const name = `${first.trim()} ${last.trim()}`.trim();
   const [dob, setDob] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export default function AddKidScreen() {
 
   const save = async () => {
     setError('');
-    if (!name.trim() || !dob.trim() || !emergency.trim()) return setError(t('err.required'));
+    if (!first.trim() || !last.trim() || !dob.trim() || !emergency.trim()) return setError(t('err.required'));
     if (!gender) return setError(isSelf ? t('err.genderMe') : t('err.gender'));
     const birth = parseDob(dob);
     if (!birth) return setError(t('err.birth'));
@@ -62,7 +66,9 @@ export default function AddKidScreen() {
     setBusy(true);
     const { data: created, error: err } = await supabase.from('kids').insert({
       parent_id: profile.id,
-      full_name: name.trim(),
+      first_name: first.trim(),
+      last_name: last.trim(),
+      full_name: name,
       birth_date: birth,
       emergency_phone: phone,
       health_conditions: none ? [] : health,
@@ -99,7 +105,8 @@ export default function AddKidScreen() {
 
           <PhotoField name={name} uri={photo} onChange={setPhoto} />
 
-          <Field label={isSelf ? t('me.name') : t('kid.name')} value={name} onChangeText={setName} autoComplete="name" />
+          <Field label={t('kid.firstName')} value={first} onChangeText={setFirst} autoComplete="name-given" textContentType="givenName" />
+          <Field label={t('kid.lastName')} value={last} onChangeText={setLast} autoComplete="name-family" textContentType="familyName" />
           <View style={{ gap: 6 }}>
             <T w="semibold" size={14}>
               {isSelf ? t('me.gender') : t('kid.gender')}

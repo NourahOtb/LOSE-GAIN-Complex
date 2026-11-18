@@ -385,6 +385,11 @@ See [docs/security-review-2026-11-19.md](docs/security-review-2026-11-19.md). Wh
 - **Online payments** show "TEST mode" on Today until they're switched to live.
 - **AI assistant:** a one-time "Before you start" screen explains what is sent to the AI service; the member taps Allow first.
 
+### 7.6d Names and adding members at the desk *(2026-11-19)*
+- Every member has a **first name and a last name** (two boxes) in the app's Add kid screen, the dashboard's member page and the desk forms. The full name shown everywhere is built from the two.
+- **New family at the desk** now adds the members in the same step: tick **"The guardian also trains here"** (birth date, male/female, health), and add **any number of kids** (**+ Add another kid**). After **Create account + N members**, each member has a **Register →** link. A "just me" account fills in the member's own details in the same form.
+- On a family's page, **Add a member** adds another kid, or the guardian as a member if they start training later.
+
 ### 7.7 Notifications
 Sent whenever something important changes or needs attention:
 - Class cancelled (by a coach or staff), and what the parent gets (make-up, extension)

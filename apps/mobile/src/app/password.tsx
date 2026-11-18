@@ -28,7 +28,7 @@ export default function PasswordScreen() {
     const { error: err } = await supabase.auth.updateUser({ password: a });
     if (err) {
       setBusy(false);
-      return setError(/different/i.test(err.message) ? t('pw.same') : t('err.generic'));
+      return setError(/different/i.test(err.message) ? t('pw.same') : /should contain|weak|at least/i.test(err.message) ? t('pw.weak') : t('err.generic'));
     }
     const { data: changed } = await supabase.rpc('password_changed');
     if (changed === false) {
