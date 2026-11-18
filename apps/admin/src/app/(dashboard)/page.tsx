@@ -2,6 +2,7 @@ import { daysUntil } from "@lg/shared";
 
 import { CancelClass } from "@/components/cancel-class";
 import { MarkPaid } from "@/components/mark-paid";
+import { SendLink } from "@/components/send-link";
 import { requireStaff } from "@/lib/auth";
 import { Handoffs } from "@/components/handoffs";
 import { OpenPool } from "@/components/open-pool";
@@ -143,7 +144,10 @@ export default async function TodayPage() {
                         <td className="py-2.5 pr-2 whitespace-nowrap">{shortDate(s.start_date)}</td>
                         <td className="py-2.5 pr-3 text-right font-semibold">{kd(s.total)}</td>
                         <td className="py-2.5 text-right">
-                          <MarkPaid id={s.id} />
+                          <div className="flex flex-col items-end gap-1.5">
+                            <MarkPaid id={s.id} />
+                            <SendLink id={s.id} kid={kid?.full_name ?? ""} amount={Number(s.total)} />
+                          </div>
                         </td>
                       </tr>
                     );

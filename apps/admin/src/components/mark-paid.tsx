@@ -24,7 +24,7 @@ export function MarkPaid({ id }: { id: string }) {
           disabled={pending}
           title="Paid through a UPayments link"
           className="whitespace-nowrap rounded border-[1.5px] border-ink px-2.5 py-1.5 text-[13px] font-semibold hover:bg-tile disabled:opacity-50">
-          Link
+          Paid · link
         </button>
       </div>
       {msg?.error ? <span className="text-xs font-semibold text-danger">{msg.error}</span> : null}

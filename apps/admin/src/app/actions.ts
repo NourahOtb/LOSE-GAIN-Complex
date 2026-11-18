@@ -210,3 +210,27 @@ export async function deskRegister(params: Record<string, unknown>, dryRun: bool
   }
   return { ok: dryRun ? "price" : "registered", data: data as { id?: string; total?: number; start_date?: string; end_date?: string; family_pct?: number; months_pct?: number; base?: number } };
 }
+
+/** Reception creates a 24-hour UPayments link for a waiting registration (also sent to the guardian's app inbox). */
+export async function sendPaymentLink(subscriptionId: string) {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.functions.invoke("upayments/create", { body: { subscription_id: subscriptionId } });
+  if (error || !data?.link) {
+    let code = "";
+    try {
+      const ctx = (error as { context?: Response } | null)?.context;
+      if (ctx && typeof ctx.json === "function") code = ((await ctx.json()) as { error?: string }).error ?? "";
+    } catch {
+      // generic
+    }
+    return {
+      error:
+        code === "provider_unavailable"
+          ? "UPayments isn't responding right now. Try again in a minute."
+          : code === "not_waiting_for_payment"
+            ? "This registration is already paid."
+            : "Could not create the payment link.",
+    };
+  }
+  return { ok: "Link ready", link: String(data.link), phone: (data.phone as string | null) ?? null, name: (data.name as string | undefined) ?? "", lang: (data.lang as string | undefined) ?? "en" };
+}

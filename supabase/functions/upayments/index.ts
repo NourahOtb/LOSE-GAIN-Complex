@@ -1,8 +1,10 @@
 // UPayments online payments for LOSE | GAIN subscriptions.
 //
 //   POST /upayments/create   (parent, signed in)  { subscription_id, lang?, return_base? } -> { link }
+//                            (staff: a 24-hour link for any waiting registration, to send by WhatsApp;
+//                             the guardian also gets an inbox message)
 //   POST /upayments/confirm  (parent, signed in)  { track_id }                             -> { status }
-//   POST /upayments/status   (parent, signed in)  { subscription_id }                      -> { status }
+//   POST /upayments/status   (parent or staff)    { subscription_id }                      -> { status }
 //   POST /upayments/webhook  (UPayments server)   notification body                        -> 200
 //
 // status values: paid | not_paid | pending | none | unknown
@@ -30,6 +32,7 @@ const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: fal
 // Where parents land after paying. Only these sites are allowed.
 const RETURN_BASES = ['https://lg-complex-app.vercel.app', 'http://localhost:8081'];
 const LINK_MINUTES = 15;
+const STAFF_LINK_MINUTES = 24 * 60; // links reception sends by WhatsApp
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -46,9 +49,10 @@ type Sub = {
   status: string;
   payment_order_id: string | null;
   payment_session_id: string | null;
+  payment_link_sent: boolean;
   kids: { full_name: string; parent_id: string };
 };
-const SUB_COLS = 'id, kid_id, total, status, payment_order_id, payment_session_id, kids!inner(full_name, parent_id)';
+const SUB_COLS = 'id, kid_id, total, status, payment_order_id, payment_session_id, payment_link_sent, kids!inner(full_name, parent_id)';
 
 async function signedInUser(req: Request) {
   const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
@@ -93,7 +97,7 @@ async function applyTransaction(sub: Sub, txn: any, trackId?: string) {
   }
   const { data: updated } = await db
     .from('subscriptions')
-    .update({ status: 'active', payment_method: 'online', paid_at: new Date().toISOString(), payment_track_id: String(txn.track_id ?? trackId ?? '') })
+    .update({ status: 'active', payment_method: sub.payment_link_sent ? 'payment_link' : 'online', paid_at: new Date().toISOString(), payment_track_id: String(txn.track_id ?? trackId ?? '') })
     .eq('id', sub.id)
     .eq('status', 'pending_payment')
     .select('id');
@@ -120,7 +124,12 @@ async function settleByTrack(trackId: string, mustBelongTo?: string) {
 
   const ids = [txn.requested_order_id, txn.order_id, txn.reference].filter(Boolean).map(String);
   const { data: subs } = await db.from('subscriptions').select(SUB_COLS).in('payment_order_id', ids.length ? ids : ['-']);
-  const sub = (subs?.[0] ?? null) as Sub | null;
+  let sub = (subs?.[0] ?? null) as Sub | null;
+  if (!sub && ids.length) {
+    // an older link of the same registration (a newer link replaced the stored order id)
+    const { data: subId } = await db.rpc('subscription_by_order', { p_order: ids[0] });
+    if (subId) sub = ((await db.from('subscriptions').select(SUB_COLS).eq('id', subId).maybeSingle()).data ?? null) as Sub | null;
+  }
   if (!sub || (mustBelongTo && sub.kids.parent_id !== mustBelongTo)) return { status: 'none' };
   return { status: await applyTransaction(sub, txn, trackId), subscription_id: sub.id };
 }
@@ -147,13 +156,18 @@ Deno.serve(async (req) => {
       const { subscription_id, lang, return_base } = await req.json();
 
       const { data: sub } = await db.from('subscriptions').select(SUB_COLS).eq('id', subscription_id).maybeSingle<Sub>();
-      if (!sub || sub.kids.parent_id !== user.id) return json({ error: 'not_found' }, 404);
+      const { data: caller } = await db.from('profiles').select('role, is_active').eq('id', user.id).maybeSingle();
+      // reception sends a link for a family (copy / WhatsApp); families pay their own
+      const byStaff = !!caller?.is_active && ['super_admin', 'manager', 'receptionist', 'accountant'].includes(caller.role);
+      if (!sub || (sub.kids.parent_id !== user.id && !byStaff)) return json({ error: 'not_found' }, 404);
       if (sub.status !== 'pending_payment') return json({ error: 'not_waiting_for_payment' }, 409);
 
-      const { data: parent } = await db.from('profiles').select('full_name, phone').eq('id', user.id).maybeSingle();
+      const payerId = sub.kids.parent_id;
+      const { data: parent } = await db.from('profiles').select('full_name, phone, preferred_language').eq('id', payerId).maybeSingle();
+      const payerEmail = payerId === user.id ? (user.email ?? '') : ((await db.auth.admin.getUserById(payerId)).data.user?.email ?? '');
       // a fresh order id per attempt (UPayments limits: order 40, reference 35 chars)
       const orderId = `${sub.id.replace(/-/g, '').slice(0, 24)}${Date.now().toString(36)}`.slice(0, 35);
-      const base = RETURN_BASES.includes(return_base) ? return_base : RETURN_BASES[0];
+      const base = !byStaff && RETURN_BASES.includes(return_base) ? return_base : RETURN_BASES[0];
       // our info lives in the path: UPayments appends its own '?...' to these addresses
       const back = `${base}/payment-result/${sub.id}`;
       const charge = {
@@ -164,15 +178,15 @@ Deno.serve(async (req) => {
           currency: 'KWD',
           amount: Number(Number(sub.total).toFixed(3)),
         },
-        language: lang === 'ar' ? 'ar' : 'en',
+        language: (byStaff ? parent?.preferred_language : lang) === 'ar' ? 'ar' : 'en',
         reference: { id: orderId },
         customer: {
-          uniqueId: user.id,
+          uniqueId: payerId,
           name: (parent?.full_name ?? 'Parent').slice(0, 50),
-          email: (user.email ?? '').slice(0, 50),
+          email: payerEmail.slice(0, 50),
           mobile: (parent?.phone ?? '').slice(0, 15),
         },
-        paymentLinkExpiryInMinutes: LINK_MINUTES,
+        paymentLinkExpiryInMinutes: byStaff ? STAFF_LINK_MINUTES : LINK_MINUTES,
         returnUrl: back,
         cancelUrl: `${base}/payment-cancelled/${sub.id}`,
         notificationUrl: `${SUPABASE_URL}/functions/v1/upayments/webhook`,
@@ -191,9 +205,26 @@ Deno.serve(async (req) => {
       }
       await db
         .from('subscriptions')
-        .update({ payment_order_id: orderId, payment_session_id: sessionId, payment_link_at: new Date().toISOString() })
+        .update({
+          payment_order_id: orderId,
+          payment_session_id: sessionId,
+          payment_link_at: new Date().toISOString(),
+          // paid through reception's link → 'payment_link'; through the app → 'online'
+          payment_link_sent: byStaff,
+        })
         .eq('id', sub.id);
-      return json({ link });
+      if (byStaff) {
+        const amount = Number(sub.total).toFixed(3);
+        await db.from('notifications').insert({
+          user_id: payerId,
+          kind: 'payment_link',
+          title_en: 'Payment link from reception',
+          body_en: `Reception sent a payment link for ${sub.kids.full_name} (${amount} KD). Tap Pay online on your home screen, or use the link sent to you. It works for 24 hours.`,
+          title_ar: 'رابط دفع من الاستقبال',
+          body_ar: `أرسل الاستقبال رابط دفع لـ ${sub.kids.full_name} (${amount} د.ك). اضغط "ادفع أونلاين" في الصفحة الرئيسية أو استخدم الرابط المرسل إليك. صالح لمدة ٢٤ ساعة.`,
+        });
+      }
+      return json({ link, phone: byStaff ? (parent?.phone ?? null) : undefined, name: byStaff ? parent?.full_name : undefined, lang: byStaff ? parent?.preferred_language : undefined });
     }
 
     if (route === 'confirm' && req.method === 'POST') {
@@ -209,7 +240,9 @@ Deno.serve(async (req) => {
       if (!user) return json({ error: 'not_signed_in' }, 401);
       const { subscription_id } = await req.json();
       const { data: sub } = await db.from('subscriptions').select(SUB_COLS).eq('id', subscription_id).maybeSingle<Sub>();
-      if (!sub || sub.kids.parent_id !== user.id) return json({ status: 'none' });
+      const { data: caller } = await db.from('profiles').select('role, is_active').eq('id', user.id).maybeSingle();
+      const isStaff = !!caller?.is_active && ['super_admin', 'manager', 'receptionist', 'accountant'].includes(caller.role);
+      if (!sub || (sub.kids.parent_id !== user.id && !isStaff)) return json({ status: 'none' });
       return json({ status: await settleBySubscription(sub), subscription_id: sub.id });
     }
 

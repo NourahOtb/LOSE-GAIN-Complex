@@ -297,6 +297,12 @@ We are building:
 - Coaches can no longer edit a member's details directly (only levels, belts, stripes and notes through their own functions).
 - *Not yet:* creating a brand-new family at the desk (needs the staff-accounts server function, 14g).
 
+### 7.5c Desk payment link *(built 2026-11-18)*
+- On any registration waiting for payment (Today page and the member page), reception taps **Send payment link**: the server creates a **UPayments link valid for 24 hours** for that exact amount, in the family's language.
+- Then **Copy link** or **WhatsApp** (opens WhatsApp with the guardian's number and a ready message in Arabic or English). The guardian also gets an **inbox message** in the app, where **Pay online** works too.
+- When it's paid, the registration turns active by itself (UPayments notifies our server) and is recorded as paid by **payment link**. "Paid · KNET" / "Paid · link" stay for marking payments by hand.
+- A payment is matched to its registration even if a newer link was created later.
+
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.
 - **Members:** active, new, expiring this week, not renewed (churn), per sport, level and class.

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DeskRegister } from "@/components/desk-register";
 import { MarkPaid } from "@/components/mark-paid";
+import { SendLink } from "@/components/send-link";
 import { MemberEditor } from "@/components/member-editor";
 import { MemberPhoto } from "@/components/member-photo";
 import { requireStaff } from "@/lib/auth";
@@ -91,7 +92,12 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
                       </div>
                     </div>
                     <span className="font-semibold">{kd(s.total)} KD</span>
-                    {s.status === "pending_payment" ? <MarkPaid id={s.id} /> : null}
+                    {s.status === "pending_payment" ? (
+                      <div className="flex w-full flex-wrap justify-end gap-2">
+                        <MarkPaid id={s.id} />
+                        <SendLink id={s.id} kid={kid.full_name} amount={Number(s.total)} />
+                      </div>
+                    ) : null}
                   </li>
                 ))}
               </ul>
