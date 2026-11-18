@@ -115,7 +115,7 @@ Sources: `docs/pricing/kids-jiujitsu-warriors-schedule-and-prices.jpg`, `docs/pr
 | Class | Ages | Times |
 |---|---|---|
 | Warriors 1 | 5–7 | 4 PM Sat, Mon, Wed · 5 PM Sun, Tue, Thu |
-| Warriors 2 | 8–12 | 4 PM Sun, Tue, Thu · 5 PM Sat, Mon, Wed |
+| Warriors 2 | 8–10 (from 11 → Titans) | 4 PM Sun, Tue, Thu · 5 PM Sat, Mon, Wed |
 | Adults + Titans (mixed, men and women welcome) | Titans 11–15, adults 16+ | 6:00–7:30 PM Sun–Thu · Gi Thu → Mon, No-Gi Tue and Wed |
 | Women | adult women | 7:30–8:30 PM Sun, Tue, Thu |
 | Saturday open mat | adults | 6 PM, **free**, not a paid class day |
@@ -124,7 +124,7 @@ Sources: `docs/pricing/kids-jiujitsu-warriors-schedule-and-prices.jpg`, `docs/pr
 - Women can mix: any day Sun–Thu at 6 PM, and/or Sun, Tue, Thu at 7:30 PM.
 - Class times, length and coaches are **editable in the admin dashboard** (more classes later).
 
-**Swimming:** adult men's swimming 4 PM Sun, Tue, Thu (2 days 75 KD, 3 days 90 KD). Kids swimming stays as today.
+**Swimming:** adult men's swimming 4 PM Sun, Tue, Thu (2 days 75 KD, 3 days 90 KD). Kids swimming stays as today (4 PM / 5 PM, Sun-Tue-Thu or Sat-Mon-Wed groups, same kids' prices); the Warriors sheet is jiu-jitsu only.
 
 **Prices (KD)**
 - Kids (unchanged, matches the sheet): 4 weeks 2→65, 3→90, 4→105, 5→120, 6→130 · 2 weeks 3→60, 4→70, 5→80 · 1 week 3→30, 4→35, 5→40.
@@ -135,8 +135,8 @@ Sources: `docs/pricing/kids-jiujitsu-warriors-schedule-and-prices.jpg`, `docs/pr
 
 **Open pool membership (adults, men and women together)**
 - 40 KD for 4 weeks from the start date, come any time 10:30 AM–3 PM and 7:30–9 PM, Saturday to Thursday, unlimited visits.
-- **Freeze:** once, for 1 week; the end date moves 1 week later.
-- **Cancelled by the complex** (admin picks a day or a time window) → members get a notification **and an extension** of their membership.
+- **Freeze:** once per membership, for 1 week. The member **asks in the app**, reception **approves in the dashboard**, then the end date moves 1 week later.
+- **Cancelled by the complex** (admin picks a day or a time window) → members get a notification **and a 1-day extension for each cancelled day** (even if only the morning or evening time was cancelled).
 
 The pricing calculator (with tests), registration, coach view, admin and the About page all learn the new classes. PRD: women's classes move into scope.
 

@@ -46,12 +46,12 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [ ] About page: sports, ages, hours, open pool, location + Directions (Google Maps link)
 - [ ] Links from log-in and Settings; test EN + AR, commit + push
 
-### 17. Full timetable + open pool ⏳ waiting for 4 small answers
+### 17. Full timetable + open pool (all questions answered)
 - [ ] Classes in the database: Warriors 1 and 2, Adults + Titans 6–7:30 PM (Gi / No-Gi), Women 7:30 PM, men's swimming 4 PM; old 4 PM Titans removed
 - [ ] Prices in the calculator (kids, men + Titans, women, 1 / 2 / 4 weeks), with tests; discounts kids only
 - [ ] Registration: women can mix 6 PM and 7:30 PM days; Saturday open mat shown as free
-- [ ] Open pool membership (40 KD / 4 weeks) + 1-week freeze
-- [ ] Admin: cancel open pool (a day or a time window) → notification + extension
+- [ ] Open pool membership (40 KD / 4 weeks) + 1-week freeze (member asks, reception approves)
+- [ ] Admin: cancel open pool (a day or a time window) → notification + 1 day extension per cancelled day
 - [ ] Admin: edit class times, length and coach
 - [ ] Coach view, admin and About page show the new classes; PRD updated
 - [ ] Test, commit + push
