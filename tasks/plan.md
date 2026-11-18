@@ -108,13 +108,37 @@ The owner picks from the list in todo.md (Task 14). Each chosen area becomes its
 - **About the complex** page (link on log-in + in Settings): swimming card, jiu-jitsu card, ages, opening hours (complex 10:30 AM–9 PM, Saturday to Thursday, Friday closed), class times, open pool times, location with a **Directions** button → https://maps.app.goo.gl/N2awgJRRfiVL3mWy6. No Call button for now.
 - Written so more information from the owner can be added later. Only facts the owner gave; no invented claims or photos.
 
-## Task 17: Adult jiu-jitsu (men, women), Titans at 6 PM, open pool membership
-Source: `docs/pricing/adult-jiujitsu-schedule-and-prices.jpg`, `docs/pricing/titan-male-adult-jiujitsu.jpg`, owner's message 2026-11-18. **Waiting for answers to Claude's questions before building.**
-- **Classes:** Men (and Titans 11–15) 6 PM Sun–Thu + Saturday open mat 6 PM; Gi Thu → Mon, No-Gi Tue and Wed. Women 7:30 PM Sun, Tue, Thu.
-- **Prices (KD):** Men 4 weeks 2→75, 3→100, 4→110, 5→125, 6→140. Women 4 weeks 2→75, 3→90, 4→105, 5→120, 6→130. Men/Women 2 weeks 3→70, 4→80, 5→90. Men/Women 1 week 3→35, 4→40, 5→45.
-- **Open pool membership:** adults (men and women), 40 KD a month, 10:30 AM–3 PM and 7:30–9 PM, every day except Friday.
-- **Admin:** cancel an open pool session (a day or a time window) → members are notified, like class cancellations.
-- The pricing calculator (with tests), registration, coach view, admin and the About page all learn the new classes. PRD: women's classes move into scope.
+## Task 17: Full timetable (kids Warriors, Titans, adult men and women jiu-jitsu, adult swimming) + open pool
+Sources: `docs/pricing/kids-jiujitsu-warriors-schedule-and-prices.jpg`, `docs/pricing/adult-jiujitsu-schedule-and-prices.jpg`, `docs/pricing/titan-male-adult-jiujitsu.jpg`, owner's answers 2026-11-18.
+
+**Jiu-jitsu classes**
+| Class | Ages | Times |
+|---|---|---|
+| Warriors 1 | 5–7 | 4 PM Sat, Mon, Wed · 5 PM Sun, Tue, Thu |
+| Warriors 2 | 8–12 | 4 PM Sun, Tue, Thu · 5 PM Sat, Mon, Wed |
+| Adults + Titans (mixed, men and women welcome) | Titans 11–15, adults 16+ | 6:00–7:30 PM Sun–Thu · Gi Thu → Mon, No-Gi Tue and Wed |
+| Women | adult women | 7:30–8:30 PM Sun, Tue, Thu |
+| Saturday open mat | adults | 6 PM, **free**, not a paid class day |
+
+- The old 4 PM Titans classes are removed.
+- Women can mix: any day Sun–Thu at 6 PM, and/or Sun, Tue, Thu at 7:30 PM.
+- Class times, length and coaches are **editable in the admin dashboard** (more classes later).
+
+**Swimming:** adult men's swimming 4 PM Sun, Tue, Thu (2 days 75 KD, 3 days 90 KD). Kids swimming stays as today.
+
+**Prices (KD)**
+- Kids (unchanged, matches the sheet): 4 weeks 2→65, 3→90, 4→105, 5→120, 6→130 · 2 weeks 3→60, 4→70, 5→80 · 1 week 3→30, 4→35, 5→40.
+- Men and Titans, 4 weeks: 2→75, 3→100, 4→110, 5→125 (6→140 kept on the price list for when a Saturday class returns; not selectable now).
+- Women, 4 weeks: 2→75, 3→90, 4→105, 5→120 (6→130 kept, not selectable).
+- Adults 2 weeks: 3→70, 4→80, 5→90 · 1 week: 3→35, 4→40, 5→45 (Titans: 4 weeks only for now).
+- Family and 3/6/12-month discounts: **kids only**.
+
+**Open pool membership (adults, men and women together)**
+- 40 KD for 4 weeks from the start date, come any time 10:30 AM–3 PM and 7:30–9 PM, Saturday to Thursday, unlimited visits.
+- **Freeze:** once, for 1 week; the end date moves 1 week later.
+- **Cancelled by the complex** (admin picks a day or a time window) → members get a notification **and an extension** of their membership.
+
+The pricing calculator (with tests), registration, coach view, admin and the About page all learn the new classes. PRD: women's classes move into scope.
 
 ## Risks
 | Risk | Mitigation |
