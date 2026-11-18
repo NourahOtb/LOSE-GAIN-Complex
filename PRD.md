@@ -201,7 +201,10 @@ We are building:
 ### 6.11 Renewal reminders (automatic)
 - **7 days**, **3 days** and **1 day** before expiry, **on the expiry day**, and **2 days after**.
 
-### 6.12 Chat rules
+### 6.12 Chat rules *(built 2026-11-18)*
+- Guardians open a chat from the **Chat** tab: pick the member, then one of that member's coaches (taken from their classes). Coaches see every guardian who wrote, and can also start from a kid's page (**Message guardian**). Messages appear **live**, with a red unread number on the Chat tab and ✓✓ when read.
+- The admin **Chats** page (owner and manager only, read only) lists every chat and marks in red any guardian waiting **12+ hours** for a coach reply. Receptionists and other coaches can't read chats.
+- *Not yet:* phone push for new messages (comes with push notifications), and an automatic alert message to the manager after 12 hours (the Chats page shows it for now).
 - Parents can message coaches **anytime**. There's no reply-time promise.
 - If a parent's message has **no reply after 12 hours**, the **manager is notified**.
 - **Managers and super admins can read** parent ↔ coach chats. Parents are told this in the terms.

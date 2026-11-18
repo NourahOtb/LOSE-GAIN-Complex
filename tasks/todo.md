@@ -64,13 +64,14 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Members can no longer save a registration or price directly (migration 0010)
 - [x] Tested: fake 1 KD price refused, real price charged, other families' members refused, wrong start day refused
 
-### 12. Guardian ↔ coach chat
-- [ ] Database: conversations + messages + security rules (migration 0008)
-- [ ] Guardian app: Chat tab → kid → coach → chat screen (live with Realtime)
-- [ ] Coach app: Chat tab, unread badge, reply
-- [ ] New message → inbox notification
-- [ ] Admin: read-only Chats page, "no reply after 12 h" in red
-- [ ] Test with two accounts side by side, update docs, commit + push
+### 12. Guardian ↔ coach chat ✅ done 2026-11-18
+- [x] Database: conversations + messages + security rules (migration 0011); live updates on
+- [x] Guardian app: Chat tab → member → coach → chat screen (live)
+- [x] Coach app: Chat tab with unread badge; "Message guardian" on a kid's page
+- [x] Unread number on the Chat tab (instead of an inbox entry for every message, so the inbox isn't flooded)
+- [x] Admin: read-only Chats page (owner + manager), "no reply after 12 h" in red
+- [x] Tested with two accounts side by side; privacy checked (other guardians, other coaches and reception can't read)
+- [ ] Later: phone push for new messages, automatic 12-hour alert message to the manager
 
 ### 13. AI assistant for guardians
 - [ ] **You:** Anthropic account, credit, API key, saved as a Supabase secret (Claude can't type keys for you)

@@ -8,12 +8,13 @@ const LINKS = [
   { href: "/registrations", label: "Registrations" },
   { href: "/kids", label: "Members & families" },
   { href: "/classes", label: "Classes" },
+  { href: "/chats", label: "Chats" },
 ];
 
 export function NavLinks({ compact }: { compact?: boolean }) {
   const path = usePathname();
   return (
-    <nav className={compact ? "flex gap-3 text-sm" : "mt-8 flex flex-col gap-0.5"}>
+    <nav className={compact ? "flex min-w-0 flex-1 gap-4 overflow-x-auto whitespace-nowrap py-1 text-sm" : "mt-8 flex flex-col gap-0.5"}>
       {LINKS.map((l) => {
         const on = l.href === "/" ? path === "/" : path.startsWith(l.href);
         return (

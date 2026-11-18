@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/">) {
       </aside>
       <div className="min-w-0 flex-1">
         {/* compact top bar on small screens (tablet portrait / phone) */}
-        <div className="flex items-center justify-between bg-rail px-4 py-3 text-white md:hidden">
+        <div className="flex items-center gap-4 bg-rail px-4 py-3 text-white md:hidden">
           <Logo size={16} className="text-white" />
           <NavLinks compact />
         </div>

@@ -124,6 +124,17 @@ export default function KidProfile() {
         </View>
         </View>
 
+        {profile?.role === 'coach' ? (
+          <Button
+            variant="ghost"
+            title={t('chat.messageGuardian')}
+            onPress={async () => {
+              const { data } = await supabase.rpc('open_conversation', { p_kid: kid.id });
+              if (data) router.push({ pathname: '/chat/[id]', params: { id: String(data) } });
+            }}
+          />
+        ) : null}
+
         {/* health first */}
         {kid.health_conditions.length > 0 || kid.health_other ? (
           <View style={{ backgroundColor: p.dangerBg, borderRadius: 4, padding: 12, gap: 4 }}>
