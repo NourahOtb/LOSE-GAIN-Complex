@@ -185,6 +185,7 @@ We are building:
 
 ### 6.9 Payments and receipts
 - **Online** through **UPayments**. **At reception:** **KNET machine** or a **UPayments payment link** sent to the parent. Staff record the method.
+- **Prices are calculated on the server.** The app shows a price preview, but the registration and its price are saved only by the `register` server function, which checks the member belongs to the account, works out class times and the family discount itself, and uses the same price rules as the app. Members can't write registrations directly. *(Added 2026-11-18.)*
 - A subscription becomes active once it's paid. Online, it only becomes active after our server asks UPayments itself and sees the payment captured **for the right amount**.
 - **Every online outcome ends back in the app with a friendly screen:** paid, cancelled ("no money was taken" + Try again / Pay at reception), failed, still waiting (checks again by itself), or payment service down (Check again). If the parent leaves the payment page any other way, the home screen checks by itself. Payment links expire after 15 minutes. *(Built 2026-11-18 on the UPayments sandbox.)*
 - **Expired or unpaid kid at the door:** the check-in screen shows a **red warning**, but the receptionist can still let them in and collect payment on the spot.

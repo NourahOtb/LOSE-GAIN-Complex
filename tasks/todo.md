@@ -59,6 +59,11 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Coach view, admin Today and About page use the new classes; PRD updated
 - [x] Tested on the website: Warriors times, men's prices, open pool, freeze, closure, class edit
 
+### 17b. Security fix: prices calculated on the server ✅ done 2026-11-18
+- [x] `register` server function saves registrations with its own price (same rules as the app; a test keeps the two copies identical)
+- [x] Members can no longer save a registration or price directly (migration 0010)
+- [x] Tested: fake 1 KD price refused, real price charged, other families' members refused, wrong start day refused
+
 ### 12. Guardian ↔ coach chat
 - [ ] Database: conversations + messages + security rules (migration 0008)
 - [ ] Guardian app: Chat tab → kid → coach → chat screen (live with Realtime)

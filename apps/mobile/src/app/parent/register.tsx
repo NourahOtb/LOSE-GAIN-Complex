@@ -162,27 +162,33 @@ export default function RegisterScreen() {
     if (!startIso) return setError(t('reg.pickDaysFirst'));
     if (needGender) return setError(t('reg.genderFirst'));
     setBusy(true);
-    const [y, m, d] = startIso.split('-').map(Number);
-    const startDate = new Date(y, m - 1, d);
-    const endDate = addDays(startDate, DURATION_WEEKS[duration] * 7);
-    const { data: created, error: err } = await supabase.from('subscriptions').insert({
-      kid_id: kidId,
-      kind: mode === 'pool' ? 'open_pool' : 'classes',
-      swim_days: swim,
-      bjj_days: bjj,
-      start_time: time,
-      bjj_times: bjj.length ? bjjTimes : null,
-      weeks: DURATION_WEEKS[duration],
-      start_date: isoDate(startDate),
-      end_date: isoDate(endDate),
-      sessions_total: price.sessions,
-      base_price: price.base,
-      discount_pct: price.totalPct,
-      total: price.total,
-      status: 'pending_payment',
-    }).select('id').single();
-    if (err || !created) {
+    // the server checks everything and calculates the price itself (the app's price is only a preview)
+    const { data: res, error: fnErr } = await supabase.functions.invoke('register', {
+      body: {
+        kid_id: kidId,
+        kind: mode === 'pool' ? 'open_pool' : 'classes',
+        swim_days: swim,
+        bjj_days: bjj,
+        swim_time: swimTime,
+        adult_time: adultTime,
+        duration,
+        start_date: startIso,
+      },
+    });
+    const created = res as { id?: string; total?: number } | null;
+    if (fnErr || !created?.id) {
       setBusy(false);
+      let code = '';
+      try {
+        const ctx = (fnErr as { context?: Response } | null)?.context;
+        if (ctx && typeof ctx.json === 'function') code = ((await ctx.json()) as { error?: string }).error ?? '';
+      } catch {
+        // keep generic
+      }
+      if (code === 'gender_required') return setError(t('reg.genderFirst'));
+      if (code && ['too_few_days', 'too_many_days', 'five_plus_bjj_only', 'not_offered', 'duplicate_day', 'invalid_day', 'separate_sports'].includes(code)) {
+        return setError(t(`reg.err.${code}` as StringKey));
+      }
       return setError(t('err.generic'));
     }
     if (payWith === 'online') {

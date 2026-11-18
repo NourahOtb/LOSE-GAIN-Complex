@@ -167,3 +167,14 @@ describe('open pool membership', () => {
     expect(priceOpenPool('adult', '3m')).toMatchObject({ ok: false, error: 'not_offered' });
   });
 });
+
+describe('the server uses the same price rules', () => {
+  it('supabase/functions/register/pricing.ts is an exact copy (run scripts/sync-pricing.sh)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const here = resolve(__dirname);
+    const app = readFileSync(resolve(here, 'pricing.ts'), 'utf8');
+    const server = readFileSync(resolve(here, '../../../supabase/functions/register/pricing.ts'), 'utf8');
+    expect(server.split('\n').slice(1).join('\n')).toBe(app);
+  });
+});

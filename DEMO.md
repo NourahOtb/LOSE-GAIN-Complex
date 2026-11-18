@@ -84,3 +84,6 @@ Both websites are connected to the GitHub repository: **every push to `main` reb
 - Admin: Vercel project `lg-complex-admin`, folder `apps/admin` (Next.js)
 
 `./scripts/deploy.sh` is a manual fallback that builds on your Mac and uploads directly.
+
+## Changing prices
+Prices live in `packages/shared/src/pricing.ts`. The server keeps an exact copy for safety: after changing prices, run `./scripts/sync-pricing.sh` and redeploy the `register` server function (ask Claude). A test fails if the two copies differ.
