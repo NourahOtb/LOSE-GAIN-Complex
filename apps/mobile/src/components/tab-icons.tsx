@@ -52,3 +52,9 @@ export const GearIcon = ({ color, size }: P) => (
 export const CheckIcon = ({ color, size }: P) => (
   <Svg {...base(size)} stroke={color}><Path d="M5 12.5l4.5 4.5L19 7.5" /></Svg>
 );
+export const PinIcon = ({ color, size }: P) => (
+  <Svg {...base(size)} stroke={color}><Path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /><Circle cx="12" cy="9.5" r="2.5" /></Svg>
+);
+export const InfoIcon = ({ color, size }: P) => (
+  <Svg {...base(size)} stroke={color}><Circle cx="12" cy="12" r="9" /><Path d="M12 11v6M12 7.5v.5" /></Svg>
+);

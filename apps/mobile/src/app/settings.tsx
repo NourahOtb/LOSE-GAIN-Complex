@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import type { ComponentType, ReactNode } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { CheckIcon, MoonIcon, PhoneIcon, SunIcon } from '@/components/tab-icons';
+import { CheckIcon, InfoIcon, MoonIcon, PhoneIcon, SunIcon } from '@/components/tab-icons';
 import { Button, Label, Screen, T } from '@/components/ui';
 import { useAppearance, type AppearanceChoice } from '@/lib/appearance';
 import { useAuth } from '@/lib/auth';
@@ -53,6 +53,10 @@ export default function SettingsScreen() {
           {langs.map((l, i) => (
             <Row key={l.value} label={l.label} on={lang === l.value} first={i === 0} onPress={() => setLang(l.value)} />
           ))}
+        </Group>
+
+        <Group title={t('about.open')}>
+          <Row label={t('about.open')} on={false} first onPress={() => router.push('/about')} icon={<InfoIcon color={p.ink} size={20} />} />
         </Group>
 
         <Pressable

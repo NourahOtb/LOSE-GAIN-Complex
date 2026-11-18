@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { Logo } from '@/components/logo';
+import { PinIcon } from '@/components/tab-icons';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { Button, ErrorText, Field, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
@@ -55,7 +56,15 @@ export default function LoginScreen() {
             <T w="semibold" size={26}>
               {t('auth.welcome')}
             </T>
-            <T color={p.inkSoft}>{t('auth.sub')}</T>
+            <T size={16} color={p.ink}>
+              {t('auth.sub')}
+            </T>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <PinIcon color={p.inkSoft} size={15} />
+              <T size={14} color={p.inkSoft}>
+                {t('auth.location')}
+              </T>
+            </View>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
@@ -89,6 +98,7 @@ export default function LoginScreen() {
             <T color={p.inkSoft}>{t('auth.noAccount')}</T>
             <Button variant="link" title={t('auth.createAccount')} onPress={() => router.push('/signup')} />
           </View>
+          <Button variant="link" title={t('about.open')} onPress={() => router.push('/about')} style={{ alignSelf: 'center' }} />
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

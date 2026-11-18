@@ -204,7 +204,9 @@ We are building:
 - A coach who is also a parent switches between **Coach** and **My family** views.
 - Parents can delete their account in the app (required by Apple).
 - **Light or dark mode is the member's choice** (changed 2026-11-18): a sun / moon switch on the log-in and sign-up screens, and **Settings → Appearance: Light, Dark, or Same as my phone**. The choice is remembered on that phone or browser, also after logging out. New users start on "Same as my phone".
-- **Settings** (gear icon at the top of every signed-in screen): Appearance, Language, Log out.
+- **Settings** (gear icon at the top of every signed-in screen): Appearance, Language, About the complex, Log out.
+- **Log-in screen line:** "A family sports center for swimming and jiu-jitsu" with **Mansouriya, Kuwait** under it.
+- **About the complex** page (link on the log-in screen, no log-in needed, and in Settings): both sports, jiu-jitsu class times, opening hours (Saturday to Thursday 10:30 AM–9 PM, Friday closed), open pool times and price, and the location with a **Directions** button (Google Maps). No Call button for now. Content lives in one file (`apps/mobile/src/lib/about.ts`) so more owner information can be added easily. *(Built 2026-11-18.)*
 
 ### 7.2 Parent app
 

@@ -42,10 +42,11 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Settings screen: Appearance, Language, Log out; gear icon on the top bar (About comes with Task 16)
 - [x] Tested light + dark in English and Arabic; remembered after reload and after logging out
 
-### 16. New log-in line + About the complex page
-- [ ] "A family sports center for swimming and jiu-jitsu" + Mansouriya, Kuwait (EN + AR)
-- [ ] About page: sports, ages, hours, open pool, location + Directions (Google Maps link)
-- [ ] Links from log-in and Settings; test EN + AR, commit + push
+### 16. New log-in line + About the complex page ✅ done 2026-11-18
+- [x] "A family sports center for swimming and jiu-jitsu" + Mansouriya, Kuwait (EN + AR)
+- [x] About page: sports, jiu-jitsu classes, hours, open pool, location + Directions (Google Maps link); no Call button
+- [x] Links from log-in and Settings; tested EN + AR, light + dark
+- [ ] Waiting for more information from the owner (edit `apps/mobile/src/lib/about.ts`)
 
 ### 17. Full timetable + open pool (all questions answered)
 - [ ] Classes in the database: Warriors 1 and 2, Adults + Titans 6–7:30 PM (Gi / No-Gi), Women 7:30 PM, men's swimming 4 PM; old 4 PM Titans removed
