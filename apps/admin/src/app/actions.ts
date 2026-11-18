@@ -104,3 +104,20 @@ export async function answerHandoff(id: string, reply: string) {
   revalidatePath("/", "layout");
   return { ok: "Sent to the guardian's inbox" };
 }
+
+/** Door check-in: mark present (uses one session) or undo it. */
+export async function checkIn(kidId: string, classId: string, dateIso: string) {
+  const { supabase } = await requireStaff();
+  const { data, error } = await supabase.rpc("check_in", { p_kid: kidId, p_class: classId, p_date: dateIso });
+  if (error) return { error: error.message.includes("not allowed") ? "Only reception, managers and the owner can check members in." : "Could not check in." };
+  revalidatePath("/check-in");
+  return { ok: "Checked in", status: (data as { status?: string } | null)?.status ?? "none" };
+}
+
+export async function undoCheckIn(kidId: string, classId: string, dateIso: string) {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.rpc("undo_check_in", { p_kid: kidId, p_class: classId, p_date: dateIso });
+  if (error) return { error: "Could not undo." };
+  revalidatePath("/check-in");
+  return { ok: "Undone" };
+}

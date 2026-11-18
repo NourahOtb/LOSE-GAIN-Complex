@@ -89,7 +89,7 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Tested for real in English and Arabic: questions (it knows the current time), renewal card + Confirm, hand-off + reply; plain-text answers; Arabic cards
 
 ### 14. More admin dashboard areas (owner picked 10) ⏳ one at a time
-- [ ] 14a. Door check-in (tablet): tap to mark present, sessions go down, red warnings
+- [x] 14a. Door check-in (tablet): tap to mark present, sessions go down, undo, red warnings, walk-ins ✅ 2026-11-18
 - [ ] 14b. Edit members + register at the desk
 - [ ] 14c. Desk payment link (copy / WhatsApp, also in the app)
 - [ ] 14d. Approvals: pause, switch, refund requests

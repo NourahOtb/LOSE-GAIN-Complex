@@ -283,6 +283,13 @@ We are building:
 
 *(Permissions per role are a proposal; the owner confirms them in each module spec.)*
 
+### 7.5a Door check-in *(built 2026-11-18)*
+- Admin **Check-in** page, made for the tablet at the door: pick the day (today by default) and the class (opens on the class happening now), then tap each member **Check in**. Big buttons, photo, age, boy/girl, guardian and phone, and health in red.
+- Checking in uses **one session** from the registration that covers that class; **tap again to undo** (the session comes back).
+- **Red warnings, but staff can still let them in:** "Not paid yet", "Expired", "Not this day · starts …", "No registration". The button says **Let in anyway**.
+- **Walk-ins:** type a name to check in someone who isn't on the class list.
+- Only the owner, managers and receptionists can check members in (enforced by the database); others see it read-only.
+
 ### 7.6 Reports & insights
 - **Revenue:** by day and month, by sport, online vs. desk, discounts given, refunds.
 - **Members:** active, new, expiring this week, not renewed (churn), per sport, level and class.
