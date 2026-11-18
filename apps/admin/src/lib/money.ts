@@ -23,6 +23,7 @@ type Sub = {
 };
 type Member = { id: string; full_name: string; birth_date: string; is_self: boolean };
 
+const REFUND_METHOD: Record<string, string> = { knet: "KNET", bank_transfer: "Bank transfer", cash: "Cash" };
 export const METHOD: Record<string, string> = { online: "Online (app)", knet_machine: "KNET machine (desk)", payment_link: "Payment link" };
 const fils = (n: number) => Math.round(n * 1000) / 1000;
 /** Kuwait date (UTC+3) of a timestamp */
@@ -115,7 +116,7 @@ export function buildMoney(d: MoneyData, month: string) {
     })),
     refundList: refunds.map((r) => {
       const s = subById.get(r.subscription_id);
-      return { day: kwDay(r.refunded_at), member: s ? name(s.kid_id) : "—", kidId: s?.kid_id ?? "", what: s ? what(s) : "", method: r.refund_method ?? "", amount: r.refund_amount };
+      return { day: kwDay(r.refunded_at), member: s ? name(s.kid_id) : "—", kidId: s?.kid_id ?? "", what: s ? what(s) : "", method: REFUND_METHOD[r.refund_method ?? ""] ?? "", amount: r.refund_amount };
     }),
     /** waiting for payment right now (not tied to the month) */
     waiting: fils(d.subs.filter((s) => s.status === "pending_payment").reduce((n, s) => n + s.total, 0)),

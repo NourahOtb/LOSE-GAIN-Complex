@@ -1,5 +1,5 @@
 import { addDays, ageOn, DURATION_WEEKS, formatKD, isoDate, priceOpenPool, priceSubscription, startOptions, WEEKDAYS, weekdayOf, type Duration, type Weekday } from '@lg/shared';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
@@ -31,6 +31,8 @@ export default function RegisterScreen() {
   const [registeredKidIds, setRegisteredKidIds] = useState<string[]>([]);
   const [kidId, setKidId] = useState<string | null>(null);
   const [sport, setSport] = useState<SportChoice>('swimming');
+  // opened from a waitlist offer ("A place opened…" → Register): start with that member, sport and day
+  const offer = useLocalSearchParams<{ kid?: string; cls?: string }>();
   const [swimDays, setSwimDays] = useState<Weekday[]>([]);
   const [bjjDays, setBjjDays] = useState<Weekday[]>([]);
   const [kidTime, setTime] = useState<'16:00' | '17:00'>('16:00');
@@ -45,6 +47,7 @@ export default function RegisterScreen() {
   const [genderBusy, setGenderBusy] = useState(false);
   const [closed, setClosed] = useState<string[]>([]);
   const pricing = usePricing();
+
   // class places (Task 14j): booked / capacity per class for the chosen dates, and this family's waitlist offers
   const [spaces, setSpaces] = useState<Record<string, { booked: number; capacity: number }>>({});
   const [offers, setOffers] = useState<string[]>([]);
@@ -63,6 +66,17 @@ export default function RegisterScreen() {
         const list = (k as Kid[]) ?? [];
         setKids(list);
         setKidId((cur) => cur ?? list[0]?.id ?? null);
+        // opened from a waitlist offer: pick that member, sport and day
+        const offered = offer.cls ? ((c ?? []) as ClassRow[]).find((x) => x.id === offer.cls) : undefined;
+        if (offered && list.some((k) => k.id === offer.kid)) {
+          const day = offered.weekday as Weekday;
+          setKidId(offer.kid!);
+          setSport(offered.sport);
+          if (offered.sport === 'swimming') {
+            setSwimDays((cur) => (cur.includes(day) ? cur : [...cur, day]));
+            setTime(offered.start_time.startsWith('17') ? '17:00' : '16:00');
+          } else setBjjDays((cur) => (cur.includes(day) ? cur : [...cur, day]));
+        }
         const { data: s } = await supabase
           .from('subscriptions')
           .select('kid_id')
@@ -70,7 +84,7 @@ export default function RegisterScreen() {
           .in('status', ['active', 'pending_payment']);
         setRegisteredKidIds([...new Set((s ?? []).map((x: { kid_id: string }) => x.kid_id))]);
       })();
-    }, [profile]),
+    }, [profile, offer.kid, offer.cls]),
   );
 
   // who is joining decides the choices:

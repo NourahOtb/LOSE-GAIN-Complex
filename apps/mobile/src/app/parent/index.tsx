@@ -90,7 +90,7 @@ export default function ParentHome() {
     const kid = kidById.get(w.kid_id)?.full_name ?? '';
     if (w.status === 'offered' && w.offer_expires) {
       const date = new Date(w.offer_expires).toLocaleString(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
-      alerts.unshift({ text: t('home.offer', { kid, cls: clsText(w.class_id), date }), action: () => router.push('/parent/register'), cta: t('tab.register') });
+      alerts.unshift({ text: t('home.offer', { kid, cls: clsText(w.class_id), date }), action: () => router.push({ pathname: '/parent/register', params: { kid: w.kid_id, cls: w.class_id } }), cta: t('tab.register') });
     } else alerts.push({ text: t('home.waiting', { kid, cls: clsText(w.class_id) }) });
   }
   for (const lane of lanes) {
