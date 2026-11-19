@@ -1,11 +1,12 @@
 import { ageOn, type Sport } from '@lg/shared';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { MemberAvatar } from '@/components/avatar';
 import { BeltBar } from '@/components/belt';
 import { HomeHeader } from '@/components/home-header';
+import { LoadState } from '@/components/load-state';
 import { Segmented } from '@/components/pickers';
 import { AlertIcon } from '@/components/tab-icons';
 import { Label, Screen, T } from '@/components/ui';
@@ -27,17 +28,33 @@ export default function CoachKids() {
   const [data, setData] = useState<CoachData | null>(null);
   const [tab, setTab] = useState<'active' | 'inactive'>('active');
 
-  useFocusEffect(
-    useCallback(() => {
-      if (profile) loadCoachData(profile.sport ?? 'swimming').then(setData);
-    }, [profile]),
-  );
+  const [loadFailed, setLoadFailed] = useState(false);
+  const load = useCallback(() => {
+    if (!profile) return;
+    loadCoachData(profile.sport ?? 'swimming', profile.id)
+      .then((d) => {
+        setData(d);
+        setLoadFailed(false);
+      })
+      .catch((e) => {
+        console.warn('[coach] kids not loaded', e instanceof Error ? e.message : String(e));
+        setLoadFailed(true);
+      });
+  }, [profile]);
+  useFocusEffect(load);
 
   if (!data) {
     return (
       <Screen edges={['top']}>
         <HomeHeader />
-        <ActivityIndicator color={p.ink} style={{ marginTop: 40 }} />
+        <LoadState
+          message={t('load.kids')}
+          failed={loadFailed}
+          onRetry={() => {
+            setLoadFailed(false);
+            load();
+          }}
+        />
       </Screen>
     );
   }

@@ -18,10 +18,16 @@ export type CoachData = {
   stripes: Stripe[];
   classes: ClassRow[];
   cancelled: { class_id: string; on_date: string }[];
+  /** a coach who only teaches women's classes sees only those classes and those members */
+  womenOnly: boolean;
 };
 
-/** Everything a coach needs for their sport (coaches may read all kids by design). */
-export async function loadCoachData(sport: Sport): Promise<CoachData> {
+/**
+ * Everything a coach needs for their sport (coaches may read all kids by design).
+ * A coach whose classes are all women's classes (e.g. the women's jiu-jitsu coach) sees only the
+ * women's classes and the members booked in them. Throws if anything fails, so the screen can say so.
+ */
+export async function loadCoachData(sport: Sport, coachId: string): Promise<CoachData> {
   const since = isoDate(new Date(Date.now() - 14 * 86400000));
   const [kids, subs, stripes, classes, cancelled] = await Promise.all([
     supabase.from('kids').select('*').order('full_name'),
@@ -31,12 +37,36 @@ export async function loadCoachData(sport: Sport): Promise<CoachData> {
     supabase.from('classes').select(CLASS_COLS).eq('sport', sport).eq('is_active', true).order('start_time'),
     supabase.from('class_cancellations').select('class_id, on_date').gte('on_date', since),
   ]);
+  const failed = [kids, subs, stripes, classes, cancelled].find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
+
+  let allClasses = (classes.data ?? []) as ClassRow[];
+  let allSubs = (subs.data ?? []) as Sub[];
+  let allKids = (kids.data ?? []) as Kid[];
+  const mine = allClasses.filter((c) => c.coach_id === coachId);
+  const womenOnly = mine.length > 0 && mine.every((c) => c.audience === 'women');
+  if (womenOnly) {
+    allClasses = allClasses.filter((c) => c.audience === 'women');
+    const kidById = new Map(allKids.map((k) => [k.id, k]));
+    allSubs = allSubs.filter((s) =>
+      allClasses.some(
+        (c) =>
+          daysOf(s, sport).includes(c.weekday) &&
+          timeOf(s, sport, c.weekday).slice(0, 5) === c.start_time.slice(0, 5) &&
+          !!kidById.get(s.kid_id) &&
+          ageGroupOf(sport, kidById.get(s.kid_id)!) === c.age_group,
+      ),
+    );
+    const booked = new Set(allSubs.map((s) => s.kid_id));
+    allKids = allKids.filter((k) => booked.has(k.id));
+  }
   return {
-    kids: (kids.data ?? []) as Kid[],
-    subs: (subs.data ?? []) as Sub[],
+    kids: allKids,
+    subs: allSubs,
     stripes: (stripes.data ?? []) as Stripe[],
-    classes: (classes.data ?? []) as ClassRow[],
+    classes: allClasses,
     cancelled: cancelled.data ?? [],
+    womenOnly,
   };
 }
 

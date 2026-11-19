@@ -9,7 +9,6 @@ import {
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState, type ReactNode } from "react";
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -19,6 +18,7 @@ import {
 import { MemberAvatar } from "@/components/avatar";
 import { BeltBar } from "@/components/belt";
 import { HomeHeader } from "@/components/home-header";
+import { LoadState } from "@/components/load-state";
 import { AlertIcon } from "@/components/tab-icons";
 import { Button, ErrorText, Label, Screen, T } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
@@ -63,8 +63,16 @@ export default function CoachClasses() {
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
+  const [loadFailed, setLoadFailed] = useState(false);
   const load = useCallback(async () => {
-    if (profile) setData(await loadCoachData(profile.sport ?? "swimming"));
+    if (!profile) return;
+    try {
+      setData(await loadCoachData(profile.sport ?? "swimming", profile.id));
+      setLoadFailed(false);
+    } catch (e) {
+      console.warn("[coach] classes not loaded", e instanceof Error ? e.message : String(e));
+      setLoadFailed(true);
+    }
   }, [profile]);
 
   useFocusEffect(
@@ -77,7 +85,14 @@ export default function CoachClasses() {
     return (
       <Screen edges={["top"]}>
         <HomeHeader />
-        <ActivityIndicator color={p.ink} style={{ marginTop: 40 }} />
+        <LoadState
+          message={t("load.classes")}
+          failed={loadFailed}
+          onRetry={() => {
+            setLoadFailed(false);
+            load();
+          }}
+        />
       </Screen>
     );
   }
@@ -250,7 +265,7 @@ export default function CoachClasses() {
         {cls ? (
           <View style={{ paddingHorizontal: 20, gap: 12 }}>
             <T size={13} color={p.inkSoft}>
-              {t("coach.kidsCount", { n: roster.length })}
+              {roster.length === 1 ? t("coach.kidsCountOne") : t("coach.kidsCount", { n: roster.length })}
             </T>
 
             {isCancelled ? (

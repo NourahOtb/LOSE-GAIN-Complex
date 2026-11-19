@@ -108,3 +108,5 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Fix: attendance report matched bookings to switched-off classes with the same day and time
 - [x] Fix: "1 classes" → "1 class" on Today
 - [x] Date of birth on a calendar in the app (year → month → day); emergency phone optional, with "whose number is it?" (migration 0027); health adds eye condition and wears glasses (app + dashboard)
+- [x] Fix: log-in could hang on a blank screen until refresh (account load failed silently or was overwritten by an older answer). Now: newest load wins, errors are caught, the start screen says "Signing you in…", and after a failure or 8 s shows Try again / Log out; coach screens show "Loading…" or an error with Try again
+- [x] A coach whose classes are all women's classes (the women's jiu-jitsu coach) sees only women's classes and the members booked in them

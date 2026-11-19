@@ -13,7 +13,7 @@ import { usePalette } from '@/lib/theme';
 
 export default function LoginScreen() {
   const { t, lang, setLang } = useI18n();
-  const { refreshProfile } = useAuth();
+  const { signedIn } = useAuth();
   const p = usePalette();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,20 +24,23 @@ export default function LoginScreen() {
     setError('');
     if (!email.trim() || !password) return setError(t('err.required'));
     setBusy(true);
-    const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
-    if (err || !data.session) {
+    try {
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (err || !data.session) return setError(t('err.login'));
+      const { data: prof } = await supabase.from('profiles').select('is_active').eq('id', data.session.user.id).maybeSingle();
+      if (prof && !prof.is_active) {
+        await supabase.auth.signOut();
+        return setError(t('err.inactive'));
+      }
+      // load this account straight from the session we just got, then let the start screen send them home
+      await signedIn(data.session);
+      router.replace('/');
+    } catch (e) {
+      console.warn('[login] failed', e instanceof Error ? e.message : String(e));
+      setError(t('err.network'));
+    } finally {
       setBusy(false);
-      return setError(t('err.login'));
     }
-    const { data: prof } = await supabase.from('profiles').select('is_active').eq('id', data.session.user.id).maybeSingle();
-    if (prof && !prof.is_active) {
-      await supabase.auth.signOut();
-      setBusy(false);
-      return setError(t('err.inactive'));
-    }
-    await refreshProfile();
-    setBusy(false);
-    router.replace('/');
   };
 
   return (
