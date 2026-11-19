@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
+import { AboutEntry } from '@/components/about-entry';
 import { AssistantEntry } from '@/components/assistant-entry';
 import { BeltBar } from '@/components/belt';
 import { DateStrip } from '@/components/date-strip';
@@ -239,6 +240,11 @@ export default function ParentHome() {
             ) : null}
           </Pressable>
         ))}
+
+        {/* about the complex: hours, open pool, location */}
+        <View style={{ marginHorizontal: 20 }}>
+          <AboutEntry />
+        </View>
       </ScrollView>
     </Screen>
   );
