@@ -3,16 +3,8 @@
 import { useState, useTransition } from "react";
 
 import { updateMember } from "@/app/actions";
+import { EMERGENCY_RELATIONS, HEALTH_OPTIONS as HEALTH } from "@/lib/kid-options";
 
-const HEALTH: [string, string][] = [
-  ["asthma", "Asthma"],
-  ["allergies", "Allergies"],
-  ["epilepsy", "Epilepsy"],
-  ["heart", "Heart condition"],
-  ["injury", "Recent injury or surgery"],
-  ["medication", "Takes medication"],
-  ["other", "Other"],
-];
 const field = "mt-1 block h-10 w-full rounded border-[1.5px] border-line bg-surface px-2.5";
 
 /** Staff edit a member's details. */
@@ -20,7 +12,7 @@ export function MemberEditor({
   kid,
   adult,
 }: {
-  kid: { id: string; first_name: string; last_name: string; relationship: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string };
+  kid: { id: string; first_name: string; last_name: string; relationship: string; birth_date: string; gender: string; emergency_phone: string; emergency_relation: string; health: string[]; health_other: string };
   adult: boolean;
 }) {
   const [f, setF] = useState(kid);
@@ -93,10 +85,25 @@ export function MemberEditor({
           </div>
         </fieldset>
       </div>
-      <label>
-        <span className="label">Emergency phone</span>
-        <input value={f.emergency_phone} onChange={(e) => set("emergency_phone", e.target.value)} inputMode="tel" placeholder="9XXX XXXX" className={field} />
-      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label>
+          <span className="label">Emergency phone (optional)</span>
+          <input value={f.emergency_phone} onChange={(e) => set("emergency_phone", e.target.value)} inputMode="tel" placeholder="9XXX XXXX" className={field} />
+        </label>
+        {f.emergency_phone.trim() ? (
+          <label>
+            <span className="label">Whose number is it?</span>
+            <select value={f.emergency_relation} onChange={(e) => set("emergency_relation", e.target.value)} className={field}>
+              <option value="">Choose</option>
+              {EMERGENCY_RELATIONS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+      </div>
       <fieldset>
         <legend className="label">Health</legend>
         <div className="mt-1 flex flex-wrap gap-2">

@@ -65,7 +65,7 @@ All demo accounts use the **same shared password** (in that file). Demo data was
 ### 2. A new parent joins (2 minutes), in the app
 1. Open the app → **العربية / English** screen. Tap **العربية** to show Arabic right-to-left, then switch back with **English** (top right).
 2. **Create a member account** → "Who is this account for?" → **My family** → name, Kuwait mobile, email, password. *(Or show **Just me**: an adult fills in their own details and goes straight to adult swimming.)*
-3. **Kids → + Add a kid**: first and last name, **you are their…** (mother, aunt, cousin…), birth date, emergency phone, **health checklist** (point out it's required, and coaches see it in red).
+3. **Kids → + Add a kid**: first and last name, **you are their…** (mother, aunt, cousin…), birth date on the **calendar** (year → month → day), optional emergency phone (then **whose number is it?**), **health checklist** (now with eye condition and glasses) (point out it's required, and coaches see it in red).
 4. **Register**:
    - pick the kid → **Jiu-jitsu** → tap **Sat, Mon, Wed**
    - point out that **any days** work, with the recommended swimming groups marked

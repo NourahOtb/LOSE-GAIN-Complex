@@ -193,9 +193,10 @@ We are building:
 - Every payment produces a **receipt**: PDF in the app, plus an email.
 
 ### 6.10 Registration requirements
-- **Health checklist (required for every kid and adult member):** asthma, allergies, epilepsy, heart condition, recent injury or surgery, medications, other (text), or "none". Anything ticked shows a **red health badge** to coaches and reception.
+- **Health checklist (required for every kid and adult member):** asthma, allergies, epilepsy, heart condition, **eye condition**, **wears glasses**, recent injury or surgery, medications, other (text), or "none". *(Eyes and glasses added 2026-11-19.)* Anything ticked shows a **red health badge** to coaches and reception.
 - **Required agreements:** terms & rules (including the pause and refund policy) and a liability waiver.
-- **Required emergency contact:** a second phone number.
+- **Emergency contact (optional, changed 2026-11-19):** a second phone number. When one is typed, the app asks **whose number it is** (mother, father, grandmother, grandfather, aunt, uncle, sister, brother, cousin, family friend, other); coaches and reception see it next to the number.
+- **Date of birth** is chosen on a **calendar**: the year, then the month, then the day (kids: years for ages 4–15 only). The dashboard uses the browser's date picker.
 - **Kid photo:** optional but recommended. Guardians **take a photo or choose one from the library** when adding a kid, and can change or remove it later from the Family tab. The receptionist can upload one or take it on the spot (admin upload: later). Photos are stored **privately**: only that family, coaches and staff can open them. *(Built 2026-11-18.)*
 - **Boy or girl (required):** asked for every new kid (**Boy / Girl**) and adult member (**Male / Female**), and shown next to the name, because names can be confusing.
 
@@ -292,7 +293,7 @@ We are building:
 
 ### 7.5b Member page and desk registration *(built 2026-11-18)*
 - Click a member's name in **Members & families** to open their page: photo, age, guardian with relationship and phone, and all their registrations.
-- **Edit details** (staff): name, date of birth, boy/girl, emergency phone, health checklist. **Photo**: take one with the tablet camera or choose a file (shrunk in the browser), or remove it.
+- **Edit details** (staff): name, date of birth, boy/girl, emergency phone and whose number it is, health checklist. **Photo**: take one with the tablet camera or choose a file (shrunk in the browser), or remove it.
 - **Register at the desk**: sport, days, times, length and first day; **Check price** uses the same server price check as the app (family discount, clashes, rules), then **Register**, then **Paid · KNET** or **Link** straight away.
 - Coaches can no longer edit a member's details directly (only levels, belts, stripes and notes through their own functions).
 - New families at the desk: built in 14g (see 7.5g).

@@ -128,12 +128,13 @@ export async function undoCheckIn(kidId: string, classId: string, dateIso: strin
   return { ok: "Undone" };
 }
 
-const HEALTH_KEYS = ["asthma", "allergies", "epilepsy", "heart", "injury", "medication", "other"];
+import { EMERGENCY_KEYS, HEALTH_KEYS } from "@/lib/kid-options";
+
 
 /** Staff edit a member's details (the database allows staff and the member's own family). */
 export async function updateMember(
   kidId: string,
-  f: { first_name: string; last_name: string; relationship: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string },
+  f: { first_name: string; last_name: string; relationship: string; birth_date: string; gender: string; emergency_phone: string; emergency_relation?: string; health: string[]; health_other: string },
 ) {
   const { supabase } = await requireStaff();
   if (!f.first_name.trim() || !f.last_name.trim()) return { error: "Enter the first and last name." };
@@ -141,6 +142,7 @@ export async function updateMember(
   if (!["male", "female"].includes(f.gender)) return { error: "Choose boy/male or girl/female." };
   const phone = f.emergency_phone.trim() ? normalizeKuwaitPhone(f.emergency_phone) : null;
   if (f.emergency_phone.trim() && !phone) return { error: "Emergency phone: 8-digit Kuwait mobile number." };
+  if (phone && !EMERGENCY_KEYS.includes(f.emergency_relation ?? "")) return { error: "Choose whose emergency number it is." };
   const { error } = await supabase
     .from("kids")
     .update({
@@ -150,6 +152,7 @@ export async function updateMember(
       birth_date: f.birth_date,
       gender: f.gender,
       emergency_phone: phone,
+      emergency_relation: phone ? f.emergency_relation : null,
       health_conditions: f.health.filter((h) => HEALTH_KEYS.includes(h)),
       health_other: f.health_other.trim() || null,
       health_confirmed: true,
@@ -395,12 +398,12 @@ export async function createFamily(form: { full_name: string; email: string; pho
 }
 
 const REL_OK = ["father", "mother", "grandfather", "grandmother", "brother", "sister", "uncle", "aunt", "cousin", "guardian"];
-const HEALTH_OK = ["asthma", "allergies", "epilepsy", "heart", "injury", "medication", "other"];
+const HEALTH_OK = HEALTH_KEYS;
 
 /** Reception adds a kid (or, for a "Just me" account, the member themself) to a family. */
 export async function addMember(
   parentId: string,
-  form: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string; is_self?: boolean; relationship?: string },
+  form: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; emergency_relation?: string; health: string[]; health_other: string; is_self?: boolean; relationship?: string },
 ) {
   const { supabase } = await requireStaff();
   const { data: parent } = await supabase.from("profiles").select("account_type, full_name").eq("id", parentId).eq("role", "parent").maybeSingle();
@@ -416,6 +419,7 @@ export async function addMember(
   if (!["male", "female"].includes(form.gender)) return { error: "Pick boy/male or girl/female." };
   const emergency = form.emergency_phone.trim() ? normalizeKuwaitPhone(form.emergency_phone) : null;
   if (form.emergency_phone.trim() && !emergency) return { error: "The emergency number must be a Kuwait mobile (8 digits)." };
+  if (emergency && !EMERGENCY_KEYS.includes(form.emergency_relation ?? "")) return { error: "Choose whose emergency number it is." };
   const { data, error } = await supabase
     .from("kids")
     .insert({
@@ -428,6 +432,7 @@ export async function addMember(
       is_self: isSelf,
       relationship: isSelf ? null : REL_OK.includes(form.relationship ?? "") ? form.relationship : null,
       emergency_phone: emergency,
+      emergency_relation: emergency ? form.emergency_relation : null,
       health_conditions: form.health.filter((h) => HEALTH_OK.includes(h)),
       health_other: form.health_other.trim() || null,
       health_confirmed: true,

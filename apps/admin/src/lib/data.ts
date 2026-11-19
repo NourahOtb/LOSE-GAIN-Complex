@@ -34,6 +34,7 @@ export type Kid = {
   health_conditions: string[];
   health_other: string | null;
   emergency_phone: string | null;
+  emergency_relation: string | null;
   swim_level: number | null;
   belt: string | null;
   is_self: boolean;
@@ -64,6 +65,8 @@ export const HEALTH: Record<string, string> = {
   allergies: "Allergies",
   epilepsy: "Epilepsy",
   heart: "Heart",
+  eyes: "Eyes",
+  glasses: "Glasses",
   injury: "Injury",
   medication: "Medication",
   other: "Other",
@@ -101,7 +104,7 @@ export async function loadDashboard(supabase: SupabaseClient) {
   const today = new Date();
   const [subs, kids, parents, classes, cancels, coaches, closures, handoffs, waiting, complexClosures] = await Promise.all([
     supabase.from("subscriptions").select("*").in("status", ["active", "pending_payment"]).order("created_at", { ascending: false }),
-    supabase.from("kids").select("id, parent_id, member_no, full_name, birth_date, health_conditions, health_other, emergency_phone, swim_level, belt, is_self").order("full_name"),
+    supabase.from("kids").select("id, parent_id, member_no, full_name, birth_date, health_conditions, health_other, emergency_phone, emergency_relation, swim_level, belt, is_self").order("full_name"),
     supabase.from("profiles").select("id, full_name, phone").eq("role", "parent"),
     supabase.from("classes").select(CLASS_COLS).eq("is_active", true).order("start_time"),
     supabase.from("class_cancellations").select("class_id, on_date, compensation").gte("on_date", isoDate(addDays(today, -1))),

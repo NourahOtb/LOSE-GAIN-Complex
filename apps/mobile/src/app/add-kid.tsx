@@ -1,13 +1,14 @@
-import { ageOn, normalizeKuwaitPhone, parseDob } from '@lg/shared';
+import { ageOn, normalizeKuwaitPhone } from '@lg/shared';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
 import { PhotoField } from '@/components/avatar';
+import { DateField } from '@/components/date-field';
 import { Segmented, Select } from '@/components/pickers';
 import { Button, ErrorText, Field, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { HEALTH_KEYS, type HealthKey } from '@/lib/data';
+import { EMERGENCY_RELATIONS, HEALTH_KEYS, type EmergencyRelation, type HealthKey } from '@/lib/data';
 import { useI18n } from '@/lib/i18n';
 import { savePhoto } from '@/lib/photos';
 import { RELATIONSHIPS, supabase, type Relationship } from '@/lib/supabase';
@@ -17,6 +18,7 @@ export default function AddKidScreen() {
   const { t } = useI18n();
   const { profile } = useAuth();
   const p = usePalette();
+  const thisYear = new Date().getFullYear();
   // self=1: the account holder adds themself as an adult member; first=1: straight after sign-up
   const params = useLocalSearchParams<{ self?: string; first?: string }>();
   const isSelf = params.self === '1';
@@ -26,12 +28,13 @@ export default function AddKidScreen() {
   const [first, setFirst] = useState(isSelf ? ownName.split(' ')[0] : '');
   const [last, setLast] = useState(isSelf ? ownName.split(' ').slice(1).join(' ') : '');
   const name = `${first.trim()} ${last.trim()}`.trim();
-  const [dob, setDob] = useState('');
+  const [dob, setDob] = useState(''); // ISO date from the calendar
   // asked for each kid: a guardian may be the mother of one kid and the aunt or cousin of another
   const [relationship, setRelationship] = useState<Relationship | null>(null);
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [emergency, setEmergency] = useState('');
+  const [emergency, setEmergency] = useState(''); // optional
+  const [emergencyWho, setEmergencyWho] = useState<EmergencyRelation | null>(null);
   const [health, setHealth] = useState<HealthKey[]>([]);
   const [none, setNone] = useState(false);
   const [other, setOther] = useState('');
@@ -53,16 +56,16 @@ export default function AddKidScreen() {
 
   const save = async () => {
     setError('');
-    if (!first.trim() || !last.trim() || !dob.trim() || !emergency.trim()) return setError(t('err.required'));
+    if (!first.trim() || !last.trim() || !dob) return setError(t('err.required'));
     if (!isSelf && !relationship) return setError(t('err.relationshipKid'));
     if (!gender) return setError(isSelf ? t('err.genderMe') : t('err.gender'));
-    const birth = parseDob(dob);
-    if (!birth) return setError(t('err.birth'));
+    const birth = dob;
     const age = ageOn(birth);
     if (isSelf && age < 16) return setError(t('err.ageAdult'));
     if (!isSelf && (age < 4 || age > 15)) return setError(t('err.age'));
-    const phone = normalizeKuwaitPhone(emergency);
-    if (!phone) return setError(t('err.phone'));
+    const phone = emergency.trim() ? normalizeKuwaitPhone(emergency) : null;
+    if (emergency.trim() && !phone) return setError(t('err.phone'));
+    if (phone && !emergencyWho) return setError(t('err.emergencyWho'));
     if (!none && health.length === 0) return setError(t('err.health'));
     if (!profile) return;
 
@@ -74,6 +77,7 @@ export default function AddKidScreen() {
       full_name: name,
       birth_date: birth,
       emergency_phone: phone,
+      emergency_relation: phone ? emergencyWho : null,
       health_conditions: none ? [] : health,
       health_other: other.trim() || null,
       health_confirmed: true,
@@ -133,7 +137,15 @@ export default function AddKidScreen() {
               onChange={setGender}
             />
           </View>
-          <Field label={t('kid.birth')} hint={t('kid.birthHint')} value={dob} onChangeText={setDob} placeholder={isSelf ? '15/06/1990' : '10/03/2019'} keyboardType="numbers-and-punctuation" />
+          <DateField
+            label={t('kid.birth')}
+            value={dob}
+            onChange={setDob}
+            placeholder={t('date.choose')}
+            // kids are 4–15; an adult member is 16 or older
+            minYear={isSelf ? thisYear - 90 : thisYear - 16}
+            maxYear={isSelf ? thisYear - 16 : thisYear - 4}
+          />
           <Field
             label={t('kid.emergency')}
             hint={t('kid.emergencyHint')}
@@ -143,6 +155,15 @@ export default function AddKidScreen() {
             inputMode="tel"
             placeholder="9XXX XXXX"
           />
+          {emergency.trim() ? (
+            <Select
+              label={isSelf ? t('kid.emergencyWhoMe') : t('kid.emergencyWho')}
+              placeholder={t('auth.choose')}
+              options={EMERGENCY_RELATIONS.map((r) => ({ value: r, label: r === 'friend' || r === 'other' ? t(`ec.${r}`) : t(`rel.${r}`) }))}
+              value={emergencyWho}
+              onChange={setEmergencyWho}
+            />
+          ) : null}
 
           <View style={{ gap: 10, marginTop: 6 }}>
             <View style={{ borderTopWidth: 2, borderTopColor: p.ink, paddingTop: 12, gap: 4 }}>

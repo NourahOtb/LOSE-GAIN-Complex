@@ -107,3 +107,4 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] Fix: coach screen no longer lists a kid on days their registration is paused
 - [x] Fix: attendance report matched bookings to switched-off classes with the same day and time
 - [x] Fix: "1 classes" → "1 class" on Today
+- [x] Date of birth on a calendar in the app (year → month → day); emergency phone optional, with "whose number is it?" (migration 0027); health adds eye condition and wears glasses (app + dashboard)

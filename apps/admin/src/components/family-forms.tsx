@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 
 import { addMember, createFamily, resetPassword } from "@/app/actions";
 import { TempPassword } from "@/components/temp-password";
+import { EMERGENCY_RELATIONS, HEALTH_OPTIONS as HEALTH } from "@/lib/kid-options";
 
 const APP_URL = "https://lg-complex-app.vercel.app";
 const field = "h-10 rounded border-[1.5px] border-line bg-surface px-2.5";
@@ -19,15 +20,6 @@ const REL: [string, string][] = [
   ["brother", "Brother"],
   ["cousin", "Cousin"],
   ["guardian", "Legal guardian"],
-];
-const HEALTH: [string, string][] = [
-  ["asthma", "Asthma"],
-  ["allergies", "Allergies"],
-  ["epilepsy", "Epilepsy"],
-  ["heart", "Heart"],
-  ["injury", "Injury"],
-  ["medication", "Medication"],
-  ["other", "Other"],
 ];
 
 /** WhatsApp text with the app link and the login, in the family's language. */
@@ -45,15 +37,17 @@ export type MemberDraft = {
   birth_date: string;
   gender: string;
   emergency_phone: string;
+  /** whose emergency number it is; asked once a number is typed */
+  emergency_relation: string;
   health: string[];
   health_other: string;
   confirmed: boolean;
   /** the guardian's relationship to this kid */
   relationship: string;
 };
-export const emptyMember = (): MemberDraft => ({ first_name: "", last_name: "", birth_date: "", gender: "", emergency_phone: "", health: [], health_other: "", confirmed: false, relationship: "" });
+export const emptyMember = (): MemberDraft => ({ first_name: "", last_name: "", birth_date: "", gender: "", emergency_phone: "", emergency_relation: "", health: [], health_other: "", confirmed: false, relationship: "" });
 /** a kid needs both names and the guardian's relationship; the account holder's name comes from the account */
-const memberReady = (m: MemberDraft, isKid: boolean) => (!isKid || (m.first_name.trim() && m.last_name.trim() && m.relationship)) && !!m.birth_date && !!m.gender && m.confirmed;
+const memberReady = (m: MemberDraft, isKid: boolean) => (!isKid || (m.first_name.trim() && m.last_name.trim() && m.relationship)) && !!m.birth_date && !!m.gender && m.confirmed && (!m.emergency_phone.trim() || !!m.emergency_relation);
 
 function MemberFields({ m, onChange, adult, withName, idKey }: { m: MemberDraft; onChange: (m: MemberDraft) => void; adult: boolean; withName: boolean; idKey: string }) {
   const set = <K extends keyof MemberDraft>(k: K, v: MemberDraft[K]) => onChange({ ...m, [k]: v });
@@ -107,6 +101,19 @@ function MemberFields({ m, onChange, adult, withName, idKey }: { m: MemberDraft;
           <span className="label">Emergency mobile (optional)</span>
           <input inputMode="tel" value={m.emergency_phone} onChange={(e) => set("emergency_phone", e.target.value)} className={`${field} w-36`} />
         </label>
+        {m.emergency_phone.trim() ? (
+          <label className="flex flex-col gap-1">
+            <span className="label">Whose number?</span>
+            <select value={m.emergency_relation} onChange={(e) => set("emergency_relation", e.target.value)} className={`${field} w-40`}>
+              <option value="">Choose</option>
+              {EMERGENCY_RELATIONS.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
       </div>
       <fieldset>
         <legend className="label mb-1.5">Health (ask the guardian)</legend>
@@ -285,7 +292,7 @@ export function NewFamily() {
           className="h-10 rounded border-[1.5px] border-ink bg-ink px-4 font-semibold text-surface disabled:opacity-40">
           {pending ? "Creating…" : single ? "Create account" : `Create account${typedKids.length + (guardianTrains ? 1 : 0) ? ` + ${typedKids.length + (guardianTrains ? 1 : 0)} member${typedKids.length + (guardianTrains ? 1 : 0) === 1 ? "" : "s"}` : ""}`}
         </button>
-        {notReady.length ? <span className="text-ink-soft">To finish: {notReady.join(", ")} (names, relationship, birth date, boy/girl, health confirmed).</span> : null}
+        {notReady.length ? <span className="text-ink-soft">To finish: {notReady.join(", ")} (names, relationship, birth date, boy/girl, whose emergency number, health confirmed).</span> : null}
         {msg?.error ? <span className="font-semibold text-danger">{msg.error}</span> : null}
       </div>
     </div>

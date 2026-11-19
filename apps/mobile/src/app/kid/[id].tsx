@@ -76,6 +76,13 @@ export default function KidProfile() {
   }
 
   const fmt = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  // "Emergency: +965… (grandmother)"
+  const who = kid.emergency_relation
+    ? kid.emergency_relation === 'friend' || kid.emergency_relation === 'other'
+      ? t(`ec.${kid.emergency_relation}` as StringKey)
+      : t(`rel.${kid.emergency_relation}` as StringKey)
+    : '';
+  const emergencyText = kid.emergency_phone ? `${t('kid.emergency.call', { phone: kid.emergency_phone })}${who ? ` (${who})` : ''}` : '';
   const onBelt = stripes.filter((s) => s.belt === kid.belt);
   const promoteTo = kid.belt ? nextBelt(kid.belt) : null;
   // stripe dates: today and the past 2 weeks (Fridays skipped)
@@ -146,12 +153,12 @@ export default function KidProfile() {
               </T>
             </View>
             {kid.health_other ? <T size={14} color={p.danger}>{kid.health_other}</T> : null}
-            {kid.emergency_phone ? <T size={13} color={p.danger}>{t('kid.emergency.call', { phone: kid.emergency_phone })}</T> : null}
+            {kid.emergency_phone ? <T size={13} color={p.danger}>{emergencyText}</T> : null}
           </View>
         ) : (
           <T size={13} color={p.inkSoft}>
             {t('kid.health.none')}
-            {kid.emergency_phone ? ` · ${t('kid.emergency.call', { phone: kid.emergency_phone })}` : ''}
+            {kid.emergency_phone ? ` · ${emergencyText}` : ''}
           </T>
         )}
 

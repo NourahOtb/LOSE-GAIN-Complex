@@ -80,6 +80,7 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
               birth_date: kid.birth_date,
               gender: kid.gender ?? "",
               emergency_phone: kid.emergency_phone ?? "",
+              emergency_relation: kid.emergency_relation ?? "",
               health: kid.health_conditions ?? [],
               health_other: kid.health_other ?? "",
             }}

@@ -17,6 +17,7 @@ export type Kid = {
   health_other: string | null;
   health_confirmed: boolean;
   emergency_phone: string | null;
+  emergency_relation?: string | null;
   swim_level: number | null;
   swim_level_since: string | null;
   belt: Belt | null;
@@ -60,7 +61,11 @@ export function genderKey(kid: Pick<Kid, 'gender' | 'birth_date' | 'is_self'>): 
 
 export type Stripe = { id: string; kid_id: string; belt: string; awarded_on: string; coach_id: string | null };
 
-export const HEALTH_KEYS = ['asthma', 'allergies', 'epilepsy', 'heart', 'injury', 'medication', 'other'] as const;
+export const HEALTH_KEYS = ['asthma', 'allergies', 'epilepsy', 'heart', 'eyes', 'glasses', 'injury', 'medication', 'other'] as const;
+
+/** Whose emergency number it is (their relation to the kid). */
+export const EMERGENCY_RELATIONS = ['mother', 'father', 'grandmother', 'grandfather', 'aunt', 'uncle', 'sister', 'brother', 'cousin', 'friend', 'other'] as const;
+export type EmergencyRelation = (typeof EMERGENCY_RELATIONS)[number];
 export type HealthKey = (typeof HEALTH_KEYS)[number];
 
 /** Real kids' BJJ belt colours: main colour + the white/black centre stripe some belts carry. */

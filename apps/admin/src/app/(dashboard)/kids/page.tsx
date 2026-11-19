@@ -3,6 +3,7 @@ import { ageOn } from "@lg/shared";
 
 import { requireStaff } from "@/lib/auth";
 import { HEALTH, type Kid } from "@/lib/data";
+import { emergencyLabel } from "@/lib/kid-options";
 
 const BELT_COLOR: Record<string, string> = { white: "#F4F4F2", grey: "#9E9E9E", yellow: "#E8C547", orange: "#E08A2E", green: "#3E8E4E" };
 
@@ -134,7 +135,7 @@ export default async function KidsPage() {
                       </div>
                     )}
                     <div className="text-xs text-ink-soft">{parent?.phone}</div>
-                    {k.emergency_phone ? <div className="text-xs text-ink-soft">Emergency {k.emergency_phone}</div> : null}
+                    {k.emergency_phone ? <div className="text-xs text-ink-soft">Emergency {k.emergency_phone}{k.emergency_relation ? ` (${emergencyLabel(k.emergency_relation)})` : ""}</div> : null}
                   </td>
                   <td className="px-3 py-2.5">
                     {k.health_conditions.length || k.health_other ? (
