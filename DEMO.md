@@ -16,15 +16,15 @@ All demo accounts use the **same shared password** (in that file). Demo data was
 | Role | Email | Name | What they do in the demo |
 |---|---|---|---|
 | Owner (super admin) | `admin@lgcomplex.test` | Owner | Everything: prices, staff, money, reports |
-| Manager | `manager@lgcomplex.test` | Khalid Al-Mutairi | Approvals, staff (coaches, reception), money |
-| Receptionist | `reception@lgcomplex.test` | Sara Al-Azmi | Desk: payments, new families, approvals, waitlist |
-| Receptionist | `reception2@lgcomplex.test` | Mariam Al-Kandari | Same (app in Arabic); gave the exception discount |
-| Accountant | `accountant@lgcomplex.test` | Faisal Al-Rashidi | Money, refunds |
-| Swimming coach | `coach.swim1@lgcomplex.test` | Yousef Al-Hajri | Kids pool 4 PM + men's swimming |
-| Swimming coach | `coach.swim2@lgcomplex.test` | Noura Al-Shammari | Olympic pool 5 PM kids |
-| Jiu-jitsu coach | `coach.bjj1@lgcomplex.test` | Ahmad Al-Enezi | Warriors 1 and Warriors 2 (kids) |
-| Jiu-jitsu coach | `coach.bjj2@lgcomplex.test` | Hamad Al-Dosari | Adults + Titans, Saturday open mat |
-| Jiu-jitsu coach (women) | `coach.bjj3@lgcomplex.test` | Dana Al-Fadhli | Women's class 7:30 PM |
+| Manager | `manager@lgcomplex.test` | Nourah Alotaibi | Approvals, staff (coaches, reception), money |
+| Receptionist | `reception@lgcomplex.test` | Liz | Desk: payments, new families, approvals, waitlist |
+| Receptionist | `reception2@lgcomplex.test` | Arra | Same (app in Arabic); gave the exception discount |
+| Accountant | `accountant@lgcomplex.test` | Naser | Money, refunds |
+| Swimming coach | `coach.swim1@lgcomplex.test` | Abbas Qali | Kids pool 4 PM + men's swimming |
+| Swimming coach | `coach.swim2@lgcomplex.test` | Abdullah Ashkanani | Olympic pool 5 PM kids |
+| Jiu-jitsu coach | `coach.bjj1@lgcomplex.test` | Yousef Aldosari | Warriors 1 and Warriors 2 (kids) |
+| Jiu-jitsu coach | `coach.bjj2@lgcomplex.test` | Ahmad Alqathmani | Adults + Titans, Saturday open mat |
+| Jiu-jitsu coach (women) | `coach.bjj3@lgcomplex.test` | Zainab Dashti | Women's class 7:30 PM |
 
 **Families** (app). Email = the name shown + `@lgcomplex.test`.
 
@@ -96,12 +96,12 @@ In the dashboard → **Closures** → pick a date and a reason (e.g. "National D
 ### 3d. A family walks in without the app (1 minute, optional)
 As reception: **Members & families → + New family** → guardian name, mobile, email, then the kids in the same form (first and last name, birth date, boy/girl, health; **+ Add another kid**; tick "The guardian also trains here" if they do) → **Create account + N members**. Show the temporary password and the **WhatsApp** button (ready message with the app link), then **Register →** next to a kid. After rehearsing, ask Claude to delete the practice family.
 
-### 4. The coach (2 minutes), in the app as Coach Ahmad (`coach.bjj1`)
+### 4. The coach (2 minutes), in the app as Coach Yousef (`coach.bjj1`)
 1. **Classes → Wed → 5:00 PM · Warriors 2**: the new kid is in the class.
 2. Point out the **health marks** and **"2 kids may be ready for a stripe"**.
 3. Tap the new kid → **Give white belt** → **Add stripe 1** → pick the date → **Add stripe**.
 4. Optional: on **Omar**, show the stripe history with dates and coach names, and write a **coach note**.
-5. Optional: log in as **Coach Yousef** (`coach.swim1`) to show swimming as **lanes by level** with **Move up?**.
+5. Optional: log in as **Coach Abbas** (`coach.swim1`) to show swimming as **lanes by level** with **Move up?**.
 
 ### 5. A class is cancelled (1.5 minutes)
 1. **Admin → Today → Cancel class** on a class (or **Cancel this class** in the coach app) → choose **A make-up class** → confirm. The dashboard says how many families were notified.
