@@ -5,7 +5,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollVie
 import { MemberAvatar } from '@/components/avatar';
 import { Button, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
-import { chatTime, type Conversation, type Message } from '@/lib/chat';
+import { chatTime, liveName, type Conversation, type Message } from '@/lib/chat';
 import { useI18n } from '@/lib/i18n';
 import { supabase } from '@/lib/supabase';
 import { usePalette } from '@/lib/theme';
@@ -51,7 +51,7 @@ export default function ChatScreen() {
 
     // live: new messages in this chat
     const channel = supabase
-      .channel(`chat-${id}`)
+      .channel(liveName(`chat-${id}`))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${id}` }, (payload) => {
         const msg = payload.new as Message;
         setMsgs((cur) => (cur && !cur.some((x) => x.id === msg.id) ? [...cur, msg] : cur));

@@ -45,6 +45,13 @@ export async function loadChats(myId: string): Promise<ChatRow[]> {
 }
 
 /** How many chat messages are waiting for me (for the tab badge); updates live. */
+/**
+ * A fresh name for every live connection. supabase.channel(name) hands back an existing connection with the
+ * same name; right after logging out and back in, the old one is still closing, and adding listeners to it
+ * crashes the screen ("cannot add postgres_changes callbacks … after subscribe()" → white page).
+ */
+export const liveName = (base: string) => `${base}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
 export function useUnreadChats(myId: string | undefined): number {
   const [n, setN] = useState(0);
 
@@ -61,7 +68,7 @@ export function useUnreadChats(myId: string | undefined): number {
     tick();
     const timer = setInterval(tick, 30000);
     const channel = supabase
-      .channel(`unread-${myId}`)
+      .channel(liveName(`unread-${myId}`))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => tick())
       .subscribe();
     return () => {

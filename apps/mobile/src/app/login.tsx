@@ -77,6 +77,7 @@ export default function LoginScreen() {
 
           <Field
             label={t('auth.email')}
+            id="login-email"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -87,6 +88,7 @@ export default function LoginScreen() {
           />
           <Field
             label={t('auth.password')}
+            id="login-password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
