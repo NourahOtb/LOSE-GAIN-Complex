@@ -175,7 +175,7 @@ export default function ParentHome() {
               ))}
             </View>
             {lanes.map((lane) => (
-              <Lane key={lane.sub.id + lane.sport} name={lane.kid.full_name} sportLabel={t(`sport.${lane.sport}`)} color={sportColor(p, lane.sport)} marks={weekMarks(lane.sub, lane.sport, data.cancels, now).map((m) => m.mark)} isRTL={isRTL} />
+              <Lane key={lane.sub.id + lane.sport} name={lane.kid.first_name || lane.kid.full_name.split(' ')[0]} sportLabel={t(`sport.${lane.sport}`)} color={sportColor(p, lane.sport)} marks={weekMarks(lane.sub, lane.sport, data.cancels, now).map((m) => m.mark)} isRTL={isRTL} />
             ))}
           </View>
         ) : null}
@@ -248,11 +248,12 @@ function Lane({ name, sportLabel, color, marks, isRTL }: { name: string; sportLa
   const p = usePalette();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', height: 58, borderTopWidth: 1, borderTopColor: p.line }}>
-      <View style={{ width: 74 }}>
-        <T w="semibold" size={15}>
+      {/* first name only, one line each: long names wrapped and ran into the row below */}
+      <View style={{ width: 74, paddingEnd: 6 }}>
+        <T w="semibold" size={15} numberOfLines={1}>
           {name}
         </T>
-        <T size={11} color={p.inkSoft}>
+        <T size={11} color={p.inkSoft} numberOfLines={1}>
           {sportLabel}
         </T>
       </View>

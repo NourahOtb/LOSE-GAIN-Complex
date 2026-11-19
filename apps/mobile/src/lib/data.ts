@@ -11,6 +11,7 @@ export type Kid = {
   parent_id: string;
   member_no: number;
   full_name: string;
+  first_name?: string | null;
   birth_date: string;
   photo_url: string | null;
   health_conditions: string[];

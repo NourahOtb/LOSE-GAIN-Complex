@@ -366,8 +366,37 @@ export default function RegisterScreen() {
               )}
             </View>
           ) : (
+            // one card per member, wrapping onto new lines (a segmented bar has no width to share on phones)
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <Segmented options={kids.map((k) => ({ value: k.id, label: k.full_name }))} value={kidId} onChange={setKidId} />
+              {kids.map((k) => {
+                const on = k.id === kidId;
+                return (
+                  <Pressable
+                    key={k.id}
+                    onPress={() => setKidId(k.id)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: on }}
+                    style={({ pressed }) => ({
+                      minHeight: 52,
+                      minWidth: '47%',
+                      flexGrow: 1,
+                      borderWidth: 1.5,
+                      borderColor: on ? p.ink : p.line,
+                      backgroundColor: on ? p.ink : pressed ? p.tile : p.surface,
+                      borderRadius: 6,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                      justifyContent: 'center',
+                    })}>
+                    <T w="semibold" size={16} color={on ? p.onInk : p.ink} numberOfLines={1}>
+                      {k.full_name}
+                    </T>
+                    <T size={12} color={on ? p.onInk : p.inkSoft}>
+                      {t('kids.years', { n: ageOn(k.birth_date) })}
+                    </T>
+                  </Pressable>
+                );
+              })}
             </View>
           )}
         </Section>
