@@ -22,7 +22,7 @@ export const ABOUT: Record<'en' | 'ar', AboutContent> = {
     swimming: {
       name: 'Swimming',
       place: "Kids' pool and Olympic pool",
-      lines: ["Kids' classes at 4 PM and 5 PM", "Men's swimming: 4 PM, Sun, Tue, Thu", 'Open pool membership for men and women'],
+      lines: ["Kids' classes and men's swimming", 'Open pool membership for men and women'],
     },
     jiujitsu: {
       name: 'Jiu-jitsu',
@@ -49,7 +49,7 @@ export const ABOUT: Record<'en' | 'ar', AboutContent> = {
     swimming: {
       name: 'السباحة',
       place: 'مسبح الأطفال والمسبح الأولمبي',
-      lines: ['حصص الأطفال الساعة ٤ و٥ مساءً', 'سباحة الرجال: ٤ مساءً، الأحد والثلاثاء والخميس', 'عضوية المسبح المفتوح للرجال والنساء'],
+      lines: ['حصص الأطفال وسباحة الرجال', 'عضوية المسبح المفتوح للرجال والنساء'],
     },
     jiujitsu: {
       name: 'الجوجيتسو',
