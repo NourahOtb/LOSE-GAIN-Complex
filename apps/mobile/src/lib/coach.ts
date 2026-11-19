@@ -1,4 +1,4 @@
-import { isoDate, timeOf, type Sport } from '@lg/shared';
+import { isoDate, isPaused, timeOf, type Sport } from '@lg/shared';
 
 import { ageGroupOf, type Belt, type Kid, type Stripe } from './data';
 import { CLASS_COLS, type ClassRow, type Sub } from './family';
@@ -42,12 +42,13 @@ export async function loadCoachData(sport: Sport): Promise<CoachData> {
 
 export const daysOf = (s: Sub, sport: Sport) => (sport === 'swimming' ? s.swim_days : s.bjj_days);
 
-/** Kids booked into a class on a given date (active or waiting for payment, date within the subscription). */
+/** Kids booked into a class on a given date (active or waiting for payment, date within the subscription, not paused). */
 export function kidsInClass(data: CoachData, cls: ClassRow, dateIso: string) {
   const sport = cls.sport;
   return data.subs
     .filter((s) => daysOf(s, sport).includes(cls.weekday) && timeOf(s, sport, cls.weekday).slice(0, 5) === cls.start_time.slice(0, 5))
     .filter((s) => dateIso >= s.start_date && dateIso <= s.end_date)
+    .filter((s) => !isPaused(s, dateIso)) // paused that day: not expected in class
     .map((s) => ({ sub: s, kid: data.kids.find((k) => k.id === s.kid_id)! }))
     .filter(({ kid }) => {
       if (!kid) return false;

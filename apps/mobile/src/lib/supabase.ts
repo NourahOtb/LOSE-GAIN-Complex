@@ -39,5 +39,5 @@ export type Profile = {
   ai_consent_at: string | null;
 };
 
-export const RELATIONSHIPS = ['father', 'mother', 'grandfather', 'grandmother', 'brother', 'sister', 'uncle', 'aunt', 'guardian'] as const;
+export const RELATIONSHIPS = ['mother', 'father', 'grandmother', 'grandfather', 'aunt', 'uncle', 'sister', 'brother', 'cousin', 'guardian'] as const;
 export type Relationship = (typeof RELATIONSHIPS)[number];

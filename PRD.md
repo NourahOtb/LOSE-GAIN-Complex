@@ -221,7 +221,7 @@ We are building:
 ### 7.1 Everyone
 - First screen of the app: choose **العربية / English** (can be changed later in settings). The admin dashboard is English.
 - Sign up, log in, forgot password, log out. Sign-up is **"Create a member account"** and first asks **"Who is this account for?"**:
-  - **My family** ("I'm registering my kids"): asks the **relationship to the kids** (father, mother, grandfather, grandmother, brother, sister, uncle, aunt, other / legal guardian). In the app this person is the **guardian (ولي الأمر)**. They can also **add themselves as a member**.
+  - **My family** ("I'm registering my kids"). The **relationship is asked for each kid** when the kid is added, not at sign-up (father, mother, grandfather, grandmother, brother, sister, uncle, aunt, cousin, other / legal guardian), so one guardian can register her son, her nephew and her cousin's daughter. *(Changed 2026-11-19, migration 0026.)* In the app this person is the **guardian (ولي الأمر)**. They can also **add themselves as a member**.
   - **Just me** ("I'm joining myself"): the adult fills in their own health checklist and emergency contact right after sign-up and registers for **adult classes only**. A "Just me" account can't add kids.
   - Coaches and staff see "Guardian: name · relationship" or "Adult member". *(Built 2026-11-18.)*
 - **Two ways to log in** to the same account: **email + password** or **mobile number + SMS code**. If one has a problem, the other still works. The super admin can switch either off temporarily.
@@ -342,7 +342,7 @@ We are building:
 - **First password:** a **temporary password is shown once** to whoever created the account. After logging in with it, the person must choose their own (dashboard and app). **New temporary password** gives a fresh one if someone forgets.
 - **Switching someone off** blocks logging in, but keeps their name on past check-ins, notes and payments. They can be switched back on.
 - **Change password:** in the dashboard (sidebar) and in the app (Settings → Account).
-- **New family at the desk** (owner, manager, reception): Members & families → **+ New family** → guardian name, relationship, mobile, email, app language, "family" or "just me". A temporary password is shown with a ready **WhatsApp** message (Arabic or English) containing the app link and the login. Then **add the kids** (name, birth date, boy/girl, emergency number, health checklist confirmed with the guardian) and **Register →** each one at the desk.
+- **New family at the desk** (owner, manager, reception): Members & families → **+ New family** → guardian name, mobile, email, app language, "family" or "just me". A temporary password is shown with a ready **WhatsApp** message (Arabic or English) containing the app link and the login. Then **add the kids**, in the same form or later (first and last name, the guardian's relationship to that kid, birth date, boy/girl, emergency number, health checklist confirmed with the guardian) and **Register →** each one at the desk.
 - Family page (from the guardian's name): login email, last log-in, new temporary password, kids.
 - Accounts are created only by the `accounts` server function, which holds the key that can create log-ins.
 

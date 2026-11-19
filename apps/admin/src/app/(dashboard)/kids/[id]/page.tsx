@@ -11,7 +11,7 @@ import { requireStaff } from "@/lib/auth";
 import { kuwaitToday } from "@/lib/checkin";
 import { kd, packageLabel, REQUEST_KIND as KIND, shortDate, type Sub } from "@/lib/data";
 
-const REL: Record<string, string> = { father: "Father", mother: "Mother", grandfather: "Grandfather", grandmother: "Grandmother", brother: "Brother", sister: "Sister", uncle: "Uncle", aunt: "Aunt", guardian: "Legal guardian" };
+const REL: Record<string, string> = { father: "Father", mother: "Mother", grandfather: "Grandfather", grandmother: "Grandmother", brother: "Brother", sister: "Sister", uncle: "Uncle", aunt: "Aunt", cousin: "Cousin", guardian: "Legal guardian" };
 const STATUS: Record<string, string> = { active: "Active", pending_payment: "Waiting for payment", expired: "Expired", cancel_requested: "Cancel requested", cancelled: "Cancelled" };
 
 export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
@@ -57,7 +57,7 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
               <Link href={`/families/${kid.parent_id}`} className="underline underline-offset-2">
                 {guardian.full_name}
               </Link>
-              {guardian.relationship ? ` · ${REL[guardian.relationship] ?? guardian.relationship}` : ""}
+              {kid.relationship ? ` · ${REL[kid.relationship] ?? kid.relationship}` : ""}
               {guardian.phone ? ` · ${guardian.phone}` : ""}
             </p>
           ) : guardian?.phone ? (
@@ -76,6 +76,7 @@ export default async function MemberPage({ params }: PageProps<"/kids/[id]">) {
               id: kid.id,
               first_name: kid.first_name ?? kid.full_name,
               last_name: kid.last_name ?? "",
+              relationship: kid.relationship ?? "",
               birth_date: kid.birth_date,
               gender: kid.gender ?? "",
               emergency_phone: kid.emergency_phone ?? "",

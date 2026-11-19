@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
 import { PhotoField } from '@/components/avatar';
-import { Segmented } from '@/components/pickers';
+import { Segmented, Select } from '@/components/pickers';
 import { Button, ErrorText, Field, Label, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { HEALTH_KEYS, type HealthKey } from '@/lib/data';
 import { useI18n } from '@/lib/i18n';
 import { savePhoto } from '@/lib/photos';
-import { supabase } from '@/lib/supabase';
+import { RELATIONSHIPS, supabase, type Relationship } from '@/lib/supabase';
 import { usePalette } from '@/lib/theme';
 
 export default function AddKidScreen() {
@@ -27,6 +27,8 @@ export default function AddKidScreen() {
   const [last, setLast] = useState(isSelf ? ownName.split(' ').slice(1).join(' ') : '');
   const name = `${first.trim()} ${last.trim()}`.trim();
   const [dob, setDob] = useState('');
+  // asked for each kid: a guardian may be the mother of one kid and the aunt or cousin of another
+  const [relationship, setRelationship] = useState<Relationship | null>(null);
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [emergency, setEmergency] = useState('');
@@ -52,6 +54,7 @@ export default function AddKidScreen() {
   const save = async () => {
     setError('');
     if (!first.trim() || !last.trim() || !dob.trim() || !emergency.trim()) return setError(t('err.required'));
+    if (!isSelf && !relationship) return setError(t('err.relationshipKid'));
     if (!gender) return setError(isSelf ? t('err.genderMe') : t('err.gender'));
     const birth = parseDob(dob);
     if (!birth) return setError(t('err.birth'));
@@ -75,6 +78,7 @@ export default function AddKidScreen() {
       health_other: other.trim() || null,
       health_confirmed: true,
       is_self: isSelf,
+      relationship: isSelf ? null : relationship,
       gender,
     }).select('id').single();
     if (err || !created) {
@@ -107,6 +111,15 @@ export default function AddKidScreen() {
 
           <Field label={t('kid.firstName')} value={first} onChangeText={setFirst} autoComplete="name-given" textContentType="givenName" />
           <Field label={t('kid.lastName')} value={last} onChangeText={setLast} autoComplete="name-family" textContentType="familyName" />
+          {isSelf ? null : (
+            <Select
+              label={t('kid.relationship')}
+              placeholder={t('auth.choose')}
+              options={RELATIONSHIPS.map((r) => ({ value: r, label: t(`rel.${r}`) }))}
+              value={relationship}
+              onChange={setRelationship}
+            />
+          )}
           <View style={{ gap: 6 }}>
             <T w="semibold" size={14}>
               {isSelf ? t('me.gender') : t('kid.gender')}

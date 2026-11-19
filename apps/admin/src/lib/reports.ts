@@ -139,7 +139,8 @@ export function buildReport(d: ReportData, month: string, todayIso: string) {
         const t = timeOf(s, sport, wd).slice(0, 5);
         const group = groupOf(m, sport, day);
         const matches = d.classes.filter((c) => c.sport === sport && c.weekday === wd && c.start_time.slice(0, 5) === t);
-        const cls = matches.find((c) => c.age_group === group) ?? matches[0];
+        // a switched-off class can share the day and time with the live one: prefer the live class
+        const cls = matches.find((c) => c.age_group === group && c.is_active) ?? matches.find((c) => c.age_group === group) ?? matches[0];
         if (!cls || cancelled.has(`${cls.id}|${day}`)) continue;
         const came = attended.has(`${m.id}|${cls.id}|${day}`);
         const cs = classStats.get(cls.id) ?? { booked: 0, came: 0 };

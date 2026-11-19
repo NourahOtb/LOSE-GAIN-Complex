@@ -133,7 +133,7 @@ const HEALTH_KEYS = ["asthma", "allergies", "epilepsy", "heart", "injury", "medi
 /** Staff edit a member's details (the database allows staff and the member's own family). */
 export async function updateMember(
   kidId: string,
-  f: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string },
+  f: { first_name: string; last_name: string; relationship: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string },
 ) {
   const { supabase } = await requireStaff();
   if (!f.first_name.trim() || !f.last_name.trim()) return { error: "Enter the first and last name." };
@@ -146,6 +146,7 @@ export async function updateMember(
     .update({
       first_name: f.first_name.trim(),
       last_name: f.last_name.trim(),
+      relationship: ["father", "mother", "grandfather", "grandmother", "brother", "sister", "uncle", "aunt", "cousin", "guardian"].includes(f.relationship) ? f.relationship : null,
       birth_date: f.birth_date,
       gender: f.gender,
       emergency_phone: phone,
@@ -386,19 +387,20 @@ export async function resetPassword(userId: string) {
   return { ok: "New temporary password", tempPassword: r.data.temp_password ?? "" };
 }
 
-export async function createFamily(form: { full_name: string; email: string; phone: string; account_type: "family" | "single"; relationship: string; lang: "ar" | "en" }) {
+export async function createFamily(form: { full_name: string; email: string; phone: string; account_type: "family" | "single"; lang: "ar" | "en" }) {
   const r = await callAccounts({ action: "create_family", ...form });
   if ("error" in r) return r;
   revalidatePath("/kids");
   return { ok: "Family account created", userId: r.data.user_id ?? "", tempPassword: r.data.temp_password ?? "" };
 }
 
+const REL_OK = ["father", "mother", "grandfather", "grandmother", "brother", "sister", "uncle", "aunt", "cousin", "guardian"];
 const HEALTH_OK = ["asthma", "allergies", "epilepsy", "heart", "injury", "medication", "other"];
 
 /** Reception adds a kid (or, for a "Just me" account, the member themself) to a family. */
 export async function addMember(
   parentId: string,
-  form: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string; is_self?: boolean },
+  form: { first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string; is_self?: boolean; relationship?: string },
 ) {
   const { supabase } = await requireStaff();
   const { data: parent } = await supabase.from("profiles").select("account_type, full_name").eq("id", parentId).eq("role", "parent").maybeSingle();
@@ -424,6 +426,7 @@ export async function addMember(
       birth_date: form.birth_date,
       gender: form.gender,
       is_self: isSelf,
+      relationship: isSelf ? null : REL_OK.includes(form.relationship ?? "") ? form.relationship : null,
       emergency_phone: emergency,
       health_conditions: form.health.filter((h) => HEALTH_OK.includes(h)),
       health_other: form.health_other.trim() || null,

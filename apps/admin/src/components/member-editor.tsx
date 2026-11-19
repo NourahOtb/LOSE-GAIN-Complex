@@ -20,7 +20,7 @@ export function MemberEditor({
   kid,
   adult,
 }: {
-  kid: { id: string; first_name: string; last_name: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string };
+  kid: { id: string; first_name: string; last_name: string; relationship: string; birth_date: string; gender: string; emergency_phone: string; health: string[]; health_other: string };
   adult: boolean;
 }) {
   const [f, setF] = useState(kid);
@@ -48,6 +48,30 @@ export function MemberEditor({
           <input value={f.last_name} onChange={(e) => set("last_name", e.target.value)} className={field} />
         </label>
       </div>
+      {!adult || f.relationship ? (
+        <label>
+          <span className="label">Guardian is their…</span>
+          <select value={f.relationship} onChange={(e) => set("relationship", e.target.value)} className={field}>
+            <option value="">Not set</option>
+            {[
+              ["mother", "Mother"],
+              ["father", "Father"],
+              ["grandmother", "Grandmother"],
+              ["grandfather", "Grandfather"],
+              ["aunt", "Aunt"],
+              ["uncle", "Uncle"],
+              ["sister", "Sister"],
+              ["brother", "Brother"],
+              ["cousin", "Cousin"],
+              ["guardian", "Legal guardian"],
+            ].map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       <div className="grid grid-cols-2 gap-3">
         <label>
           <span className="label">Date of birth</span>

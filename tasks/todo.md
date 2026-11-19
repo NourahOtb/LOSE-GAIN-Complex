@@ -100,3 +100,10 @@ See [plan.md](plan.md). One task at a time; Claude asks before starting the next
 - [x] 14i. Money reports: net income, payments, discounts, refunds, each day, by sport (split by days), online vs desk, by member, waiting for payment, Excel ✅ 2026-11-18
 - [x] 14j. Waitlist + capacity: places per class, app shows Full + other times + Join the waitlist, Waitlist page with Offer (48 h), over the limit and Add to waitlist at the desk ✅ 2026-11-19
 
+
+### 15. Demo data and small fixes (2026-11-19)
+- [x] Relationship asked per kid (Add a kid in the app, desk forms, member editor); removed from sign-up; "cousin" added (migration 0026)
+- [x] Old data cleared (only the owner login kept); new demo data: 9 staff (manager, 2 receptionists, accountant, 2 swimming + 3 jiu-jitsu coaches) and 22 families with many scenarios (see DEMO.md)
+- [x] Fix: coach screen no longer lists a kid on days their registration is paused
+- [x] Fix: attendance report matched bookings to switched-off classes with the same day and time
+- [x] Fix: "1 classes" → "1 class" on Today

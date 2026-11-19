@@ -5,11 +5,11 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { Logo } from '@/components/logo';
 import { ThemeSwitch } from '@/components/theme-switch';
-import { ChoiceCards, Select } from '@/components/pickers';
+import { ChoiceCards } from '@/components/pickers';
 import { Button, ErrorText, Field, Screen, T } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { useI18n } from '@/lib/i18n';
-import { RELATIONSHIPS, supabase, type Relationship } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { usePalette } from '@/lib/theme';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,7 +19,6 @@ export default function SignupScreen() {
   const { refreshProfile } = useAuth();
   const p = usePalette();
   const [accountType, setAccountType] = useState<'family' | 'single' | null>(null);
-  const [relationship, setRelationship] = useState<Relationship | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -31,7 +30,6 @@ export default function SignupScreen() {
   const submit = async () => {
     setError('');
     if (!accountType) return setError(t('err.accountFor'));
-    if (accountType === 'family' && !relationship) return setError(t('err.relationship'));
     if (!name.trim() || !phone.trim() || !email.trim() || !password) return setError(t('err.required'));
     const normalized = normalizeKuwaitPhone(phone);
     if (!normalized) return setError(t('err.phone'));
@@ -48,7 +46,6 @@ export default function SignupScreen() {
           phone: normalized,
           preferred_language: lang ?? 'en',
           account_type: accountType,
-          relationship: accountType === 'family' ? relationship : null,
         },
       },
     });
@@ -93,15 +90,6 @@ export default function SignupScreen() {
               onChange={setAccountType}
             />
           </View>
-          {accountType === 'family' ? (
-            <Select
-              label={t('auth.relationship')}
-              placeholder={t('auth.choose')}
-              options={RELATIONSHIPS.map((r) => ({ value: r, label: t(`rel.${r}`) }))}
-              value={relationship}
-              onChange={setRelationship}
-            />
-          ) : null}
 
           <Field label={t('auth.fullName')} value={name} onChangeText={setName} autoComplete="name" textContentType="name" />
           <Field

@@ -13,10 +13,11 @@ const REL: [string, string][] = [
   ["father", "Father"],
   ["grandmother", "Grandmother"],
   ["grandfather", "Grandfather"],
-  ["sister", "Sister"],
-  ["brother", "Brother"],
   ["aunt", "Aunt"],
   ["uncle", "Uncle"],
+  ["sister", "Sister"],
+  ["brother", "Brother"],
+  ["cousin", "Cousin"],
   ["guardian", "Legal guardian"],
 ];
 const HEALTH: [string, string][] = [
@@ -47,10 +48,12 @@ export type MemberDraft = {
   health: string[];
   health_other: string;
   confirmed: boolean;
+  /** the guardian's relationship to this kid */
+  relationship: string;
 };
-export const emptyMember = (): MemberDraft => ({ first_name: "", last_name: "", birth_date: "", gender: "", emergency_phone: "", health: [], health_other: "", confirmed: false });
-/** a kid needs both names; the account holder's name comes from the account */
-const memberReady = (m: MemberDraft, needsName: boolean) => (!needsName || (m.first_name.trim() && m.last_name.trim())) && !!m.birth_date && !!m.gender && m.confirmed;
+export const emptyMember = (): MemberDraft => ({ first_name: "", last_name: "", birth_date: "", gender: "", emergency_phone: "", health: [], health_other: "", confirmed: false, relationship: "" });
+/** a kid needs both names and the guardian's relationship; the account holder's name comes from the account */
+const memberReady = (m: MemberDraft, isKid: boolean) => (!isKid || (m.first_name.trim() && m.last_name.trim() && m.relationship)) && !!m.birth_date && !!m.gender && m.confirmed;
 
 function MemberFields({ m, onChange, adult, withName, idKey }: { m: MemberDraft; onChange: (m: MemberDraft) => void; adult: boolean; withName: boolean; idKey: string }) {
   const set = <K extends keyof MemberDraft>(k: K, v: MemberDraft[K]) => onChange({ ...m, [k]: v });
@@ -66,6 +69,17 @@ function MemberFields({ m, onChange, adult, withName, idKey }: { m: MemberDraft;
             <label className="flex flex-col gap-1">
               <span className="label">Last name</span>
               <input value={m.last_name} onChange={(e) => set("last_name", e.target.value)} className={`${field} w-40`} />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="label">Guardian is their…</span>
+              <select value={m.relationship} onChange={(e) => set("relationship", e.target.value)} className={field}>
+                <option value="">Choose</option>
+                {REL.map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
             </label>
           </>
         ) : null}
@@ -124,7 +138,7 @@ function MemberFields({ m, onChange, adult, withName, idKey }: { m: MemberDraft;
 // ---------- new family (or "just me" member) at the desk, with its members in one go ----------
 
 export function NewFamily() {
-  const [f, setF] = useState({ full_name: "", email: "", phone: "", account_type: "family" as "family" | "single", relationship: "mother", lang: "ar" as "ar" | "en" });
+  const [f, setF] = useState({ full_name: "", email: "", phone: "", account_type: "family" as "family" | "single", lang: "ar" as "ar" | "en" });
   const [kids, setKids] = useState<MemberDraft[]>([emptyMember()]);
   const [guardianTrains, setGuardianTrains] = useState(false);
   const [self, setSelf] = useState<MemberDraft>(emptyMember());
@@ -192,18 +206,6 @@ export function NewFamily() {
             <span className="label">{single ? "Member's full name" : "Guardian's full name"}</span>
             <input value={f.full_name} onChange={(e) => set("full_name", e.target.value)} className={`${field} w-56`} />
           </label>
-          {!single ? (
-            <label className="flex flex-col gap-1">
-              <span className="label">Relationship to the kids</span>
-              <select value={f.relationship} onChange={(e) => set("relationship", e.target.value)} className={field}>
-                {REL.map(([v, l]) => (
-                  <option key={v} value={v}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
         </div>
         <div className="flex flex-wrap gap-3">
           <label className="flex flex-col gap-1">
@@ -283,7 +285,7 @@ export function NewFamily() {
           className="h-10 rounded border-[1.5px] border-ink bg-ink px-4 font-semibold text-surface disabled:opacity-40">
           {pending ? "Creating…" : single ? "Create account" : `Create account${typedKids.length + (guardianTrains ? 1 : 0) ? ` + ${typedKids.length + (guardianTrains ? 1 : 0)} member${typedKids.length + (guardianTrains ? 1 : 0) === 1 ? "" : "s"}` : ""}`}
         </button>
-        {notReady.length ? <span className="text-ink-soft">To finish: {notReady.join(", ")} (names, birth date, boy/girl, health confirmed).</span> : null}
+        {notReady.length ? <span className="text-ink-soft">To finish: {notReady.join(", ")} (names, relationship, birth date, boy/girl, health confirmed).</span> : null}
         {msg?.error ? <span className="font-semibold text-danger">{msg.error}</span> : null}
       </div>
     </div>

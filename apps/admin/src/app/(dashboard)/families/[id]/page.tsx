@@ -4,14 +4,14 @@ import Link from "next/link";
 import { AddMemberForm, FamilyNewPassword } from "@/components/family-forms";
 import { requireStaff } from "@/lib/auth";
 
-const REL: Record<string, string> = { father: "Father", mother: "Mother", grandfather: "Grandfather", grandmother: "Grandmother", brother: "Brother", sister: "Sister", uncle: "Uncle", aunt: "Aunt", guardian: "Legal guardian" };
+const REL: Record<string, string> = { father: "Father", mother: "Mother", grandfather: "Grandfather", grandmother: "Grandmother", brother: "Brother", sister: "Sister", uncle: "Uncle", aunt: "Aunt", cousin: "Cousin", guardian: "Legal guardian" };
 
 export default async function FamilyPage({ params }: PageProps<"/families/[id]">) {
   const { id } = await params;
   const { supabase, profile } = await requireStaff();
   const [{ data: g }, { data: kids }, { data: login }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, phone, relationship, account_type, preferred_language").eq("id", id).eq("role", "parent").maybeSingle(),
-    supabase.from("kids").select("id, full_name, birth_date, gender, is_self, health_conditions, health_other").eq("parent_id", id).order("created_at"),
+    supabase.from("kids").select("id, full_name, birth_date, gender, is_self, health_conditions, health_other, relationship").eq("parent_id", id).order("created_at"),
     supabase.rpc("family_login", { p_parent: id }),
   ]);
   if (!g) return <p className="text-ink-soft">Family not found.</p>;
@@ -28,7 +28,7 @@ export default async function FamilyPage({ params }: PageProps<"/families/[id]">
       </Link>
       <h1 className="mt-3 text-[28px] font-semibold leading-tight">{g.full_name}</h1>
       <p className="text-ink-soft">
-        {single ? "Adult member (just me)" : `Guardian${g.relationship ? ` · ${REL[g.relationship] ?? g.relationship}` : ""}`}
+        {single ? "Adult member (just me)" : "Guardian"}
         {g.phone ? ` · ${g.phone}` : ""} · app in {g.preferred_language === "ar" ? "Arabic" : "English"}
       </p>
 
@@ -62,6 +62,7 @@ export default async function FamilyPage({ params }: PageProps<"/families/[id]">
                   {k.full_name}
                 </Link>
                 <span className="text-ink-soft">
+                  {k.is_self ? "Guardian · " : k.relationship ? `Guardian is their ${(REL[k.relationship] ?? k.relationship).toLowerCase()} · ` : ""}
                   {ageOn(k.birth_date)} yrs{k.gender ? ` · ${k.gender === "male" ? (k.is_self ? "Male" : "Boy") : k.is_self ? "Female" : "Girl"}` : ""}
                 </span>
                 {(k.health_conditions ?? []).length || k.health_other ? <span className="rounded bg-danger-bg px-2 py-0.5 text-xs font-semibold text-danger">Health</span> : null}

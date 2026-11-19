@@ -33,6 +33,7 @@ const REL: Record<string, string> = {
   sister: "Sister",
   uncle: "Uncle",
   aunt: "Aunt",
+  cousin: "Cousin",
   guardian: "Legal guardian",
 };
 
@@ -49,7 +50,7 @@ export default async function KidsPage() {
     supabase.from("stripes").select("kid_id, belt"),
     supabase.from("subscriptions").select("kid_id, status, end_date").in("status", ["active", "pending_payment"]),
   ]);
-  const kids = (kidsRes.data ?? []) as (Kid & { belt_since: string | null; is_self: boolean; gender: string | null; photo_url: string | null })[];
+  const kids = (kidsRes.data ?? []) as (Kid & { belt_since: string | null; is_self: boolean; gender: string | null; photo_url: string | null; relationship: string | null })[];
   // private photos: short-lived links, only for staff (database rules)
   const photoPaths = kids.map((k) => k.photo_url).filter((x): x is string => !!x);
   const photos = new Map<string, string>();
@@ -129,7 +130,7 @@ export default async function KidsPage() {
                         <Link href={`/families/${k.parent_id}`} className="underline-offset-2 hover:underline">
                           {parent?.full_name}
                         </Link>
-                        {parent?.relationship ? <span className="text-ink-soft"> · {REL[parent.relationship] ?? parent.relationship}</span> : null}
+                        {k.relationship ? <span className="text-ink-soft"> · {REL[k.relationship] ?? k.relationship}</span> : null}
                       </div>
                     )}
                     <div className="text-xs text-ink-soft">{parent?.phone}</div>

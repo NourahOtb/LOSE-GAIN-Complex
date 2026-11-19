@@ -238,7 +238,7 @@ export default async function TodayPage() {
                             {left === 0 ? "today" : `in ${left} day${left === 1 ? "" : "s"}`}
                           </span>
                         </td>
-                        <td className="py-2.5 text-right">{s.kind === "open_pool" ? "—" : `${s.sessions_total - s.sessions_used} classes`}</td>
+                        <td className="py-2.5 text-right">{s.kind === "open_pool" ? "—" : `${s.sessions_total - s.sessions_used} ${s.sessions_total - s.sessions_used === 1 ? "class" : "classes"}`}</td>
                       </tr>
                     );
                   })}
